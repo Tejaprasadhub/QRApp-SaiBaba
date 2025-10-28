@@ -1,105 +1,210 @@
-/* Force visible background colors for toast messages */
+
+/* ======================================================
+   THEME VARIABLES — PURPLE THEME (LIGHT MODE)
+   ====================================================== */
+
+:root {
+  /* ======================================================
+     BASE COLORS
+     ====================================================== */
+  --color-bg: #faf9ff; /* Light background for app */
+  --color-surface: #ffffff; /* Card / surface background */
+
+  /* ======================================================
+     PURPLE THEME GRADIENTS
+     ====================================================== */
+  --color-header: linear-gradient(90deg, #7e22ce 0%, #5b21b6 100%);
+  --color-footer: linear-gradient(90deg, #5b21b6 0%, #7e22ce 100%);
+  --text-accent: #ffffff; /* Soft lavender accent */
+  --accent-primary: #9333ea;
+  --accent-gradient: linear-gradient(90deg, #7e22ce, #a855f7);
+
+  /* ======================================================
+     TEXT COLORS
+     ====================================================== */
+  --text-primary: #000;      /* Deep indigo text for light bg */
+  --text-secondary: #5b21b6;    /* Purple secondary text */
+  --text-muted: #7c7a89;        /* Neutral grey for hints */
+  --text-inverse: #ffffff;      /* For buttons or header/footer contrast */
+
+  /* ======================================================
+     BORDERS, SHADOWS & DEPTH
+     ====================================================== */
+  --border-color: rgba(124, 58, 237, 0.25);
+  --shadow-color: rgba(124, 58, 237, 0.15);
+  --shadow-strong: rgba(124, 58, 237, 0.3);
+
+  /* ======================================================
+     TOAST COLORS
+     ====================================================== */
+  --toast-success: #16a34a;
+  --toast-info: #2563eb;
+  --toast-warn: #f59e0b;
+  --toast-error: #dc2626;
+
+  /* ======================================================
+     TYPOGRAPHY & SPACING
+     ====================================================== */
+  --font-family: 'Poppins', sans-serif;
+  --radius-md: 10px;
+  --radius-lg: 18px;
+  --padding-section: 1.2rem;
+
+  /* ======================================================
+     BUTTON & INPUT HIGHLIGHTS
+     ====================================================== */
+  --btn-bg: linear-gradient(90deg, #7e22ce, #a855f7);
+  --btn-bg-hover: linear-gradient(90deg, #a855f7, #7e22ce);
+  --input-border: rgba(124, 58, 237, 0.4);
+  --input-focus: rgba(124, 58, 237, 0.7);
+  --input-bg: #f9f7ff;
+
+  /* ======================================================
+     BACKGROUND GRADIENT (for html/body)
+     ====================================================== */
+  --color-bg-gradient-start: #f7f3ff; /* soft lavender top */
+  --color-bg-gradient-end: #e8e3fa;   /* gentle purple fade */
+
+  /* ======================================================
+   QR CODE SECTION COLORS — tuned for purple theme
+   ====================================================== */
+--qr-bg-gradient: linear-gradient(135deg, #a855f7 0%, #c084fc 100%); /* smooth purple gradient */
+--btn-text: #ffffff; /* clean white text for clarity */
+--shadow-soft: rgba(147, 51, 234, 0.25); /* soft shadow from accent-primary family */
+
+
+}
+
+/* ======================================================
+   GLOBAL BASE
+   ====================================================== */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  font-family: var(--font-family);
+  color: var(--text-primary);
+
+  background: radial-gradient(
+    circle at top,
+    var(--color-bg-gradient-start),
+    var(--color-bg-gradient-end)
+  );
+  background-attachment: fixed;
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* ======================================================
+   TOAST STYLES
+   ====================================================== */
 .p-toast .p-toast-message {
-  border-radius: 10px !important;
+  border-radius: var(--radius-md) !important;
   padding: 1rem 1.25rem !important;
-  color: #fff !important;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  color: var(--text-inverse) !important;
+  box-shadow: 0 8px 20px var(--shadow-color);
   backdrop-filter: blur(4px);
 }
 
-/* Background colors for each severity */
 .p-toast-message-success {
-  background-color: #16a34a !important; /* green-600 */
+  background-color: var(--toast-success) !important;
 }
 
 .p-toast-message-info {
-  background-color: #0284c7 !important; /* sky-600 */
+  background-color: var(--toast-info) !important;
 }
 
 .p-toast-message-warn {
-  background-color: #f59e0b !important; /* amber-500 */
-  color: #1f2937 !important;
+  background-color: var(--toast-warn) !important;
+  color: #1e1b4b !important;
 }
 
 .p-toast-message-error {
-  background-color: #dc2626 !important; /* red-600 */
+  background-color: var(--toast-error) !important;
 }
 
-/* Fix potential theme overrides */
 .p-toast .p-toast-message .p-toast-text,
 .p-toast .p-toast-message .p-toast-summary,
 .p-toast .p-toast-message .p-toast-detail {
   color: inherit !important;
 }
 
-
-
-
-/* ================================================
-   Global App Styles – Elegant Orange Theme (with background image)
-   ================================================ */
-
-html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  width: 100%;
-  font-family: 'Poppins', sans-serif;
-  color: #2b2b2b;
-  overflow-x: hidden;
-
-  /* ✅ Background Image + Gradient Overlay */
-  background: 
-    url('assets/bg-image3.jpg'); /* ⬅️ put your image in assets/images/ */
-    //   background: 
-    // linear-gradient(160deg, rgba(255, 243, 230, 0.9), rgba(255, 197, 130, 0.8)),
-    // url('assets/bg-image1.webp'); /* ⬅️ put your image in assets/images/ */
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
-}
-
 /* ======================================================
    HEADER
    ====================================================== */
-.app-header {
-  background: linear-gradient(90deg, #ff8a3d 0%, #ffb14d 100%);
-  color: #fff;
-  padding: 1rem 2rem;
-  box-shadow: 0 4px 12px rgba(255, 138, 61, 0.4);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
+/* ======================================================
+   APP HEADER WRAPPER — Rich Purple Theme
+   ====================================================== */
+
+.app-header-wrapper {
+  .app-header {
+    background: var(--color-header);
+    color: var(--text-inverse);
+    box-shadow: 0 4px 12px var(--shadow-soft);
+    border-bottom: 1px solid var(--border-color);
+    font-family: var(--font-family);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  /* 🪪 Logo */
+  .app-header .logo {
+    height: 50px;
+    width: auto;
+    border-radius: var(--radius-md);
+    box-shadow: 0 2px 6px var(--shadow-color);
+    background: var(--color-surface);
+    // padding: 4px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .app-header .logo:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 10px var(--shadow-strong);
+  }
+
+  /* ✨ Shop Name & Tagline */
+  .app-header .shop-name {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--text-accent);
+    text-shadow: 0 2px 6px var(--shadow-strong);
+  }
+
+  .app-header .shop-tagline {
+    color: var(--text-accent);
+    opacity: 0.9;
+    font-size: 0.9rem;
+    letter-spacing: 0.3px;
+  }
+
+
+  /* 📱 Responsive Adjustments */
+  @media (max-width: 768px) {
+    .app-header {
+      flex-direction: column;
+      text-align: center;
+      gap: 10px;
+    }
+
+    .app-header .logo {
+      height: 70px;
+    }
+
+    .app-header .shop-name {
+      font-size: 1.3rem;
+    }
+
+    .app-header .shop-tagline {
+      font-size: 0.8rem;
+    }
+  }
 }
 
-.app-header .shop-name {
-  font-size: 1.8rem;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-}
-
-.app-header .shop-tagline {
-  font-size: 0.85rem;
-  color: #fff7e6;
-}
-
-.app-header .nav-link {
-  color: #fff;
-  margin-left: 1.2rem;
-  text-decoration: none;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.app-header .nav-link:hover {
-  color: #fffbe6;
-  text-shadow: 0 0 6px rgba(255, 255, 255, 0.6);
-}
 
 /* ======================================================
    MAIN APP CONTAINER & CARD
@@ -110,77 +215,50 @@ html, body {
   justify-content: center;
   align-items: center;
   padding: 1rem;
-  .container{
+
+  .container {
     padding: 0 !important;
   }
 }
 
 .card {
-  background: rgba(255, 255, 255, 0.96);
-  border-radius: 18px;
-  box-shadow: 0 10px 30px rgba(255, 155, 60, 0.25);
-  border: 1px solid rgba(255, 190, 120, 0.3);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 30px var(--shadow-color);
+  border: 1px solid var(--border-color);
   padding: 2rem;
   transition: all 0.3s ease;
+  color: var(--text-primary);
 }
 
 .card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 35px rgba(255, 155, 60, 0.35);
+  box-shadow: 0 12px 35px var(--shadow-strong);
 }
-
-/* ======================================================
-   INPUTS + BUTTONS
-   ====================================================== */
-// input.form-control {
-//   border-radius: 10px;
-//   border: 1px solid #ffb770;
-//   background-color: #fff;
-//   transition: all 0.3s ease;
-// }
-
-// input.form-control:focus {
-//   border-color: #ff9333;
-//   box-shadow: 0 0 10px rgba(255, 147, 51, 0.4);
-// }
-
-// .btn-success {
-//   background: linear-gradient(90deg, #ff9333, #ffb84d);
-//   border: none;
-//   color: white;
-//   font-weight: 600;
-//   border-radius: 8px;
-//   padding: 0.6rem 1.5rem;
-//   transition: 0.3s all ease;
-// }
-
-// .btn-success:hover {
-//   background: linear-gradient(90deg, #ffb84d, #ff9333);
-//   box-shadow: 0 4px 12px rgba(255, 147, 51, 0.4);
-// }
 
 /* ======================================================
    FOOTER
    ====================================================== */
 .app-footer {
-  background: linear-gradient(90deg, #ff9333 0%, #ffb84d 100%);
-  color: #fffdf5;
+  background: var(--color-footer);
+  color: var(--text-inverse);
   text-align: center;
-  padding: 1.2rem;
+  padding: var(--padding-section);
   font-size: 0.9rem;
-  box-shadow: 0 -4px 12px rgba(255, 147, 51, 0.3);
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
+  box-shadow: 0 -4px 12px var(--shadow-color);
+  border-top-left-radius: var(--radius-md);
+  border-top-right-radius: var(--radius-md);
 }
 
 .app-footer .social-icons i {
   margin: 0 6px;
   font-size: 1.2rem;
   transition: all 0.3s ease;
+  color: var(--text-accent);
 }
 
 .app-footer .social-icons i:hover {
-  color: #fffbe6;
+  color: var(--text-inverse);
   text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
 }
 
@@ -201,3 +279,558 @@ html, body {
     padding: 1.2rem;
   }
 }
+
+/* ======================================================
+   QR CODE STYLES
+   ====================================================== */
+
+.qr-wrapper {
+  background: var(--qr-bg-gradient);
+  border-radius: 20px;
+  padding: 30px;
+  color: var(--text-primary);
+  box-shadow: 0 4px 20px var(--shadow-soft);
+  display: inline-block;
+  text-align: center;
+  transition: all 0.3s ease;
+
+  h2 {
+    color: var(--text-accent);
+    font-weight: 600;
+  }
+
+  p {
+    color: var(--text-secondary);
+  }
+
+  canvas {
+    background: var(--color-bg);
+    border-radius: 12px;
+    padding: 10px;
+    box-shadow: 0 2px 10px var(--shadow-soft);
+  }
+
+  .btn-primary {
+    background: var(--btn-bg);
+    color: var(--btn-text);
+    font-weight: 600;
+    border: none;
+    border-radius: 30px;
+    padding: 8px 20px;
+    transition: 0.3s;
+
+    &:hover {
+      background: var(--btn-bg-hover);
+      color: var(--btn-text);
+      box-shadow: 0 0 10px var(--shadow-strong);
+    }
+  }
+}
+
+/* ======================================================
+   CUSTOMER FORM STYLES
+   ====================================================== */
+
+
+.customer-form-wrapper{
+.card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 6px 24px var(--shadow-color);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+
+  .card-body {
+    padding: 1.5rem;
+  }
+
+  .alert-info {
+    background: var(--qr-bg-gradient);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: 0 2px 10px var(--shadow-soft);
+    font-weight: 500;
+    text-align: center;
+  }
+
+  label.form-label {
+    color: var(--text-secondary);
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .form-control {
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
+    color: var(--text-primary);
+    border-radius: var(--radius-md);
+    padding: 0.6rem 0.8rem;
+    transition: all 0.25s ease;
+
+    &:focus {
+      border-color: var(--input-focus);
+      box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.15);
+      background-color: #ffffff;
+    }
+
+    &.is-valid {
+      border-color: var(--toast-success);
+    }
+
+    &.is-invalid {
+      border-color: var(--toast-error);
+    }
+  }
+
+  .invalid-feedback {
+    color: var(--toast-error);
+    font-size: 0.85rem;
+  }
+
+  .btn-success {
+    background: var(--btn-bg);
+    color: var(--btn-text);
+    border: none;
+    border-radius: 30px;
+    padding: 0.6rem 1.5rem;
+    font-weight: 600;
+    transition: 0.3s all ease;
+    box-shadow: 0 4px 12px var(--shadow-soft);
+
+    &:hover {
+      background: var(--btn-bg-hover);
+      color: var(--btn-text);
+      box-shadow: 0 6px 16px var(--shadow-strong);
+      transform: translateY(-2px);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+  }
+}
+}
+
+
+
+/* ======================================================
+   THANK YOU SECTION (PURPLE THEME)
+   ====================================================== */
+
+.thank-you-wrapper {
+  .thank-you-container {
+    min-height: calc(100vh - 160px);
+    background: radial-gradient(
+      circle at top,
+      var(--color-bg-gradient-start),
+      var(--color-bg-gradient-end)
+    );
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--text-primary);
+  }
+
+  /* Card Styling */
+  .thank-you-card {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 8px 30px var(--shadow-color);
+    max-width: 420px;
+    width: 100%;
+    backdrop-filter: blur(12px);
+    text-align: center;
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 35px var(--shadow-strong);
+    }
+
+    i.pi-check-circle {
+      color: var(--toast-success);
+      font-size: 3rem;
+    }
+  }
+
+  /* Title & Message */
+  .thank-you-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .thank-you-message {
+    font-size: 1.05rem;
+    color: var(--text-primary);
+    opacity: 0.9;
+    margin-bottom: 1rem;
+  }
+
+  /* Action Buttons */
+  .action-buttons .btn {
+    border-radius: 30px;
+    font-weight: 600;
+    box-shadow: 0 4px 10px var(--shadow-soft);
+    border: none;
+    transition: all 0.3s ease;
+    color: var(--btn-text);
+
+    &:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 15px var(--shadow-strong);
+    }
+
+    &.btn-warning {
+      background: var(--accent-gradient);
+    }
+
+    &.btn-success {
+      background: var(--toast-success);
+    }
+
+    &.btn-danger {
+      background: linear-gradient(90deg, #d946ef, #9333ea);
+    }
+
+    &.btn-primary {
+      background: linear-gradient(90deg, #6366f1, #7c3aed);
+    }
+
+    &.btn-outline-light {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+
+      &:hover {
+        background: var(--btn-bg-hover);
+        color: var(--btn-text);
+        border-color: transparent;
+      }
+    }
+  }
+
+  /* Disabled Links */
+  .disabled-link {
+    opacity: 0.6;
+    pointer-events: none;
+    cursor: not-allowed;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .thank-you-card {
+      padding: 1.5rem;
+    }
+
+    .thank-you-title {
+      font-size: 1.6rem;
+    }
+
+    .thank-you-message {
+      font-size: 1rem;
+    }
+  }
+}
+
+
+
+/* ======================================================
+   CUSTOMERS LIST WRAPPER — POLISHED PURPLE THEME
+   ====================================================== */
+
+.customers-list-wrapper {
+  /* 🌅 Page Background */
+  .customer-list-container {
+    min-height: calc(100vh - 140px);
+    background: linear-gradient(
+      135deg,
+      var(--color-bg-gradient-start),
+      var(--color-bg-gradient-end)
+    );
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    color: var(--text-primary);
+    padding: var(--padding-section);
+  }
+
+  /* 📦 Main Container */
+  .customer-container {
+    width: 100%;
+    max-width: 1100px;
+  }
+
+  /* 🏷️ Header Section */
+  .header-section {
+    background: var(--accent-gradient);
+    border-radius: var(--radius-lg);
+    padding: 1.2rem 1.6rem;
+    color: var(--text-inverse);
+    box-shadow: 0 6px 18px var(--shadow-color);
+    text-align: center;
+  }
+
+  .header-section h2 {
+    color: var(--text-inverse);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.8rem;
+    text-shadow: 0 2px 8px var(--shadow-strong);
+  }
+
+  /* 🧭 Button Group */
+  .button-group {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 1rem;
+  }
+
+  .button-group .btn {
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    padding: 0.55rem 1.3rem;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+  }
+
+  /* ➕ Add Customer */
+  .button-group .btn-light {
+    background: var(--color-surface);
+    color: var(--accent-primary);
+    border: 2px solid var(--accent-primary);
+    box-shadow: 0 2px 8px var(--shadow-color);
+  }
+
+  .button-group .btn-light:hover {
+    background: var(--btn-bg);
+    color: var(--text-inverse);
+    border-color: transparent;
+    box-shadow: 0 4px 12px var(--shadow-strong);
+  }
+
+  /* ⬇️ Export to Excel */
+  .button-group .btn-success {
+    background: linear-gradient(90deg, var(--toast-success), #34d399);
+    border: none;
+    color: var(--text-inverse);
+  }
+
+  .button-group .btn-success:hover {
+    background: linear-gradient(90deg, #34d399, var(--toast-success));
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px var(--shadow-strong);
+  }
+
+  /* 🧾 Table Card */
+  .table-card {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 4px 20px var(--shadow-color);
+    padding: 1rem 1.2rem;
+    border: 1px solid var(--border-color);
+  }
+
+  /* 🪶 Table Header */
+  .table-gradient {
+    background: var(--accent-gradient);
+    color: var(--text-inverse);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+  }
+
+  .stylish-table tbody > tr:nth-child(even) {
+    background-color: rgba(147, 51, 234, 0.05);
+  }
+
+  .stylish-table tbody > tr:hover {
+    background-color: rgba(147, 51, 234, 0.12);
+    transition: background 0.3s ease;
+  }
+
+  /* 🟣 Table Buttons */
+  .table .btn-warning {
+    background: var(--accent-gradient);
+    border: none;
+    color: var(--text-inverse);
+    font-weight: 600;
+    transition: all 0.25s ease;
+  }
+
+  .table .btn-warning:hover {
+    background: var(--btn-bg-hover);
+  }
+
+  .table .btn-danger {
+    background: var(--toast-error);
+    border: none;
+    color: var(--text-inverse);
+    font-weight: 600;
+  }
+
+  .table .btn-danger:hover {
+    background: var(--toast-error);
+    filter: brightness(1.1);
+  }
+
+  /* ✏️ Dialog Styling */
+  :host ::ng-deep .p-dialog {
+    border-radius: var(--radius-lg);
+    box-shadow: 0 8px 30px var(--shadow-strong);
+    overflow: hidden;
+    animation: fadeInScale 0.25s ease-out;
+  }
+
+  /* Dialog Header */
+  :host ::ng-deep .p-dialog .p-dialog-header {
+    background: var(--accent-gradient);
+    color: var(--text-inverse);
+    font-weight: 600;
+    font-size: 1.1rem;
+    padding: 1rem 1.3rem;
+    letter-spacing: 0.5px;
+  }
+
+  :host ::ng-deep .p-dialog .p-dialog-header-icon {
+    color: var(--text-inverse);
+    transition: all 0.2s ease;
+  }
+
+  :host ::ng-deep .p-dialog .p-dialog-header-icon:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: scale(1.15);
+  }
+
+  /* Dialog Content */
+  :host ::ng-deep .p-dialog .p-dialog-content {
+    background: var(--color-surface);
+    color: var(--text-primary);
+    padding: 1.6rem;
+  }
+
+  /* Form Fields */
+  .p-fluid .field {
+    margin-bottom: 1rem;
+  }
+
+  .p-fluid .field label {
+    display: block;
+    color: var(--text-secondary);
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+  }
+
+  .p-fluid .field input[pInputText] {
+    width: 100%;
+    border-radius: var(--radius-md);
+    padding: 10px 14px;
+    font-size: 0.95rem;
+    border: 1px solid var(--input-border);
+    background: var(--input-bg);
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+  }
+
+  .p-fluid .field input[pInputText]:focus {
+    border-color: var(--input-focus);
+    box-shadow: 0 0 8px var(--shadow-soft);
+    outline: none;
+  }
+
+  /* Dialog Footer */
+  :host ::ng-deep .p-dialog .p-dialog-footer {
+    background: var(--color-surface);
+    border-top: 1px solid var(--border-color);
+    padding: 1rem 1.3rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.8rem;
+  }
+
+  :host ::ng-deep .p-dialog .p-button-text {
+    color: var(--text-secondary);
+    background: transparent;
+    border: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+
+  :host ::ng-deep .p-dialog .p-button-text:hover {
+    background: rgba(124, 58, 237, 0.1);
+  }
+
+  :host ::ng-deep .p-dialog .p-button-primary {
+    background: var(--btn-bg);
+    border: none;
+    color: var(--btn-text);
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    padding: 0.55rem 1.2rem;
+    transition: all 0.3s ease;
+  }
+
+  :host ::ng-deep .p-dialog .p-button-primary:hover {
+    background: var(--btn-bg-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px var(--shadow-soft);
+  }
+
+  /* ✨ Animation */
+  @keyframes fadeInScale {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* 📱 Responsive */
+  @media (max-width: 768px) {
+    .header-section h2 {
+      font-size: 1.4rem;
+    }
+
+    .button-group {
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .table-card {
+      padding: 0.75rem;
+    }
+
+    .button-group .btn {
+      width: 100%;
+      max-width: 220px;
+    }
+
+    :host ::ng-deep .p-dialog {
+      width: 92% !important;
+    }
+
+    :host ::ng-deep .p-dialog .p-dialog-content {
+      padding: 1.2rem;
+    }
+  }
+}
+
+
+
+
+
