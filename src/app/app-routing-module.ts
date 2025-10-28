@@ -5,6 +5,8 @@ import { QrCodeComponent } from './pages/qr-code/qr-code';
 import { ThankYou } from './pages/thank-you/thank-you';
 import { QrRedirectComponent } from './pages/qr-redirect/qr-redirect';
 import { CustomerList } from './pages/customer-list/customer-list';
+import { AuthGuard } from './services/AuthGuard';
+import { AdminLogin } from './pages/admin-login/admin-login';
 
 const routes: Routes = [
  { path: '', redirectTo: '/customer-form', pathMatch: 'full' },
@@ -12,7 +14,9 @@ const routes: Routes = [
   { path: 'qr-code', component: QrCodeComponent },
   { path: 'thank-you', component: ThankYou },
    { path: 'qr-redirect', component: QrRedirectComponent }, // 👈 new redirect route
-{ path: 'customer-list', component: CustomerList },
+{ path: 'customer-list', component: CustomerList ,
+  canActivate: [AuthGuard]},
+  {path:'login',component:AdminLogin},
 
   // 👇 wildcard route must always come LAST
   { path: '**', redirectTo: '/customer-form' }

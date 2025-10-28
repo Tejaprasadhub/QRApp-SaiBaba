@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import { AuthService } from '../../services/AuthService';
 @Component({
   selector: 'app-customer-list',
   templateUrl: './customer-list.html',
@@ -17,7 +18,9 @@ pageSize = 5;
   customers: any[] = [];
 selectedCustomer: any = { id: 0, name: '', phone: '' };
   displayDialog: boolean = false;
-  constructor(private firestore: Firestore,private messageService :MessageService,private router: Router) {}
+  constructor(private firestore: Firestore,private messageService :MessageService,private router: Router,
+    private authService: AuthService
+  ) {}
 get totalPages(): number {
   return Math.ceil(this.customers.length / this.pageSize);
 }
@@ -128,5 +131,13 @@ const ref = collection(this.firestore, 'customers');
     }
    this.updateCustomer(this.selectedCustomer.id,this.selectedCustomer);
     this.displayDialog = false;
+  }
+
+  async logout(){
+      await this.authService.logout();
+      this.messageService.add({severity:'success', summary:'Logged Out', detail:'You have been logged out successfully'});
+   setTimeout(() => {
+          this.router.navigate(['/login']);
+   }, 3000);
   }
 }

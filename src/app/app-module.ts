@@ -18,6 +18,8 @@ import { provideFirestore, getFirestore  } from '@angular/fire/firestore';
 import { environment } from '../environments/environment';
 import { QrRedirectComponent } from './pages/qr-redirect/qr-redirect';
 import { CustomerList } from './pages/customer-list/customer-list';
+import { provideAuth, getAuth } from '@angular/fire/auth';
+import { AdminLogin } from './pages/admin-login/admin-login';
 
 @NgModule({
   declarations: [
@@ -26,7 +28,8 @@ import { CustomerList } from './pages/customer-list/customer-list';
     QrCodeComponent,
     ThankYou,
     QrRedirectComponent,
-    CustomerList
+    CustomerList,
+    AdminLogin
   ],
   imports: [
     BrowserModule,
@@ -40,6 +43,7 @@ import { CustomerList } from './pages/customer-list/customer-list';
   providers: [
     // ✅ These go in providers, not imports
     provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
+    provideAuth(() => getAuth()),
     provideFirestore(() => getFirestore())
   ],
   bootstrap: [App]
