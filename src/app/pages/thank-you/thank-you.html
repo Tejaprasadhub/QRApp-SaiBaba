@@ -1,0 +1,36 @@
+
+<!-- Thank You Section -->
+<div class="thank-you-container d-flex flex-column justify-content-center align-items-center text-center">
+  <div class="thank-you-card p-4">
+    <i class="pi pi-check-circle text-success fs-1 mb-3"></i>
+    <h2 class="thank-you-title">Thank You!</h2>
+    <p class="thank-you-message">
+      Your details have been successfully submitted.  
+      We’ll get in touch with you soon.
+    </p>
+
+    <div class="action-buttons mt-4">
+      <button class="btn btn-warning m-2" (click)="saveContact()">
+        <i class="pi pi-user-plus me-2"></i> Save as Contact
+      </button>
+
+      <a (click)="joinWhatsAppChannel()" class="btn btn-success m-2">
+        <i class="pi pi-whatsapp me-2"></i> Join our WhatsApp Channel
+      </a>
+
+      <a href="https://www.instagram.com/" target="_blank" class="btn btn-danger m-2 disabled-link">
+        <i class="pi pi-instagram me-2"></i> Follow us on Instagram
+      </a>
+
+      <a href="https://www.facebook.com/" target="_blank" class="btn btn-primary m-2 disabled-link">
+        <i class="pi pi-facebook me-2"></i> Like us on Facebook
+      </a>
+    </div>
+
+    <button class="btn btn-outline-light mt-4" routerLink="/">
+      <i class="pi pi-home me-2"></i> Go Back to Home
+    </button>
+  </div>
+</div>
+
+

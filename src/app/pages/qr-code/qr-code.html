@@ -1,0 +1,53 @@
+<!-- <div class="qr-wrapper">
+  <div class="qr-card text-center shadow-lg">
+    <h2 class="qr-title">📱 Scan to Register with {{ shopName }}</h2>
+    <p class="qr-subtitle">Quickly fill your details using your mobile device!</p>
+
+    <div class="qr-code-container">
+      <qrcode
+        [qrdata]="formUrl"
+        [width]="230"
+        [errorCorrectionLevel]="'M'"
+        [margin]="2">
+      </qrcode>
+    </div>
+
+    <div class="qr-actions mt-4">
+      <button class="btn btn-success me-2" (click)="downloadQRCode()">Download QR</button>
+      <button class="btn btn-outline-light" (click)="refreshQRCode()">Regenerate</button>
+    </div>
+
+    <div class="mt-4">
+      <small class="text-light">Scan using your camera or QR scanner app</small>
+    </div>
+  </div>
+</div> -->
+
+
+<!-- <div class="qr-wrapper text-center">
+  <h2 class="mb-3 text-light">📱 Scan to Register with {{ shopName }}</h2>
+
+  <canvas #canvas></canvas>
+
+  <div class="mt-3">
+    <button class="btn btn-warning" (click)="downloadQR()">Download QR Code</button>
+  </div>
+  <div class="mt-4">
+      <small class="text-light">Scan using your camera or QR scanner app</small>
+    </div>
+</div> -->
+
+<div class="qr-wrapper text-center">
+  <h2 class="mb-3 text-light">{{ shopName }}</h2>
+  <canvas #canvas></canvas>
+
+  <p *ngIf="qrGenerated" class="mt-3 text-light">
+    📱 Scan this QR code to open the Customer Form instantly!
+  </p>
+
+  <button class="btn btn-warning mt-3" (click)="downloadQR()">
+    Download QR
+  </button>
+</div>
+
+

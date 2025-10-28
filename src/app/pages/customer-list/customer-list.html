@@ -1,0 +1,97 @@
+<p-toast></p-toast>
+<div class="thank-you-container text-center shadow-lg">
+  <div class="container mt-5 customer-container">
+    
+
+    <div class="card shadow-lg border-0 rounded-4 p-3 table-card">
+        <div class="header-section text-center mb-4">
+      <h2 class="fw-bold text-light">👥 Customer List</h2>
+      <div class="button-group mt-3">
+        <button (click)="addcustomer()" class="btn btn-light text-primary me-2 shadow-sm">
+          ➕ Add Customer
+        </button>
+        <button (click)="exportToExcel()" class="btn btn-success shadow-sm">
+          ⬇️ Export to Excel
+        </button>
+        <h6 class="fw-bold text-light">Total Customers: {{customers.length}}</h6>
+      </div>
+    </div>
+      <div class="table-responsive">
+        <table class="table align-middle table-hover text-center mb-0 stylish-table">
+          <thead class="table-gradient text-white">
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Phone</th>
+              <th>In Time</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+           <tr *ngFor="let c of customers | slice:(page-1)*pageSize : (page-1)*pageSize + pageSize; let i = index">
+      <td>{{ (page - 1) * pageSize + i + 1 }}</td>
+              <td>{{ c.name }}</td>
+              <td>{{ c.phone }}</td>
+              <td>{{ c.createdAt?.toDate() | date: 'short' }}</td>
+              <td class="d-flex">
+                <button (click)="openEditDialog(c)" class="btn btn-sm btn-warning me-2">
+                  ✏️
+                </button>
+                <button (click)="deleteCustomer(c.id)" class="btn btn-sm btn-danger">
+                  🗑️
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <!-- 📄 Pagination Controls -->
+<div class="pagination-controls mt-3 text-center">
+  <button class="btn btn-outline-primary btn-sm me-2" (click)="prevPage()" [disabled]="page === 1">Previous</button>
+  <span class="fw-bold">Page {{ page }} / {{ totalPages }}</span>
+  <button class="btn btn-outline-primary btn-sm ms-2" (click)="nextPage()" [disabled]="page === totalPages">Next</button>
+</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- ✏️ Edit Dialog -->
+<p-dialog
+  header="Edit Customer"
+  [(visible)]="displayDialog"
+  [modal]="true"
+  [style]="{ width: '400px' }"
+  [draggable]="false"
+  [resizable]="false"
+>
+  <div class="p-fluid">
+    <div class="field text-start">
+      <label for="name" class="fw-bold text-primary">Name</label>
+      <input
+        id="name"
+        type="text"
+        pInputText
+        [(ngModel)]="selectedCustomer.name"
+        placeholder="Enter customer name"
+      />
+    </div>
+
+    <div class="field text-start mt-3">
+      <label for="phone" class="fw-bold text-primary">Phone</label>
+      <input
+        id="phone"
+        type="text"
+        pInputText
+        [(ngModel)]="selectedCustomer.phone"
+        placeholder="Enter phone number"
+      />
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancel" class="p-button-text" (click)="displayDialog = false"></button>
+    <button pButton label="Update" icon="pi pi-check" class="p-button-primary" (click)="saveUpdatedCustomer()"></button>
+  </ng-template>
+</p-dialog>

@@ -1,0 +1,86 @@
+// /* ------------------------
+//    Premium Animated Header
+//    ------------------------ */
+// .app-header {
+//   position: sticky;
+//   top: 0;
+//   width: 100%;
+//   display: flex;
+//   align-items: center;
+//   justify-content: space-between;
+//   padding: 15px 40px;
+//   z-index: 10;
+//   box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+//   border-radius: 0 0 20px 20px;
+//   background: linear-gradient(270deg, #ff6a00, #ee0979, #8e2de2, #4a00e0);
+//   background-size: 800% 800%;
+//   animation: headerGradient 15s ease infinite;
+//   color: #fff;
+//   backdrop-filter: blur(5px);
+// }
+
+// /* Gradient Animation */
+// @keyframes headerGradient {
+//   0% { background-position: 0% 50%; }
+//   50% { background-position: 100% 50%; }
+//   100% { background-position: 0% 50%; }
+// }
+
+// /* Logo */
+// .logo {
+//   height: 50px;
+//   width: auto;
+//   filter: drop-shadow(0 0 10px rgba(255,255,255,0.8));
+//   transition: transform 0.3s ease;
+// }
+
+// .logo:hover {
+//   transform: scale(1.1);
+// }
+
+// /* Shop name and tagline glow */
+// .header-text .shop-name {
+//   font-size: 1.8rem;
+//   font-weight: 700;
+//   text-shadow: 0 0 8px #fff, 0 0 12px rgba(255,255,255,0.6);
+// }
+
+// .header-text .shop-tagline {
+//   font-size: 0.9rem;
+//   opacity: 0.85;
+// }
+
+// /* Navigation Links */
+// .nav-links .nav-link {
+//   margin-left: 25px;
+//   color: #fff;
+//   font-weight: 600;
+//   position: relative;
+//   transition: 0.3s all;
+// }
+
+// .nav-links .nav-link::after {
+//   content: '';
+//   position: absolute;
+//   bottom: -3px;
+//   left: 0;
+//   width: 0%;
+//   height: 2px;
+//   background: #fff;
+//   transition: 0.3s;
+// }
+
+// .nav-links .nav-link:hover::after {
+//   width: 100%;
+// }
+
+// .nav-links .nav-link:hover {
+//   color: #ffd700;
+// }
+
+// /* Responsive: hide nav links on mobile */
+// @media (max-width: 767px) {
+//   .nav-links {
+//     display: none;
+//   }
+// }
