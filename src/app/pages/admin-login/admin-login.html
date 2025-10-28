@@ -1,55 +1,60 @@
 <p-toast></p-toast>
-<div class="min-h-screen flex items-center justify-center px-4">
-  <div class="login-card">
-    <h2>Login</h2>
 
-    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-4">
-      <!-- Your form fields as-is -->
-        <!-- Email -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700">Email</label>
-        <input
-          type="email"
-          formControlName="email"
-          placeholder="Enter your email"
-          class="mt-1 w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none"
-        />
-        <div *ngIf="loginForm.get('email')?.touched && loginForm.get('email')?.invalid" class="text-red-500 text-sm mt-1">
-          Please enter a valid email.
+<div class="card">
+  <div class="card-body" style="padding: 10px 0;">
+    <div class="alert alert-info" role="alert">
+      Fill in your details below!
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <div class="row">
+
+        <!-- Name field -->
+        <div class="col-12 col-md-6">
+          <label for="email" class="form-label">Email</label>
+          <input
+            id="email"
+            type="text"
+            class="form-control"
+            formControlName="email"
+            [ngClass]="{
+              'is-invalid': email?.invalid && email?.touched,
+              'is-valid': email?.valid && email?.touched
+            }"
+          />
+          <div *ngIf="email?.invalid && email?.touched" class="invalid-feedback">
+            Email is required.
+          </div>
         </div>
-      </div>
 
-      <!-- Password -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700">Password</label>
-        <input
-          type="password"
-          formControlName="password"
-          placeholder="Enter your password"
-          class="mt-1 w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none"
-        />
-        <div *ngIf="loginForm.get('password')?.touched && loginForm.get('password')?.invalid" class="text-red-500 text-sm mt-1">
+        <!-- Phone field -->
+        <div class="col-12 col-md-6">
+          <label for="password1" class="form-label">Password</label>
+          <input
+            id="password1"
+            type="password"
+            class="form-control"
+            formControlName="password"
+            [ngClass]="{
+              'is-invalid': password?.invalid && password?.touched,
+              'is-valid': password?.valid && password?.touched
+            }"
+          />
+         <div *ngIf="loginForm.get('password')?.touched && loginForm.get('password')?.invalid" class="text-red-500 text-sm mt-1">
           Password must be at least 6 characters.
         </div>
+        </div>
+
+        <!-- Submit button -->
+        <div class="col-12 mt-1">
+          <button type="submit" class="btn btn-success" [disabled]="loginForm.invalid">
+            Login
+          </button>
+        </div>
+
       </div>
-
-      <!-- Error Message -->
-      <p *ngIf="errorMessage" class="text-red-600 text-sm text-center">{{ errorMessage }}</p>
-
-      <!-- Submit Button -->
-      <button
-        type="submit"
-        [disabled]="loading"
-        class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition disabled:bg-blue-300"
-      >
-        {{ loading ? 'Logging in...' : 'Login' }}
-      </button>
     </form>
-
-    <p>
-      Don’t have an account?
-      <a routerLink="/signup">Sign up</a>
-    </p>
   </div>
 </div>
+
 

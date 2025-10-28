@@ -23,6 +23,14 @@ export class AdminLogin {
     private router: Router, private messageService: MessageService
   ) { }
 
+  // Convenience getters for template access
+  get email() {
+    return this.loginForm.get('email');
+  }
+
+  get password() {
+    return this.loginForm.get('password');
+  }
 
 
   ngOnInit() {
