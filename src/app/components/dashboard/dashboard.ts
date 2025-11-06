@@ -11,6 +11,7 @@ import { Firestore, collection, collectionData } from '@angular/fire/firestore';
   styleUrl: './dashboard.scss',
 })
 export class Dashboard implements OnInit {
+  // 📦 Product metrics
   totalProducts = 0;
   totalStock = 0;
   outOfStock = 0;
@@ -18,19 +19,23 @@ export class Dashboard implements OnInit {
   fastMoving = 0;
   deadStock = 0;
 
+  // 💰 Financial metrics
   totalSalesAmount = 0;
   totalProfit = 0;
+
+  // 🧾 Purchase metrics
   totalPurchaseCount = 0;
   totalPurchaseValue = 0;
+  totalPurchaseReceivedValue = 0; // ✅ NEW metric
 
-  // Filters
+  // 🔍 Filters
   filterFromDate: string = '';
   filterToDate: string = '';
 
   categoryCounts: { [key: string]: number } = {};
   categoryStock: { [key: string]: number } = {};
 
-  // Charts
+  // 📊 Charts
   stockPieData: any;
   categoryBarData: any;
   monthlySalesData: any;
@@ -56,6 +61,7 @@ export class Dashboard implements OnInit {
     this.loadPurchaseOrders();
   }
 
+  // ✅ Safely convert values
   private safeNumber(v: any): number {
     if (v == null) return 0;
     if (typeof v === 'number') return isNaN(v) ? 0 : v;
@@ -63,10 +69,12 @@ export class Dashboard implements OnInit {
     return isNaN(n) ? 0 : n;
   }
 
+  // 📦 Load Products
   private loadProducts() {
     this.ps.getProducts().subscribe((products) => {
       this.totalProducts = products.length;
       this.totalStock = products.reduce((s, p) => s + this.safeNumber(p.stock), 0);
+
       this.lowStock = products.filter(
         (p) => this.safeNumber(p.stock) <= this.safeNumber(p.minStock || 0)
       ).length;
@@ -103,16 +111,17 @@ export class Dashboard implements OnInit {
     });
   }
 
+  // 💰 Load Sales and calculate total + profit
   private loadSales() {
     this.ss.getSales().subscribe((sales) => {
       this.allSales = sales;
-      this.applyDateFilter(); // initial calculation with all sales
+      this.applyDateFilter();
     });
   }
 
+  // 📆 Apply From–To filter
   applyDateFilter() {
     let filtered = [...this.allSales];
-
     if (this.filterFromDate || this.filterToDate) {
       const from = this.filterFromDate ? new Date(this.filterFromDate) : null;
       const to = this.filterToDate ? new Date(this.filterToDate) : null;
@@ -130,6 +139,7 @@ export class Dashboard implements OnInit {
     this.calculateSalesAndProfit(filtered);
   }
 
+  // 🧮 Compute total sales and profit
   private calculateSalesAndProfit(sales: any[]) {
     let totalSales = 0;
     let totalProfit = 0;
@@ -146,16 +156,13 @@ export class Dashboard implements OnInit {
 
       for (const item of s.items || []) {
         const qty = this.safeNumber(item.qty);
-
         const cost = this.safeNumber(
           item.costPrice || item.purchasePrice || item.priceCost || 0
         );
         const sell = this.safeNumber(
           item.sellingPrice || item.salePrice || item.price || 0
         );
-
-        const itemTotal = sell * qty;
-        saleTotal += itemTotal;
+        saleTotal += sell * qty;
         saleProfit += (sell - cost) * qty;
       }
 
@@ -193,26 +200,34 @@ export class Dashboard implements OnInit {
     };
   }
 
+  // 🧾 Load Purchase Orders & calculate totals
   private loadPurchaseOrders() {
     const purchaseRef = collection(this.firestore, 'purchaseOrders');
     collectionData(purchaseRef, { idField: 'id' }).subscribe((orders) => {
       this.totalPurchaseCount = orders.length || 0;
+
       let totalValue = 0;
+      let totalReceived = 0;
+
       for (const o of orders) {
         if (Array.isArray(o['items'])) {
-          totalValue += o['items'].reduce(
-            (sum: number, i: any) =>
-              sum +
-              this.safeNumber(i.receivedQty || i.orderQty || 0) *
-                this.safeNumber(i.newPrice || i.price || 0),
-            0
-          );
+          for (const i of o['items']) {
+            const qty = this.safeNumber(i.orderQty || 0);
+            const rcvQty = this.safeNumber(i.receivedQty || 0);
+            const price = this.safeNumber(i.newPrice || i.price || 0);
+
+            totalValue += qty * price;
+            totalReceived += rcvQty * price;
+          }
         }
       }
+
       this.totalPurchaseValue = Math.round(totalValue);
+      this.totalPurchaseReceivedValue = Math.round(totalReceived);
     });
   }
 
+  // 📊 Charts
   private prepareStockPieChart() {
     this.stockPieData = {
       labels: ['In Stock', 'Out of Stock'],

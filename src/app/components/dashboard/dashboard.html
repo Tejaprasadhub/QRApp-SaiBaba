@@ -1,12 +1,13 @@
 <h2>📊 Business Overview Dashboard</h2>
 
-<!-- Filters -->
+<!-- 📆 Date Range Filter -->
 <div style="margin-bottom:20px; display:flex; gap:10px; flex-wrap:wrap;">
   <input type="date" [(ngModel)]="filterFromDate" (change)="applyDateFilter()" />
   <input type="date" [(ngModel)]="filterToDate" (change)="applyDateFilter()" />
   <button (click)="applyDateFilter()">Apply Filter</button>
 </div>
 
+<!-- 🧾 Metrics -->
 <div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:24px;">
   <div class="metric"><h4>Total Products</h4><p>{{ totalProducts }}</p></div>
   <div class="metric"><h4>Total Stock</h4><p>{{ totalStock }}</p></div>
@@ -14,12 +15,31 @@
   <div class="metric"><h4>Low Stock (&lt;= Min Stock)</h4><p>{{ lowStock }}</p></div>
   <div class="metric"><h4>Fast Moving</h4><p>{{ fastMoving }}</p></div>
   <div class="metric"><h4>Dead Stock (&gt;90 days)</h4><p>{{ deadStock }}</p></div>
-  <div class="metric" style="background-color:#f0f8ff;"><h4>Total Purchase Orders</h4><p>{{ totalPurchaseCount }}</p></div>
-  <div class="metric" style="background-color:#e8f5e9;"><h4>Total Purchase Value</h4><p>₹{{ totalPurchaseValue | number }}</p></div>
-  <div class="metric" style="background-color:#e3f2fd;"><h4>Total Sales</h4><p>₹{{ totalSalesAmount | number }}</p></div>
-  <div class="metric" style="background-color:#fff3e0;"><h4>Total Profit</h4><p>₹{{ totalProfit | number }}</p></div>
+
+  <div class="metric" style="background-color:#f0f8ff;">
+    <h4>Total Purchase Orders</h4>
+    <p>{{ totalPurchaseCount }}</p>
+  </div>
+  <div class="metric" style="background-color:#e8f5e9;">
+    <h4>Total Purchase Value</h4>
+    <p>₹{{ totalPurchaseValue | number }}</p>
+  </div>
+  <div class="metric" style="background-color:#f1f8e9;">
+    <h4>Total Purchase Received Value</h4>
+    <p>₹{{ totalPurchaseReceivedValue | number }}</p>
+  </div>
+
+  <div class="metric" style="background-color:#e3f2fd;">
+    <h4>Total Sales</h4>
+    <p>₹{{ totalSalesAmount | number }}</p>
+  </div>
+  <div class="metric" style="background-color:#fff3e0;">
+    <h4>Total Profit</h4>
+    <p>₹{{ totalProfit | number }}</p>
+  </div>
 </div>
 
+<!-- 📊 Charts -->
 <div style="display:flex;flex-wrap:wrap;gap:40px;">
   <div style="flex:1;min-width:350px;">
     <h3>🧾 Stock Status</h3>
@@ -41,7 +61,7 @@
   border: 1px solid #ddd;
   padding: 12px;
   border-radius: 6px;
-  min-width: 150px;
+  min-width: 160px;
   background: #fff;
 }
 .metric h4 {

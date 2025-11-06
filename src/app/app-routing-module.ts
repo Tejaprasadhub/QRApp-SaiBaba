@@ -30,15 +30,15 @@ const routes: Routes = [
   {path:'login',component:AdminLogin},  
 
   //inventory management routes
-  { path: 'products', component: ProductList },
-  { path: 'categories', component: CategoryList },
-  { path: 'sales', component: SalesList },
-  { path: 'purchaseOrders', component: PurchaseOrders },
-  { path: 'reorder', component: Reorder },
-  {path:'dashboard',component:Dashboard},
-  { path: 'subcategories', component: SubCategories },
-  { path: 'products/add', component: ProductForm },
-  { path: 'sales/add', component: SalesForm },
+  { path: 'products', component: ProductList,canActivate: [AuthGuard] },
+  { path: 'categories', component: CategoryList,canActivate: [AuthGuard] },
+  { path: 'sales', component: SalesList,canActivate: [AuthGuard] },
+  { path: 'purchaseOrders', component: PurchaseOrders,canActivate: [AuthGuard] },
+  { path: 'reorder', component: Reorder,canActivate: [AuthGuard] },
+  {path:'dashboard',component:Dashboard,canActivate: [AuthGuard]},
+  { path: 'subcategories', component: SubCategories,canActivate: [AuthGuard] },
+  { path: 'products/add', component: ProductForm,canActivate: [AuthGuard] },
+  { path: 'sales/add', component: SalesForm,canActivate: [AuthGuard] },
 
   // 👇 wildcard route must always come LAST
   { path: '**', redirectTo: '/customer-form' },
