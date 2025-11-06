@@ -1,17 +1,48 @@
 <h2>Subcategories (Brands)</h2>
 
-<form (ngSubmit)="add()">
+<!-- Add new subcategory -->
+<form (ngSubmit)="add()" style="margin-bottom: 15px;">
   <select [(ngModel)]="newSub.categoryId" name="category" required>
     <option value="">Select category</option>
     <option *ngFor="let c of categories" [value]="c.id">{{ c.name }}</option>
   </select>
-  <input [(ngModel)]="newSub.name" name="name" placeholder="Subcategory/Brand name" required>
-  <button type="submit">Add</button>
+
+  <input [(ngModel)]="newSub.name" name="name" placeholder="Subcategory / Brand name" required />
+
+  <button type="submit" [disabled]="loading">
+    {{ loading ? 'Adding...' : 'Add' }}
+  </button>
 </form>
 
-<table border="1" cellpadding="6" style="margin-top:10px">
-  <tr><th>Subcategory</th><th>Category</th></tr>
+<!-- List of subcategories -->
+<table border="1" cellpadding="6" style="margin-top:10px; width:100%; border-collapse: collapse;">
+  <tr style="background-color:#f3f3f3;">
+    <th>Subcategory / Brand</th>
+    <th>Category</th>
+    <th style="width:160px; text-align:center;">Actions</th>
+  </tr>
+
   <tr *ngFor="let s of subcategories">
-    <td>{{ s.name }}</td><td>{{ s.categoryName }}</td>
+    <td>
+      <div *ngIf="editSub?.id === s.id; else viewMode">
+        <input [(ngModel)]="editSub.name" name="editName" />
+      </div>
+      <ng-template #viewMode>{{ s.name }}</ng-template>
+    </td>
+    <td>{{ s.categoryName }}</td>
+    <td style="text-align:center;">
+      <div *ngIf="editSub?.id === s.id; else actions">
+        <button (click)="saveEdit()">💾 Save</button>
+        <button (click)="cancelEdit()">✖ Cancel</button>
+      </div>
+      <ng-template #actions>
+        <button (click)="startEdit(s)">✏️ Edit</button>
+        <button (click)="remove(s.id)" style="color:red;">🗑 Delete</button>
+      </ng-template>
+    </td>
+  </tr>
+
+  <tr *ngIf="!subcategories.length">
+    <td colspan="3" style="text-align:center; color:gray;">No subcategories found.</td>
   </tr>
 </table>

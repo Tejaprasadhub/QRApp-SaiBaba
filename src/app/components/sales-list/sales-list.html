@@ -1,15 +1,66 @@
 <h2>Sales</h2>
 <a routerLink="/sales/add">New Sale</a>
 
-<table border="1" cellpadding="6" style="margin-top:10px">
-  <tr><th>Date</th><th>Items</th><th>Total</th></tr>
-  <tr *ngFor="let s of sales">
-    <td>{{ s.date?.toDate ? s.date.toDate() : (s.date?.seconds ? (s.date.seconds*1000 | date:'medium') : s.date) }}</td>
+<!-- Filters -->
+<div style="margin-top:15px; display:flex; gap:10px; flex-wrap:wrap;">
+  <input [(ngModel)]="filterCustomer" placeholder="Customer" (input)="applyFilters()">
+  <input type="date" [(ngModel)]="filterFromDate" (change)="applyFilters()">
+  <input type="date" [(ngModel)]="filterToDate" (change)="applyFilters()">
+</div>
+
+<!-- Sales Table -->
+<table border="1" cellpadding="6" style="margin-top:10px; width:100%; border-collapse: collapse;">
+  <tr style="background-color:#f3f3f3;">
+    <th>Date</th>
+    <th>Customer</th>
+    <th>Items</th>
+    <th>Total Items</th>
+    <th>Total Amount</th>
+    <th>Payment Mode</th>
+  </tr>
+
+  <tr *ngFor="let s of filteredSales">
+    <td>{{ getFormattedDate(s.date) | date:'medium' }}</td>
+    <td>{{ s.customer || 'Walk-in' }}</td>
     <td>
       <ul>
-        <li *ngFor="let i of s.items">{{ i.name }} x {{ i.qty }} @ ₹{{ i.price }}</li>
+        <li *ngFor="let i of s.items">
+          {{ i.name }} x {{ i.qty }} @ ₹{{ i.price }} = ₹{{ i.price * i.qty }}
+        </li>
       </ul>
     </td>
+    <td>{{ getTotalItems(s) }}</td>
     <td>₹{{ s.total }}</td>
+    <td>{{ s.paymentMode || 'Cash' }}</td>
+  </tr>
+
+  <tr *ngIf="!filteredSales.length">
+    <td colspan="6" style="text-align:center; color:gray;">No sales found.</td>
   </tr>
 </table>
+
+<!-- Monthly Sales Chart -->
+<div style="margin-top:30px;">
+  <h3>Monthly Sales Summary</h3>
+  <p-chart type="bar" [data]="monthlyChartData" [options]="monthlyChartOptions"></p-chart>
+</div>
+
+<!-- Product-wise Sales Chart -->
+<div style="margin-top:30px;">
+  <h3>Product-wise Sales</h3>
+  <p-chart type="bar" [data]="productChartData" [options]="productChartOptions"></p-chart>
+
+  <table border="1" cellpadding="6" style="margin-top:10px; width:100%; border-collapse: collapse;">
+    <tr style="background-color:#f3f3f3;">
+      <th>Product</th>
+      <th>Units Sold</th>
+    </tr>
+    <tr *ngFor="let p of productSummary">
+      <td>{{ p.name }}</td>
+      <td>{{ p.qty }}</td>
+    </tr>
+    <tr *ngIf="!productSummary.length">
+      <td colspan="2" style="text-align:center; color:gray;">No sales data found.</td>
+    </tr>
+  </table>
+</div>

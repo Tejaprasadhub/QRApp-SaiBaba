@@ -1,11 +1,36 @@
 <h2>Categories</h2>
-<form (ngSubmit)="add()">
-  <input [(ngModel)]="newCat.name" name="name" placeholder="Category name" required>
-  <button type="submit">Add</button>
+
+<!-- Add Category -->
+<form (ngSubmit)="add()" style="margin-bottom:15px;">
+  <input
+    [(ngModel)]="newCat.name"
+    name="name"
+    placeholder="Category name"
+    required
+  />
+  <button type="submit" [disabled]="loading">
+    {{ loading ? 'Adding...' : 'Add' }}
+  </button>
 </form>
 
+<!-- Category List -->
 <ul>
   <li *ngFor="let c of categories">
-    {{ c.name }} <button (click)="remove(c.id)">Delete</button>
+    <!-- If editing this category -->
+    <div *ngIf="editCat?.id === c.id; else viewMode">
+      <input [(ngModel)]="editCat.name" name="editName" />
+      <button (click)="saveEdit()">💾 Save</button>
+      <button (click)="cancelEdit()">✖ Cancel</button>
+    </div>
+
+    <!-- Normal view -->
+    <ng-template #viewMode>
+      {{ c.name }}
+      <button (click)="startEdit(c)">✏️ Edit</button>
+      <button (click)="remove(c.id)" style="color:red;">🗑 Delete</button>
+    </ng-template>
   </li>
 </ul>
+
+<!-- Empty state -->
+<p *ngIf="!categories.length" style="color:gray;">No categories found.</p>

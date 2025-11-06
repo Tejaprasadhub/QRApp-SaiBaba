@@ -1,31 +1,48 @@
-<h2>Dashboard</h2>
+<h2>📊 Business Overview Dashboard</h2>
 
-<div style="display:flex;gap:12px;flex-wrap:wrap">
+<div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:24px;">
   <div style="border:1px solid #ddd;padding:12px;border-radius:6px;min-width:150px">
-    <div>Total Products</div><div style="font-weight:700">{{ totalProducts }}</div>
+    <h4>Total Products</h4>
+    <p>{{ totalProducts }}</p>
   </div>
   <div style="border:1px solid #ddd;padding:12px;border-radius:6px;min-width:150px">
-    <div>Total Stock</div><div style="font-weight:700">{{ totalStock }}</div>
+    <h4>Total Stock</h4>
+    <p>{{ totalStock }}</p>
   </div>
   <div style="border:1px solid #ddd;padding:12px;border-radius:6px;min-width:150px">
-    <div>Out of Stock</div><div style="font-weight:700">{{ outOfStock }}</div>
+    <h4>Out of Stock</h4>
+    <p>{{ outOfStock }}</p>
   </div>
   <div style="border:1px solid #ddd;padding:12px;border-radius:6px;min-width:150px">
-    <div>Fast Moving</div><div style="font-weight:700">{{ fastMoving }}</div>
+    <h4>Low Stock (&lt;= Min Stock)</h4>
+    <p>{{ lowStock }}</p>
   </div>
   <div style="border:1px solid #ddd;padding:12px;border-radius:6px;min-width:150px">
-    <div>Dead Stock (&gt;90 days)</div><div style="font-weight:700">{{ deadStock }}</div>
+    <h4>Fast Moving</h4>
+    <p>{{ fastMoving }}</p>
   </div>
   <div style="border:1px solid #ddd;padding:12px;border-radius:6px;min-width:150px">
-    <div>Total Sales</div><div style="font-weight:700">₹{{ totalSalesAmount }}</div>
+    <h4>Dead Stock (&gt;90 days)</h4>
+    <p>{{ deadStock }}</p>
+  </div>
+  <div style="border:1px solid #ddd;padding:12px;border-radius:6px;min-width:150px">
+    <h4>Total Sales</h4>
+    <p>₹{{ totalSalesAmount | number }}</p>
   </div>
 </div>
 
-<!-- <div style="margin-top:20px">
-  <h3>Monthly Sales</h3>
-  <canvas baseChart
-    [data]="barChartData"
-    [options]="barChartOptions"
-    chartType="bar">
-  </canvas>
-</div> -->
+<div style="display:flex;flex-wrap:wrap;gap:40px;">
+  <div style="flex:1;min-width:350px;">
+    <h3>🧾 Stock Status</h3>
+    <p-chart type="pie" [data]="stockPieData" [options]="chartOptions"></p-chart>
+  </div>
+  <div style="flex:2;min-width:400px;">
+    <h3>📦 Category-wise Products & Stock</h3>
+    <p-chart type="bar" [data]="categoryBarData" [options]="chartOptions"></p-chart>
+  </div>
+</div>
+
+<div style="margin-top:40px;">
+  <h3>💰 Monthly Sales</h3>
+  <p-chart type="bar" [data]="monthlySalesData" [options]="chartOptions"></p-chart>
+</div>

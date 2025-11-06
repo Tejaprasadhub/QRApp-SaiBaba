@@ -11,7 +11,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { TooltipModule } from 'primeng/tooltip';
 import { MessageModule } from 'primeng/message';
-
+import { ChartModule } from 'primeng/chart';
 @NgModule({
   exports: [
     ButtonModule,
@@ -23,7 +23,8 @@ import { MessageModule } from 'primeng/message';
     CheckboxModule,
     RadioButtonModule,
     MessageModule,
-    TooltipModule
+    TooltipModule,
+    ChartModule
   ]
 })
 export class PrimengModule {}

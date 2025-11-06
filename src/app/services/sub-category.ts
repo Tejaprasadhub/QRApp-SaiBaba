@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collection, collectionData, addDoc, query, where } from '@angular/fire/firestore';
+import { Firestore, collection, collectionData, addDoc, query, where, doc, deleteDoc } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
@@ -20,5 +20,11 @@ export class SubcategoryService {
   add(sub: any) {
     const ref = collection(this.firestore, 'subcategories');
     return addDoc(ref, { ...sub, createdAt: new Date() });
+  }
+
+   // ✅ Add this delete method if missing
+  deleteSubcategory(id: string) {
+    const subcatDoc = doc(this.firestore, 'subcategories', id);
+    return deleteDoc(subcatDoc);
   }
 }
