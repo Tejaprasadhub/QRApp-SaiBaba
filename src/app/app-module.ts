@@ -20,6 +20,16 @@ import { QrRedirectComponent } from './pages/qr-redirect/qr-redirect';
 import { CustomerList } from './pages/customer-list/customer-list';
 import { provideAuth, getAuth } from '@angular/fire/auth';
 import { AdminLogin } from './pages/admin-login/admin-login';
+import { Dashboard } from './components/dashboard/dashboard';
+import { ProductList } from './components/product-list/product-list';
+import { ProductForm } from './components/product-form/product-form';
+import { CategoryList } from './components/category-list/category-list';
+import { CategoryForm } from './components/category-form/category-form';
+import { SalesList } from './components/sales-list/sales-list';
+import { SalesForm } from './components/sales-form/sales-form';
+import { Reorder } from './components/reorder/reorder';
+import { SubCategories } from './components/sub-categories/sub-categories';
+import { PurchaseOrders } from './components/purchase-orders/purchase-orders';
 
 @NgModule({
   declarations: [
@@ -29,16 +39,25 @@ import { AdminLogin } from './pages/admin-login/admin-login';
     ThankYou,
     QrRedirectComponent,
     CustomerList,
-    AdminLogin
+    AdminLogin,
+    Dashboard,
+    ProductList,
+    ProductForm,
+    CategoryList,
+    CategoryForm,
+    SalesList,
+    SalesForm,
+    Reorder,
+    SubCategories,
+    PurchaseOrders
   ],
   imports: [
     BrowserModule,
-    BrowserAnimationsModule,
-    ReactiveFormsModule,
-    AppRoutingModule,
-    FormsModule,
-
-    PrimengModule
+ReactiveFormsModule,
+AppRoutingModule,
+BrowserAnimationsModule,
+FormsModule,
+PrimengModule
   ],
   providers: [
     // ✅ These go in providers, not imports

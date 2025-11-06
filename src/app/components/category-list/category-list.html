@@ -1,0 +1,11 @@
+<h2>Categories</h2>
+<form (ngSubmit)="add()">
+  <input [(ngModel)]="newCat.name" name="name" placeholder="Category name" required>
+  <button type="submit">Add</button>
+</form>
+
+<ul>
+  <li *ngFor="let c of categories">
+    {{ c.name }} <button (click)="remove(c.id)">Delete</button>
+  </li>
+</ul>

@@ -1,0 +1,17 @@
+<h2>Subcategories (Brands)</h2>
+
+<form (ngSubmit)="add()">
+  <select [(ngModel)]="newSub.categoryId" name="category" required>
+    <option value="">Select category</option>
+    <option *ngFor="let c of categories" [value]="c.id">{{ c.name }}</option>
+  </select>
+  <input [(ngModel)]="newSub.name" name="name" placeholder="Subcategory/Brand name" required>
+  <button type="submit">Add</button>
+</form>
+
+<table border="1" cellpadding="6" style="margin-top:10px">
+  <tr><th>Subcategory</th><th>Category</th></tr>
+  <tr *ngFor="let s of subcategories">
+    <td>{{ s.name }}</td><td>{{ s.categoryName }}</td>
+  </tr>
+</table>

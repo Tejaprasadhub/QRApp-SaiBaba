@@ -1,0 +1,21 @@
+<h2>New Sale</h2>
+
+<div style="display:flex;gap:20px">
+  <div style="flex:1">
+    <h4>Products</h4>
+    <ul>
+      <li *ngFor="let p of products">
+        {{ p.name }} ({{ p.stock }} left) - ₹{{ p.price }}
+        <button (click)="addToCart(p)">Add</button>
+      </li>
+    </ul>
+  </div>
+
+  <div style="width:320px">
+    <h4>Cart</h4>
+    <div *ngFor="let c of cart">{{ c.name }} x {{ c.qty }} = ₹{{ c.price * c.qty }}</div>
+    <div>Total: ₹{{ total }}</div>
+    <input [(ngModel)]="customer" placeholder="Customer name (optional)">
+    <button (click)="checkout()">Checkout</button>
+  </div>
+</div>

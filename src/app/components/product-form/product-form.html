@@ -1,0 +1,19 @@
+<h2>Add Product</h2>
+<form (ngSubmit)="add()">
+  <select [(ngModel)]="product.categoryId" name="category" (change)="loadSubcats()" required>
+    <option value="">Select category</option>
+    <option *ngFor="let c of categories" [value]="c.id">{{ c.name }}</option>
+  </select>
+
+  <select [(ngModel)]="product.subcategoryId" name="subcategory">
+    <option value="">Select brand (optional)</option>
+    <option *ngFor="let s of subcategories" [value]="s.id">{{ s.name }}</option>
+  </select>
+
+  <input [(ngModel)]="product.name" name="name" placeholder="Product name" required>
+  <input [(ngModel)]="product.price" name="price" type="number" placeholder="Price" required>
+  <input [(ngModel)]="product.stock" name="stock" type="number" placeholder="Stock" required>
+  <input [(ngModel)]="product.minStock" name="minStock" type="number" placeholder="Min stock (reorder threshold)">
+
+  <button type="submit">Add Product</button>
+</form>

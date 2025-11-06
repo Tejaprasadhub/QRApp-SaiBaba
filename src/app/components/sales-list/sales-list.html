@@ -1,0 +1,15 @@
+<h2>Sales</h2>
+<a routerLink="/sales/add">New Sale</a>
+
+<table border="1" cellpadding="6" style="margin-top:10px">
+  <tr><th>Date</th><th>Items</th><th>Total</th></tr>
+  <tr *ngFor="let s of sales">
+    <td>{{ s.date?.toDate ? s.date.toDate() : (s.date?.seconds ? (s.date.seconds*1000 | date:'medium') : s.date) }}</td>
+    <td>
+      <ul>
+        <li *ngFor="let i of s.items">{{ i.name }} x {{ i.qty }} @ ₹{{ i.price }}</li>
+      </ul>
+    </td>
+    <td>₹{{ s.total }}</td>
+  </tr>
+</table>
