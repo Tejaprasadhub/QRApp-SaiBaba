@@ -1,17 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { ProductService } from '../../services/product';
-import { PurchaseOrderService } from '../../services/purchase-order';
 import { Firestore, collection, collectionData, addDoc } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
-// Define a Product interface for strong typing
-interface Product {
-  id: number;
-  name: string;
-  stock?: number;
-  minStock?: number;
-  categoryName?: string;
-  subcategoryName?: string;
-}
 
 @Component({
   selector: 'app-reorder',
@@ -20,68 +9,18 @@ interface Product {
   styleUrls: ['./reorder.scss'],
 })
 export class Reorder implements OnInit {
-//   grouped: Record<string, Product[]> = {};
-
-//   constructor(
-//     private ps: ProductService,
-//     private po: PurchaseOrderService
-//   ) {}
-
-//   ngOnInit(): void {
-//     this.ps.getProducts().subscribe((products: Product[]) => {
-//       // Filter low stock products
-//       const lowStock = products.filter(
-//         (p) => (p.stock ?? 0) <= (p.minStock ?? 5)
-//       );
-
-//       // Group by category → subcategory
-//       this.grouped = lowStock.reduce((acc: Record<string, Product[]>, item) => {
-//         const key = `${item.categoryName || 'Uncategorized'}||${item.subcategoryName || 'Unbranded'}`;
-
-//         if (!acc[key]) {
-//           acc[key] = [];
-//         }
-
-//         acc[key].push(item);
-//         return acc;
-//       }, {});
-//     });
-//   }
-
-//   getKeyPart(key: unknown, index: number): string {
-//   const str = String(key ?? '');
-//   return str.split('||')[index] || '';
-// }
-
-//   async createOrder(groupKey: any): Promise<void> {
-//     const [categoryName, subcategoryName] = groupKey.split('||');
-
-//     const items = (this.grouped[groupKey] || []).map((p) => ({
-//       productId: p.id,
-//       name: p.name,
-//       currentStock: p.stock ?? 0,
-//       orderQty: Math.max((p.minStock ?? 5) - (p.stock ?? 0), 1),
-//     }));
-
-//     const order = {
-//       date: new Date(),
-//       categoryName,
-//       subcategoryName,
-//       items,
-//       status: 'pending',
-//     };
-
-//     await this.po.createOrder(order);
-//     alert(`Purchase order created for ${categoryName} / ${subcategoryName}`);
-//   }
-
-products$!: Observable<any[]>;
+  products$!: Observable<any[]>;
   grouped: { [key: string]: any[] } = {};
   loading = true;
+
+  purchaseOrders$!: Observable<any[]>;
+  orders: any[] = [];
+  createdOrders: { [category: string]: boolean } = {}; // track which categories already have orders
 
   constructor(private firestore: Firestore) {}
 
   ngOnInit() {
+    // Load products for reorder
     const productsRef = collection(this.firestore, 'products');
     this.products$ = collectionData(productsRef, { idField: 'id' });
 
@@ -92,21 +31,43 @@ products$!: Observable<any[]>;
       // Group low-stock products by category
       this.grouped = lowStock.reduce((acc: any, p: any) => {
         if (!acc[p.categoryName]) acc[p.categoryName] = [];
-        acc[p.categoryName].push(p);
+        acc[p.categoryName].push({ ...p, orderQty: Math.max((p.minStock || 5) - (p.stock || 0), 1) });
         return acc;
       }, {});
+    });
+
+    // Load purchase orders
+    const poRef = collection(this.firestore, 'purchaseOrders');
+    this.purchaseOrders$ = collectionData(poRef, { idField: 'id' });
+    this.purchaseOrders$.subscribe((orders) => {
+      this.orders = orders;
+
+      // Mark categories that already have pending orders
+      this.createdOrders = {};
+      for (const o of orders) {
+        if (o.status === 'pending') {
+          this.createdOrders[o.categoryName] = true;
+        }
+      }
     });
   }
 
   async createOrder(categoryName: string, products: any[]) {
     if (!products.length) return;
 
+    // Check if order already exists for this category
+    if (this.createdOrders[categoryName]) {
+      alert(`Order for category "${categoryName}" has already been created.`);
+      return;
+    }
+
     const orderItems = products.map(p => ({
       productId: p.id,
       name: p.name,
-      orderQty: (p.minStock || 5) - (p.stock || 0),
+      orderQty: p.orderQty, // store ordered quantity
       price: p.price,
-      received: false // new field for line-level tracking
+      receivedQty: 0,
+      received: false
     }));
 
     const order = {
@@ -117,7 +78,17 @@ products$!: Observable<any[]>;
     };
 
     const poRef = collection(this.firestore, 'purchaseOrders');
-    await addDoc(poRef, order);
-    alert(`Purchase order created for category "${categoryName}"`);
+    const docRef = await addDoc(poRef, order);
+    alert(`Purchase order created for category "${categoryName}" with ID: ${docRef.id}`);
+
+    // Mark this category as ordered to disable button
+    this.createdOrders[categoryName] = true;
+  }
+
+  // Calculate total ordered quantity for a category
+  getOrderedQty(categoryName: string): number {
+    const order = this.orders.find(o => o.categoryName === categoryName && o.status === 'pending');
+    if (!order) return 0;
+    return order.items.reduce((sum: number, item: any) => sum + (item.orderQty || 0), 0);
   }
 }

@@ -13,7 +13,14 @@ import { Firestore, collection, query, where, getDocs } from '@angular/fire/fire
 export class ProductForm {
   categories: any[] = [];
   subcategories: any[] = [];
-  product: any = { name: '', price: 0, stock: 0, categoryId: '', subcategoryId: '', minStock: 5 };
+  product: any = { 
+    name: '', 
+    price: 0, 
+    stock: 0, 
+    categoryId: '', 
+    subcategoryId: '', 
+    minStock: 5 
+  };
   loading = false;
 
   constructor(
@@ -30,6 +37,7 @@ export class ProductForm {
   loadSubcats() {
     if (!this.product.categoryId) { 
       this.subcategories = []; 
+      this.product.subcategoryId = '';
       return; 
     }
     this.ss.getByCategory(this.product.categoryId).subscribe(s => this.subcategories = s);
@@ -45,19 +53,31 @@ export class ProductForm {
     const sub = this.subcategories.find(s => s.id === this.product.subcategoryId);
 
     try {
-      // 🔍 Duplicate check: Query Firestore for same category + name (case-insensitive)
+      // 🔍 Duplicate check (case-insensitive)
+      // If subcategory is selected, check within that subcategory.
+      // Otherwise, check within category only.
       const productsRef = collection(this.firestore, 'products');
-      const q = query(
-        productsRef,
-        where('categoryId', '==', this.product.categoryId),
-        where('name', '==', this.product.name.trim().toUpperCase())
-      );
 
+      const filters = [
+        where('categoryId', '==', this.product.categoryId),
+        where('name', '==', this.product.name.trim().toUpperCase()),
+      ];
+
+      if (this.product.subcategoryId) {
+        filters.push(where('subcategoryId', '==', this.product.subcategoryId));
+      }
+
+      const q = query(productsRef, ...filters);
       const existingSnap = await getDocs(q);
 
       if (!existingSnap.empty) {
         this.loading = false;
-        alert(`Product "${this.product.name}" already exists in category "${cat.name}".`);
+
+        const msg = this.product.subcategoryId
+          ? `Product "${this.product.name}" already exists in category "${cat.name}" and subcategory "${sub?.name}".`
+          : `Product "${this.product.name}" already exists in category "${cat.name}".`;
+
+        alert(msg);
         return;
       }
 
@@ -72,13 +92,16 @@ export class ProductForm {
         subcategoryId: sub?.id || '',
         subcategoryName: sub?.name || '',
         salesCount: 0,
-        lastSoldAt: null,        // <-- add this
-        createdAt: new Date()
+        lastSoldAt: null,
+        createdAt: new Date(),
       };
 
       await this.ps.addProduct(payload);
       alert('✅ Product added successfully!');
+
+      // Reset form
       this.product = { name: '', price: 0, stock: 0, categoryId: '', subcategoryId: '', minStock: 5 };
+      this.subcategories = [];
     } catch (err) {
       console.error(err);
       alert('Error adding product. Please try again.');

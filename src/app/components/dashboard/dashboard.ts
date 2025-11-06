@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ProductService } from '../../services/product';
 import { SalesService } from '../../services/sales';
 import { ChartOptions } from 'chart.js';
+import { Firestore, collection, collectionData } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-dashboard',
@@ -16,7 +17,15 @@ export class Dashboard implements OnInit {
   lowStock = 0;
   fastMoving = 0;
   deadStock = 0;
+
   totalSalesAmount = 0;
+  totalProfit = 0;
+  totalPurchaseCount = 0;
+  totalPurchaseValue = 0;
+
+  // Filters
+  filterFromDate: string = '';
+  filterToDate: string = '';
 
   categoryCounts: { [key: string]: number } = {};
   categoryStock: { [key: string]: number } = {};
@@ -33,11 +42,18 @@ export class Dashboard implements OnInit {
     },
   };
 
-  constructor(private ps: ProductService, private ss: SalesService) {}
+  private allSales: any[] = [];
+
+  constructor(
+    private ps: ProductService,
+    private ss: SalesService,
+    private firestore: Firestore
+  ) {}
 
   ngOnInit() {
     this.loadProducts();
     this.loadSales();
+    this.loadPurchaseOrders();
   }
 
   private safeNumber(v: any): number {
@@ -51,100 +67,174 @@ export class Dashboard implements OnInit {
     this.ps.getProducts().subscribe((products) => {
       this.totalProducts = products.length;
       this.totalStock = products.reduce((s, p) => s + this.safeNumber(p.stock), 0);
+      this.lowStock = products.filter(
+        (p) => this.safeNumber(p.stock) <= this.safeNumber(p.minStock || 0)
+      ).length;
+      this.outOfStock = products.filter((p) => this.safeNumber(p.stock) <= 0).length;
 
-      // Low stock = stock <= minStock
-      this.lowStock = products.filter(p => this.safeNumber(p.stock) <= this.safeNumber(p.minStock || 0)).length;
-
-      // Out of stock = stock == 0
-      this.outOfStock = products.filter(p => this.safeNumber(p.stock) <= 0).length;
-
-      // Fast moving
       const FAST_THRESHOLD = 10;
-      this.fastMoving = products.filter(p => this.safeNumber(p.salesCount) > FAST_THRESHOLD).length;
+      this.fastMoving = products.filter(
+        (p) => this.safeNumber(p.salesCount) > FAST_THRESHOLD
+      ).length;
 
-      // Dead stock = stock > 0 but never sold or last sold > 90 days
       const now = Date.now();
       const DAYS_90_MS = 90 * 24 * 60 * 60 * 1000;
-      this.deadStock = products.filter(p => {
+      this.deadStock = products.filter((p) => {
         const stock = this.safeNumber(p.stock);
-        if (stock <= 0) return false; // only in-stock products
-        if (!p.lastSoldAt) return true; // never sold
+        if (stock <= 0) return false;
+        if (!p.lastSoldAt) return true;
         const lastSold = p.lastSoldAt.seconds
           ? new Date(p.lastSoldAt.seconds * 1000)
           : new Date(p.lastSoldAt);
         return now - lastSold.getTime() > DAYS_90_MS;
       }).length;
 
-      // Category wise counts and stock
       this.categoryCounts = {};
       this.categoryStock = {};
-      products.forEach(p => {
+      products.forEach((p) => {
         const cat = p.categoryName || 'Uncategorized';
         this.categoryCounts[cat] = (this.categoryCounts[cat] || 0) + 1;
-        this.categoryStock[cat] = (this.categoryStock[cat] || 0) + this.safeNumber(p.stock);
+        this.categoryStock[cat] =
+          (this.categoryStock[cat] || 0) + this.safeNumber(p.stock);
       });
 
-      // Prepare charts
       this.prepareStockPieChart();
       this.prepareCategoryBarChart();
     });
   }
 
   private loadSales() {
-    this.ss.getSales().subscribe(sales => {
-      let total = 0;
-      const monthlyMap: { [key: string]: number } = {};
+    this.ss.getSales().subscribe((sales) => {
+      this.allSales = sales;
+      this.applyDateFilter(); // initial calculation with all sales
+    });
+  }
 
-      for (const s of sales) {
-        let t = this.safeNumber(s.total);
-        if (t <= 0 && Array.isArray(s.items)) {
-          t = s.items.reduce((sum: number, i: any) => sum + this.safeNumber(i.price) * this.safeNumber(i.qty), 0);
-        }
-        total += t;
+  applyDateFilter() {
+    let filtered = [...this.allSales];
 
-        // Monthly aggregation
-        const dateObj = s.date?.seconds ? new Date(s.date.seconds * 1000) : new Date(s.date || Date.now());
-        if (!isNaN(dateObj.getTime())) {
-          const key = `${dateObj.getMonth() + 1}-${dateObj.getFullYear()}`;
-          monthlyMap[key] = (monthlyMap[key] || 0) + t;
-        }
+    if (this.filterFromDate || this.filterToDate) {
+      const from = this.filterFromDate ? new Date(this.filterFromDate) : null;
+      const to = this.filterToDate ? new Date(this.filterToDate) : null;
+
+      filtered = filtered.filter((s) => {
+        const d = s.date?.seconds
+          ? new Date(s.date.seconds * 1000)
+          : new Date(s.date);
+        if (from && d < from) return false;
+        if (to && d > to) return false;
+        return true;
+      });
+    }
+
+    this.calculateSalesAndProfit(filtered);
+  }
+
+  private calculateSalesAndProfit(sales: any[]) {
+    let totalSales = 0;
+    let totalProfit = 0;
+    const monthlyMap: { [k: string]: { sales: number; profit: number } } = {};
+
+    for (const s of sales) {
+      const dateObj = s.date?.seconds
+        ? new Date(s.date.seconds * 1000)
+        : new Date(s.date || Date.now());
+      const key = `${dateObj.getMonth() + 1}-${dateObj.getFullYear()}`;
+
+      let saleTotal = 0;
+      let saleProfit = 0;
+
+      for (const item of s.items || []) {
+        const qty = this.safeNumber(item.qty);
+
+        const cost = this.safeNumber(
+          item.costPrice || item.purchasePrice || item.priceCost || 0
+        );
+        const sell = this.safeNumber(
+          item.sellingPrice || item.salePrice || item.price || 0
+        );
+
+        const itemTotal = sell * qty;
+        saleTotal += itemTotal;
+        saleProfit += (sell - cost) * qty;
       }
 
-      this.totalSalesAmount = total;
+      totalSales += saleTotal;
+      totalProfit += saleProfit;
 
-      // Prepare monthly sales chart
-      const labels = Object.keys(monthlyMap).sort((a, b) => {
-        const [am, ay] = a.split('-').map(Number);
-        const [bm, by] = b.split('-').map(Number);
-        return new Date(ay, am-1).getTime() - new Date(by, bm-1).getTime();
-      });
-      const data = labels.map(l => monthlyMap[l] || 0);
-      this.monthlySalesData = {
-        labels,
-        datasets: [{ label: 'Monthly Sales (₹)', data, backgroundColor: '#42A5F5' }]
-      };
+      monthlyMap[key] = monthlyMap[key] || { sales: 0, profit: 0 };
+      monthlyMap[key].sales += saleTotal;
+      monthlyMap[key].profit += saleProfit;
+    }
+
+    this.totalSalesAmount = Math.round(totalSales);
+    this.totalProfit = Math.round(totalProfit);
+
+    const labels = Object.keys(monthlyMap).sort((a, b) => {
+      const [am, ay] = a.split('-').map(Number);
+      const [bm, by] = b.split('-').map(Number);
+      return new Date(ay, am - 1).getTime() - new Date(by, bm - 1).getTime();
+    });
+
+    this.monthlySalesData = {
+      labels,
+      datasets: [
+        {
+          label: 'Monthly Sales (₹)',
+          data: labels.map((k) => monthlyMap[k].sales),
+          backgroundColor: '#42A5F5',
+        },
+        {
+          label: 'Monthly Profit (₹)',
+          data: labels.map((k) => monthlyMap[k].profit),
+          backgroundColor: '#66BB6A',
+        },
+      ],
+    };
+  }
+
+  private loadPurchaseOrders() {
+    const purchaseRef = collection(this.firestore, 'purchaseOrders');
+    collectionData(purchaseRef, { idField: 'id' }).subscribe((orders) => {
+      this.totalPurchaseCount = orders.length || 0;
+      let totalValue = 0;
+      for (const o of orders) {
+        if (Array.isArray(o['items'])) {
+          totalValue += o['items'].reduce(
+            (sum: number, i: any) =>
+              sum +
+              this.safeNumber(i.receivedQty || i.orderQty || 0) *
+                this.safeNumber(i.newPrice || i.price || 0),
+            0
+          );
+        }
+      }
+      this.totalPurchaseValue = Math.round(totalValue);
     });
   }
 
   private prepareStockPieChart() {
     this.stockPieData = {
-      labels: ['In Stock (products)', 'Out of Stock (products)'],
+      labels: ['In Stock', 'Out of Stock'],
       datasets: [
-        { data: [this.totalProducts - this.outOfStock, this.outOfStock], backgroundColor: ['#42A5F5', '#FF6384'] }
-      ]
+        {
+          data: [this.totalProducts - this.outOfStock, this.outOfStock],
+          backgroundColor: ['#42A5F5', '#FF6384'],
+        },
+      ],
     };
   }
 
   private prepareCategoryBarChart() {
     const labels = Object.keys(this.categoryCounts);
-    const productData = labels.map(l => this.categoryCounts[l]);
-    const stockData = labels.map(l => this.categoryStock[l] || 0);
+    const productData = labels.map((l) => this.categoryCounts[l]);
+    const stockData = labels.map((l) => this.categoryStock[l] || 0);
     this.categoryBarData = {
       labels,
       datasets: [
         { label: 'Products', data: productData, backgroundColor: '#66BB6A' },
-        { label: 'Stock Qty', data: stockData, backgroundColor: '#FFA726' }
-      ]
+        { label: 'Stock Qty', data: stockData, backgroundColor: '#FFA726' },
+      ],
     };
   }
 }

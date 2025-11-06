@@ -8,6 +8,12 @@
   <input type="date" [(ngModel)]="filterToDate" (change)="applyFilters()">
 </div>
 
+<!-- Summary -->
+<div style="margin-top:20px; display:flex; gap:40px;">
+  <h3>Total Sales: ₹{{ totalSales | number:'1.0-2' }}</h3>
+  <h3>Total Profit: ₹{{ totalProfit | number:'1.0-2' }}</h3>
+</div>
+
 <!-- Sales Table -->
 <table border="1" cellpadding="6" style="margin-top:10px; width:100%; border-collapse: collapse;">
   <tr style="background-color:#f3f3f3;">
@@ -16,6 +22,7 @@
     <th>Items</th>
     <th>Total Items</th>
     <th>Total Amount</th>
+    <th>Profit (₹)</th>
     <th>Payment Mode</th>
   </tr>
 
@@ -25,42 +32,47 @@
     <td>
       <ul>
         <li *ngFor="let i of s.items">
-          {{ i.name }} x {{ i.qty }} @ ₹{{ i.price }} = ₹{{ i.price * i.qty }}
+          {{ i.name }} x {{ i.qty }}
+          <br>Cost ₹{{ i.costPrice || 0 }} | Sold ₹{{ i.sellingPrice || i.price }}
+          <br><strong>Profit ₹{{ ((i.sellingPrice || i.price) - (i.costPrice || 0)) * i.qty }}</strong>
         </li>
       </ul>
     </td>
     <td>{{ getTotalItems(s) }}</td>
     <td>₹{{ s.total }}</td>
+    <td>₹{{ getSaleProfit(s) | number:'1.0-2' }}</td>
     <td>{{ s.paymentMode || 'Cash' }}</td>
   </tr>
 
   <tr *ngIf="!filteredSales.length">
-    <td colspan="6" style="text-align:center; color:gray;">No sales found.</td>
+    <td colspan="7" style="text-align:center; color:gray;">No sales found.</td>
   </tr>
 </table>
 
-<!-- Monthly Sales Chart -->
+<!-- Monthly Sales & Profit Chart -->
 <div style="margin-top:30px;">
-  <h3>Monthly Sales Summary</h3>
+  <h3>Monthly Sales & Profit</h3>
   <p-chart type="bar" [data]="monthlyChartData" [options]="monthlyChartOptions"></p-chart>
 </div>
 
-<!-- Product-wise Sales Chart -->
+<!-- Product-wise Chart -->
 <div style="margin-top:30px;">
-  <h3>Product-wise Sales</h3>
+  <h3>Product-wise Units & Profit</h3>
   <p-chart type="bar" [data]="productChartData" [options]="productChartOptions"></p-chart>
 
   <table border="1" cellpadding="6" style="margin-top:10px; width:100%; border-collapse: collapse;">
     <tr style="background-color:#f3f3f3;">
       <th>Product</th>
       <th>Units Sold</th>
+      <th>Profit (₹)</th>
     </tr>
     <tr *ngFor="let p of productSummary">
       <td>{{ p.name }}</td>
       <td>{{ p.qty }}</td>
+      <td>₹{{ p.profit | number:'1.0-2' }}</td>
     </tr>
     <tr *ngIf="!productSummary.length">
-      <td colspan="2" style="text-align:center; color:gray;">No sales data found.</td>
+      <td colspan="3" style="text-align:center; color:gray;">No sales data found.</td>
     </tr>
   </table>
 </div>

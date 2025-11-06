@@ -1,24 +1,34 @@
-<h2>New Sale</h2>
+<h2>🛒 New Sale</h2>
 
 <div style="display:flex;gap:20px">
+  <!-- Product List -->
   <div style="flex:1">
     <h4>Products</h4>
     <ul>
       <li *ngFor="let p of products" [style.color]="isLowStock(p) ? 'red' : 'black'">
-        {{ p.name }} ({{ p.stock }} left) - ₹{{ p.price }}
+        {{ p.name }} ({{ p.stock }} left)
+        <span>- Cost ₹{{ p.price }}</span>
         <button (click)="addToCart(p)" *ngIf="canAddToCart(p)">Add</button>
         <span *ngIf="!canAddToCart(p)" style="color:gray; margin-left:6px;">Out of stock</span>
       </li>
     </ul>
   </div>
 
-  <div style="width:360px">
-    <h4>Cart</h4>
-    <div *ngFor="let c of cart" style="margin-bottom:6px;">
-      {{ c.name }} x {{ c.qty }} = ₹{{ c.price * c.qty }}
-      <button (click)="removeFromCart(c)" style="margin-left:8px; color:red;">Remove</button>
+  <!-- Cart -->
+  <div style="width:380px">
+    <h4>🧾 Cart</h4>
+    <div *ngFor="let c of cart" style="margin-bottom:8px; border-bottom:1px solid #ddd; padding-bottom:6px;">
+      <div><b>{{ c.name }}</b> (x{{ c.qty }})</div>
+      <div>
+        <label>Selling Price:</label>
+        <input type="number" [(ngModel)]="c.sellingPrice" (ngModelChange)="recalc()" min="0" style="width:90px;">
+        <span style="margin-left:6px;">= ₹{{ c.sellingPrice * c.qty }}</span>
+      </div>
+      <button (click)="removeFromCart(c)" style="margin-top:4px; color:red;">Remove</button>
     </div>
+
     <div style="margin-top:10px; font-weight:bold;">Total: ₹{{ total }}</div>
+
     <input [(ngModel)]="customer" placeholder="Customer name (optional)" style="margin-top:10px; width:100%;">
     <button (click)="checkout()" style="margin-top:10px; width:100%;">Checkout</button>
   </div>
