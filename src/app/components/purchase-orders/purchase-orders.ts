@@ -12,9 +12,9 @@ import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-purchase-orders',
-  standalone: false,
+  standalone:false,
   templateUrl: './purchase-orders.html',
-  styleUrl: './purchase-orders.scss',
+  styleUrls: ['./purchase-orders.scss'],
 })
 export class PurchaseOrders implements OnInit {
   purchaseOrders$!: Observable<any[]>;
@@ -40,13 +40,13 @@ export class PurchaseOrders implements OnInit {
 
   async saveItem(order: any, item: any) {
     const editData = this.getEditingItem(order.id, item);
-    if (!editData.receivedQty || editData.receivedQty <= 0)
+    if (!editData.receivedQty || editData.receivedQty <= 0) {
       return alert('Enter received quantity');
+    }
 
     const orderRef = doc(this.firestore, `purchaseOrders/${order.id}`);
     const productRef = doc(this.firestore, `products/${item.productId}`);
 
-    // Update product stock and price
     const productSnap = await getDoc(productRef);
     if (productSnap.exists()) {
       const prod = productSnap.data() as any;
@@ -55,7 +55,6 @@ export class PurchaseOrders implements OnInit {
       await updateDoc(productRef, { stock: newStock, price: newPrice });
     }
 
-    // Update order item with received quantity and price
     const updatedItems = order.items.map((p: any) =>
       p.productId === item.productId
         ? {
@@ -68,10 +67,8 @@ export class PurchaseOrders implements OnInit {
     );
 
     await updateDoc(orderRef, { items: updatedItems });
-
     alert(`${item.name} updated successfully with received quantity ${editData.receivedQty}`);
 
-    // Persist updated values in UI
     this.editingItemMap[order.id + '_' + item.productId] = {
       receivedQty: editData.receivedQty,
       newPrice: editData.newPrice || item.price,
@@ -91,8 +88,7 @@ export class PurchaseOrders implements OnInit {
 
   totalReceivedPrice(order: any) {
     return order.items.reduce(
-      (sum: number, i: any) =>
-        sum + ((i.receivedPrice || i.price || 0) * (i.receivedQty || 0)),
+      (sum: number, i: any) => sum + ((i.receivedPrice || i.price || 0) * (i.receivedQty || 0)),
       0
     );
   }
