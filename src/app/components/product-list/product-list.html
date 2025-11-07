@@ -3,31 +3,52 @@
   <!-- Page Header -->
   <div class="page-header">
     <h2>Products</h2>
-    <a routerLink="/products/add" class="add-product">➕ Add Product</a>
+    <div class="header-actions">
+      <button class="filter-toggle" (click)="showFilters = !showFilters">
+        <i class="pi pi-filter"></i> Filters
+      </button>
+      <a routerLink="/products/add" class="add-product"> <i class="pi pi-plus"></i> Product</a>
+    </div>
+  </div>
+
+  <!-- Filters Panel -->
+  <div class="filters-wrapper" [class.show]="showFilters">
+    <input type="text" placeholder="Search by name..." [(ngModel)]="filterName" class="filter-input" />
+
+    <select [(ngModel)]="filterCategoryId" (change)="onCategoryChange(filterCategoryId)" class="filter-select">
+      <option value="">All Categories</option>
+      <option *ngFor="let c of categories" [value]="c.id">{{ c.name }}</option>
+    </select>
+
+    <select [(ngModel)]="filterSubcategoryId" class="filter-select">
+      <option value="">All Subcategories</option>
+      <option *ngFor="let s of filteredSubcategoriesForFilter" [value]="s.id">{{ s.name }}</option>
+    </select>
+
+    <input type="number" placeholder="Min Stock" [(ngModel)]="filterStockMin" class="filter-input" />
+    <input type="number" placeholder="Max Stock" [(ngModel)]="filterStockMax" class="filter-input" />
+
+    <button (click)="clearFilters()" class="filter-toggle">✖ Clear</button>
   </div>
 
   <!-- Products Grid -->
   <div class="products-grid">
-    <div *ngFor="let p of products" class="product-card">
-
+    <div *ngFor="let p of filteredProducts" class="product-card">
       <ng-container *ngIf="editingProduct?.id === p.id; else viewMode">
 
         <!-- Edit Mode -->
         <input [(ngModel)]="editingProduct.name" placeholder="Product Name" class="edit-input" />
-
-        <select [(ngModel)]="editingProduct.categoryId">
+        <select [(ngModel)]="editingProduct.categoryId" class="edit-select">
           <option value="">Select Category</option>
           <option *ngFor="let c of categories" [value]="c.id">{{ c.name }}</option>
         </select>
 
-        <select [(ngModel)]="editingProduct.subcategoryId">
+        <select [(ngModel)]="editingProduct.subcategoryId" class="edit-select">
           <option value="">Select Subcategory</option>
-          <option *ngFor="let s of filteredSubcategories()" [value]="s.id">
-            {{ s.name }}
-          </option>
+          <option *ngFor="let s of filteredSubcategories()" [value]="s.id">{{ s.name }}</option>
         </select>
 
-        <input type="number" [(ngModel)]="editingProduct.stock" placeholder="Stock" />
+        <input type="number" [(ngModel)]="editingProduct.stock" placeholder="Stock" class="edit-input" />
 
         <div class="edit-actions">
           <button (click)="saveEdit()" [disabled]="loading">💾 Save</button>
@@ -37,37 +58,25 @@
       </ng-container>
 
       <ng-template #viewMode>
-        <!-- View Mode -->
         <div class="product-name">
           {{ p.name }}
           <span class="action-icons">
-            <button (click)="startEdit(p)" title="Edit">
-              <i class="pi pi-pencil"></i>
-            </button>
-            <button (click)="delete(p.id)" title="Delete">
-              <i class="pi pi-trash"></i>
-            </button>
+            <button (click)="startEdit(p)" title="Edit"><i class="pi pi-pencil"></i></button>
+            <button (click)="delete(p.id)" title="Delete"><i class="pi pi-trash"></i></button>
           </span>
         </div>
 
-        <div *ngIf="p.subcategoryName" class="product-subcategory">
-          {{ p.subcategoryName }}
-        </div>
-
-        <div class="product-stock">
-          Stock: {{ p.stock }}
-        </div>
+        <div *ngIf="p.subcategoryName" class="product-subcategory">{{ p.subcategoryName }}</div>
+        <div class="product-stock">Stock: {{ p.stock }}</div>
       </ng-template>
-
     </div>
   </div>
 
   <!-- Pagination -->
   <p-paginator
     [rows]="10"
-    [totalRecords]="products.length"
+    [totalRecords]="filteredProducts.length"
     [rowsPerPageOptions]="[5,10,20]"
     styleClass="custom-paginator"
   ></p-paginator>
-
 </div>
