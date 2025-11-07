@@ -12,6 +12,8 @@ import { RadioButtonModule } from 'primeng/radiobutton';
 import { TooltipModule } from 'primeng/tooltip';
 import { MessageModule } from 'primeng/message';
 import { ChartModule } from 'primeng/chart';
+import { DrawerModule } from 'primeng/drawer';
+
 @NgModule({
   exports: [
     ButtonModule,
@@ -24,7 +26,8 @@ import { ChartModule } from 'primeng/chart';
     RadioButtonModule,
     MessageModule,
     TooltipModule,
-    ChartModule
+    ChartModule,
+    DrawerModule
   ]
 })
 export class PrimengModule {}

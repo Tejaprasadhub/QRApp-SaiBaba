@@ -59,7 +59,7 @@ export class AdminLogin {
           this.messageService.add({ severity: 'success', summary: 'Login Successful!', detail: 'Welcome back!' });
           this.loginForm.reset();
           setTimeout(() => {
-            this.router.navigate(['/customer-list']);
+            this.router.navigate(['/dashboard']);
           }, 4000);
         })
         .catch((error) => {

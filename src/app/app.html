@@ -2,14 +2,58 @@
 <div class="app-header-wrapper">
   <header class="app-header d-flex align-items-center justify-content-between px-4 py-3">
     <div class="d-flex align-items-center gap-3">
+       <button *ngIf="user"
+      pButton
+      icon="pi pi-bars"
+      class="p-button-text p-button-lg md:hidden"
+      (click)="toggleDrawer()"
+    ></button>
       <img src="assets/logo.png" alt="Shop Logo" class="logo" />
       <div>
         <!-- <h1 class="shop-name m-0">Sai Baba Cell Point</h1> -->
         <small class="shop-tagline">Smartphones. Smart Service. Smarter You.</small>
       </div>
+       <div *ngIf="user" class="hidden md:flex align-items-center gap-3">
+    <span class="text-500">{{ user?.email }}</span>
+    <button
+      pButton
+      label="Logout"
+      icon="pi pi-sign-out"
+      class="p-button-text p-button-danger"
+      (click)="logout()"
+    ></button>
+  </div>
     </div>
   </header>
 </div>
+<!-- PrimeNG Drawer (Sidebar) -->
+<p-drawer [(visible)]="drawerVisible" position="left" [modal]="true">
+  <div class="profile-card">
+    <img src="assets/logo.png" alt="User Avatar" />
+    <div class="profile-info">
+      <!-- <h3>{{ user?.displayName || 'John Doe' }}</h3> -->
+      <small>{{ user?.email || 'john@example.com' }}</small>
+    </div>
+  </div>
+
+  <ul class="menu-list">
+    <li
+      *ngFor="let item of menuItems"
+      class="menu-item"
+      [class.active]="isActive(item.route)"
+      (click)="navigate(item.route)"
+    >
+      <i class="{{ item.icon }}"></i>
+      {{ item.label }}
+    </li>
+  </ul>
+
+  <div class="divider"></div>
+
+  <div class="drawer-footer">
+    <button pButton icon="pi pi-sign-out" label="Logout" (click)="logout()"></button>
+  </div>
+</p-drawer>
 
 
 <!-- Main App Content -->
