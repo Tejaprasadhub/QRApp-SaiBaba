@@ -2,7 +2,7 @@
 
   <!-- Header -->
   <div class="sales-header">
-    <h2>Sales</h2>
+    <h2>Sales Dashboard</h2>
     <a routerLink="/sales/add" class="btn-new-sale">New Sale</a>
   </div>
 
@@ -48,14 +48,19 @@
               <li *ngFor="let i of s.items">
                 {{ i.name }} x {{ i.qty }} |
                 Cost ₹{{ i.costPrice || 0 }} | Sold ₹{{ i.sellingPrice || i.price }} |
-                <strong>Profit ₹{{ ((i.sellingPrice || i.price) - (i.costPrice || 0)) * i.qty }}</strong>
+                <strong [ngClass]="{'profit-positive': ((i.sellingPrice || i.price) - (i.costPrice || 0)) * i.qty > 0,
+                                     'profit-negative': ((i.sellingPrice || i.price) - (i.costPrice || 0)) * i.qty <= 0}">
+                  Profit ₹{{ ((i.sellingPrice || i.price) - (i.costPrice || 0)) * i.qty }}
+                </strong>
               </li>
             </ul>
           </td>
           <td>{{ getTotalItems(s) }}</td>
           <td>₹{{ s.total }}</td>
-          <td>₹{{ getSaleProfit(s) | number:'1.0-2' }}</td>
-          <td>{{ s.paymentMode || 'Cash' }}</td>
+          <td [ngClass]="{'profit-positive': getSaleProfit(s) > 0, 'profit-negative': getSaleProfit(s) <= 0}">
+            ₹{{ getSaleProfit(s) | number:'1.0-2' }}
+          </td>
+          <td class="payment-badge">{{ s.paymentMode || 'Cash' }}</td>
         </tr>
         <tr *ngIf="!filteredSales.length">
           <td colspan="7" class="no-data">No sales found.</td>
@@ -72,48 +77,27 @@
         <div>{{ s.customer || 'Walk-in' }}</div>
       </div>
       <div class="sale-info">
-        <div>Total Items: {{ getTotalItems(s) }}</div>
-        <div>Total Amount: ₹{{ s.total }}</div>
-        <div>Profit: ₹{{ getSaleProfit(s) | number:'1.0-2' }}</div>
-        <div>Payment: {{ s.paymentMode || 'Cash' }}</div>
+        <span class="info-badge">Items: {{ getTotalItems(s) }}</span>
+        <span class="info-badge">Total: ₹{{ s.total }}</span>
+        <span class="info-badge" [ngClass]="{'profit-positive': getSaleProfit(s) > 0, 'profit-negative': getSaleProfit(s) <= 0}">
+          Profit: ₹{{ getSaleProfit(s) | number:'1.0-2' }}
+        </span>
+        <span class="info-badge payment-badge">{{ s.paymentMode || 'Cash' }}</span>
       </div>
       <details class="items-details">
-        <summary>Items</summary>
+        <summary>Items Breakdown</summary>
         <ul>
           <li *ngFor="let i of s.items">
-            {{ i.name }} x {{ i.qty }} | Cost ₹{{ i.costPrice || 0 }} | Sold ₹{{ i.sellingPrice || i.price }} | 
-            <strong>Profit ₹{{ ((i.sellingPrice || i.price) - (i.costPrice || 0)) * i.qty }}</strong>
+            {{ i.name }} x {{ i.qty }} | Cost ₹{{ i.costPrice || 0 }} | Sold ₹{{ i.sellingPrice || i.price }} |
+            <strong [ngClass]="{'profit-positive': ((i.sellingPrice || i.price) - (i.costPrice || 0)) * i.qty > 0,
+                                 'profit-negative': ((i.sellingPrice || i.price) - (i.costPrice || 0)) * i.qty <= 0}">
+              Profit ₹{{ ((i.sellingPrice || i.price) - (i.costPrice || 0)) * i.qty }}
+            </strong>
           </li>
         </ul>
       </details>
     </div>
   </div>
 
-  <!-- Charts -->
-  <div class="charts-wrapper">
-    <div class="chart-section">
-      <div class="product-summary-wrapper">
-        <table class="product-summary-table">
-          <thead>
-            <tr>
-              <th>Product</th>
-              <th>Units Sold</th>
-              <th>Profit (₹)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let p of productSummary">
-              <td>{{ p.name }}</td>
-              <td>{{ p.qty }}</td>
-              <td>₹{{ p.profit | number:'1.0-2' }}</td>
-            </tr>
-            <tr *ngIf="!productSummary.length">
-              <td colspan="3" class="no-data">No sales data found.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
 
 </div>

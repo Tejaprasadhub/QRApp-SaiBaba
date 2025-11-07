@@ -1,11 +1,14 @@
 $primary-color: #1e88e5;
+$success-color: #28a745;
+$danger-color: #dc3545;
 $secondary-color: #6c757d;
 $bg-light: #f9f9f9;
 $text-dark: #333;
 $border-color: #ddd;
-$border-radius: 8px;
+$border-radius: 12px;
 $spacing: 16px;
 $summary-bg: #e3f2fd;
+$hover-bg: #f1f5f9;
 
 .sales-wrapper {
 
@@ -16,33 +19,49 @@ $summary-bg: #e3f2fd;
     flex-wrap: wrap;
     margin-bottom: $spacing;
 
-    h2 { font-size: 1.8rem; color: $text-dark; margin: 0; }
+    h2 {
+      font-size: 2rem;
+      color: $text-dark;
+      font-weight: 700;
+      margin: 0;
+    }
+
     .btn-new-sale {
       background-color: $primary-color;
       color: white;
-      padding: 6px 14px;
+      padding: 10px 22px;
       border-radius: $border-radius;
       text-decoration: none;
       font-weight: 600;
-      &:hover { background-color:$primary-color; }
+      transition: background 0.3s, transform 0.2s;
+      &:hover {
+        background-color: $primary-color;
+        transform: translateY(-1px);
+      }
     }
   }
 
   // Filters
   .sales-filters {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     flex-wrap: wrap;
     margin-bottom: $spacing;
 
     .filter-input {
-      padding: 6px 12px;
+      padding: 8px 14px;
       border: 1px solid $border-color;
       border-radius: $border-radius;
+      font-size: 0.95rem;
+      transition: border 0.3s;
+      &:focus {
+        outline: none;
+        border-color: $primary-color;
+      }
     }
   }
 
-  // Summary
+  // Summary Cards
   .sales-summary {
     display: flex;
     gap: $spacing;
@@ -53,8 +72,13 @@ $summary-bg: #e3f2fd;
       background: $summary-bg;
       padding: $spacing;
       border-radius: $border-radius;
-      h3 { margin: 0 0 8px; font-size: 1.2rem; color: $text-dark; }
-      p { margin: 0; font-size: 1.4rem; font-weight: 600; color: $primary-color; }
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      transition: transform 0.2s;
+      &:hover { transform: translateY(-3px); }
+
+      h3 { margin: 0 0 10px; font-size: 1.2rem; color: $text-dark; font-weight: 600; }
+      p { margin: 0; font-size: 1.5rem; font-weight: 700; color: $primary-color; }
     }
   }
 
@@ -65,27 +89,76 @@ $summary-bg: #e3f2fd;
       width: 100%;
       border-collapse: collapse;
       font-size: 0.95rem;
-      th, td { padding: 10px; border: 1px solid $border-color; text-align: left; }
-      th { background-color: $bg-light; }
-      .no-data { text-align: center; color: $secondary-color; }
+      th, td {
+        padding: 12px 10px;
+        border: 1px solid $border-color;
+        text-align: left;
+      }
+      th {
+        background-color: $bg-light;
+        font-weight: 600;
+      }
+      tr:hover { background-color: $hover-bg; }
+      .no-data { text-align: center; color: $secondary-color; font-style: italic; }
     }
   }
 
-  // Mobile cards
+  // Mobile Cards
   .mobile-table { display: none; }
   .sale-card {
-    background: $bg-light;
+    background: white;
     border-radius: $border-radius;
     padding: $spacing;
     margin-bottom: $spacing;
-    box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    transition: transform 0.2s;
+    &:hover { transform: translateY(-2px); }
 
-    .sale-header { display: flex; justify-content: space-between; font-weight: 600; margin-bottom: 8px; }
-    .sale-info { margin-bottom: 8px; font-size: 0.95rem; }
+    .sale-header { 
+      display: flex; 
+      justify-content: space-between; 
+      font-weight: 600; 
+      margin-bottom: 10px; 
+      font-size: 1rem;
+    }
 
-    details { background: white; padding: 8px; border-radius: $border-radius; border: 1px solid $border-color; }
+    .sale-info { 
+      margin-bottom: 10px; 
+      font-size: 0.95rem; 
+      line-height: 1.4; 
+      display: flex; 
+      flex-wrap: wrap; 
+      gap: 8px;
+
+      .info-badge {
+        background: $bg-light;
+        padding: 4px 8px;
+        border-radius: $border-radius;
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+
+      .profit-positive { color: $success-color; }
+      .profit-negative { color: $danger-color; }
+      .payment-badge { color: $primary-color; }
+    }
+
+    details { 
+      background: $bg-light; 
+      padding: 10px; 
+      border-radius: $border-radius; 
+      border: 1px solid $border-color; 
+      font-size: 0.9rem;
+      margin-top: 6px;
+    }
+
     summary { font-weight: 600; cursor: pointer; }
-    ul { margin: 6px 0 0 12px; padding: 0; list-style: disc; font-size: 0.9rem; }
+    ul { 
+      margin: 6px 0 0 14px; 
+      padding: 0; 
+      list-style: disc; 
+      font-size: 0.9rem; 
+    }
   }
 
   // Charts
@@ -95,8 +168,16 @@ $summary-bg: #e3f2fd;
   @media (max-width: 768px) {
     .sales-table-wrapper { display: none; }
     .mobile-table { display: block; }
-    .sales-filters { flex-direction: column; gap: 8px; .filter-input { width: 100%; } }
-    .sales-summary { flex-direction: column; gap: 12px; }
-    .sales-header {  align-items: flex-start; .btn-new-sale { margin-top: 8px; } }
+    .sales-filters { 
+      flex-direction: column; 
+      gap: 10px; 
+      .filter-input { width: 100%; } 
+    }
+    .sales-summary { flex-direction: column; gap: 14px; }
+    .sales-header {  
+      align-items: flex-start; 
+      .btn-new-sale { margin-top: 10px; width: 100%; text-align: center; }
+    }
+    .sale-card { font-size: 0.95rem; }
   }
 }
