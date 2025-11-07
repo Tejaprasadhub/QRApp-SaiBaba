@@ -1,19 +1,58 @@
-<h2>Add Product</h2>
-<form (ngSubmit)="add()">
-  <select [(ngModel)]="product.categoryId" name="category" (change)="loadSubcats()" required>
-    <option value="">Select category</option>
-    <option *ngFor="let c of categories" [value]="c.id">{{ c.name }}</option>
-  </select>
+<div class="add-product-wrapper-alt">
 
-  <select [(ngModel)]="product.subcategoryId" name="subcategory">
-    <option value="">Select brand (optional)</option>
-    <option *ngFor="let s of subcategories" [value]="s.id">{{ s.name }}</option>
-  </select>
+  <div class="form-card">
+    <h2>Add Product</h2>
 
-  <input [(ngModel)]="product.name" name="name" placeholder="Product name" required>
-  <input [(ngModel)]="product.price" name="price" type="number" placeholder="Price" required>
-  <input [(ngModel)]="product.stock" name="stock" type="number" placeholder="Stock" required>
-  <input [(ngModel)]="product.minStock" name="minStock" type="number" placeholder="Min stock (reorder threshold)">
+    <form (ngSubmit)="add()" class="add-product-form-alt">
 
-  <button type="submit">Add Product</button>
-</form>
+      <div class="form-row-alt">
+        <label class="form-label-alt">
+          <span class="label-text">Category <span class="required">*</span></span>
+          <select [(ngModel)]="product.categoryId" name="category" (change)="loadSubcats()" required>
+            <option value="">Select category</option>
+            <option *ngFor="let c of categories" [value]="c.id">{{ c.name }}</option>
+          </select>
+        </label>
+
+        <label class="form-label-alt">
+          <span class="label-text">Subcategory / Brand</span>
+          <select [(ngModel)]="product.subcategoryId" name="subcategory">
+            <option value="">Select subcategory (optional)</option>
+            <option *ngFor="let s of subcategories" [value]="s.id">{{ s.name }}</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="form-row-alt">
+        <label class="form-label-alt">
+          <span class="label-text">Product Name <span class="required">*</span></span>
+          <input [(ngModel)]="product.name" name="name" placeholder="Product name" required />
+        </label>
+
+        <label class="form-label-alt">
+          <span class="label-text">Price <span class="required">*</span></span>
+          <input [(ngModel)]="product.price" name="price" type="number" placeholder="Price" required />
+        </label>
+      </div>
+
+      <div class="form-row-alt">
+        <label class="form-label-alt">
+          <span class="label-text">Stock <span class="required">*</span></span>
+          <input [(ngModel)]="product.stock" name="stock" type="number" placeholder="Stock" required />
+        </label>
+
+        <label class="form-label-alt">
+          <span class="label-text">Min Stock</span>
+          <input [(ngModel)]="product.minStock" name="minStock" type="number" placeholder="Reorder threshold" />
+        </label>
+      </div>
+
+      <div class="form-actions-alt">
+        <button type="submit" class="btn-submit-alt"><i class="pi pi-plus"></i> Add Product</button>
+        <a routerLink="/products" class="btn-cancel-alt">Cancel</a>
+      </div>
+
+    </form>
+  </div>
+
+</div>
