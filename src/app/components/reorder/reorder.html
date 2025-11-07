@@ -1,81 +1,84 @@
 <div class="low-stock">
-<p-card>
-  <!-- Page Header -->
-  <div class="page-header p-mb-4">
-    <h2>Low Stock Products</h2>
-    <p class="page-subtitle">Products that need reordering</p>
-  </div>
-
-  <ng-container *ngIf="!loading; else loadingTpl">
-    <div *ngIf="grouped | keyvalue as groupedData; else noDataTpl">
-      <div *ngFor="let cat of groupedData" class="category-section">
-        <!-- Category Title with Badge -->
-        <h4 class="category-title">
-          {{ cat.key }}
-          <span *ngIf="createdOrders[cat.key]" class="ordered-badge">
-            {{ getOrderedQty(cat.key) }} Ordered
-          </span>
-        </h4>
-
-        <!-- Product Table -->
-        <p-table
-          [value]="cat.value"
-          responsiveLayout="scroll"
-          [showGridlines]="true"
-          class="low-stock-table">
-
-          <ng-template pTemplate="header">
-            <tr>
-              <th>Product</th>
-              <th>Stock</th>
-              <th>Min</th>
-              <th>Qty to Order</th>
-            </tr>
-          </ng-template>
-
-          <ng-template pTemplate="body" let-p>
-            <tr>
-              <td>{{ p.name }}</td>
-              <td>{{ p.stock }}</td>
-              <td>{{ p.minStock }}</td>
-              <td>
-                <input type="number"
-                       [(ngModel)]="p.orderQty"
-                       min="1"
-                       [max]="(p.minStock || 5) - (p.stock || 0) + 20"
-                       class="p-inputtext qty-input">
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
-
-        <!-- Action Button -->
-        <div class="button-container">
-          <p-button 
-            [label]="createdOrders[cat.key] ? ' Ordered (' + getOrderedQty(cat.key) + ' items)' : ' Create Purchase Order'"
-                        [icon]="createdOrders[cat.key] ? 'pi pi-check-circle' : 'pi pi-shopping-cart'"
-            [ngClass]="createdOrders[cat.key] ? 'p-1 ordered-btn' : 'p-1 create-btn'"
-            (click)="createOrder(cat.key, cat.value)"
-            [disabled]="createdOrders[cat.key]">
-          </p-button>
-        </div>
-      </div>
+  <p-card>
+    <!-- Page Header -->
+    <div class="page-header p-mb-4">
+      <h2>Low Stock Products</h2>
+      <p class="page-subtitle">Products that need reordering</p>
     </div>
-  </ng-container>
-</p-card>
+
+    <ng-container *ngIf="!loading; else loadingTpl">
+      <!-- Assign grouped keyvalue to template variable -->
+      <ng-container *ngIf="grouped | keyvalue as groupedData; else noDataTpl">
+        <ng-container *ngIf="groupedData.length > 0; else noDataTpl">
+          <div *ngFor="let cat of groupedData" class="category-section">
+            <h4 class="category-title">
+              {{ cat.key }}
+              <span *ngIf="createdOrders[cat.key]" class="ordered-badge">
+                {{ getOrderedQty(cat.key) }} Ordered
+              </span>
+            </h4>
+
+            <p-table
+              [value]="cat.value"
+              responsiveLayout="scroll"
+              [showGridlines]="true"
+              class="low-stock-table">
+
+              <ng-template pTemplate="header">
+                <tr>
+                  <th>Product</th>
+                  <th>Stock</th>
+                  <th>Min</th>
+                  <th>Qty to Order</th>
+                </tr>
+              </ng-template>
+
+              <ng-template pTemplate="body" let-p>
+                <tr>
+                  <td>{{ p.name }}</td>
+                  <td>{{ p.stock }}</td>
+                  <td>{{ p.minStock }}</td>
+                  <td>
+                    <input
+                      type="number"
+                      [(ngModel)]="p.orderQty"
+                      min="1"
+                      [max]="(p.minStock || 5) - (p.stock || 0) + 20"
+                      class="p-inputtext qty-input"
+                    />
+                  </td>
+                </tr>
+              </ng-template>
+            </p-table>
+
+            <div class="button-container">
+              <p-button
+                [label]="createdOrders[cat.key] ? ' Ordered (' + getOrderedQty(cat.key) + ' items)' : ' Create Purchase Order'"
+                [icon]="createdOrders[cat.key] ? 'pi pi-check-circle' : 'pi pi-shopping-cart'"
+                [ngClass]="createdOrders[cat.key] ? 'p-1 ordered-btn' : 'p-1 create-btn'"
+                (click)="createOrder(cat.key, cat.value)"
+                [disabled]="createdOrders[cat.key]">
+              </p-button>
+            </div>
+          </div>
+        </ng-container>
+      </ng-container>
+    </ng-container>
+  </p-card>
 </div>
+
 <!-- Loading State -->
 <ng-template #loadingTpl>
   <div class="loading-container">
-    <!-- <p-progressSpinner></p-progressSpinner> -->
     <p>Loading products...</p>
   </div>
 </ng-template>
 
-<!-- No Data State -->
+<!-- No Low-Stock Products State -->
 <ng-template #noDataTpl>
   <div class="no-data-container">
-    <p class="p-text-secondary p-text-lg">🎉 All products are sufficiently stocked!</p>
+    <p class="p-text-center p-text-lg">
+      🎉 All products are sufficiently stocked! No low-stock products found.
+    </p>
   </div>
 </ng-template>
-

@@ -15,12 +15,12 @@ export class Reorder implements OnInit {
 
   purchaseOrders$!: Observable<any[]>;
   orders: any[] = [];
-  createdOrders: { [category: string]: boolean } = {}; // track which categories already have orders
+  createdOrders: { [category: string]: boolean } = {}; // track categories with orders
 
   constructor(private firestore: Firestore) {}
 
   ngOnInit() {
-    // Load products for reorder
+    // Load products
     const productsRef = collection(this.firestore, 'products');
     this.products$ = collectionData(productsRef, { idField: 'id' });
 
@@ -39,10 +39,9 @@ export class Reorder implements OnInit {
     // Load purchase orders
     const poRef = collection(this.firestore, 'purchaseOrders');
     this.purchaseOrders$ = collectionData(poRef, { idField: 'id' });
+
     this.purchaseOrders$.subscribe((orders) => {
       this.orders = orders;
-
-      // Mark categories that already have pending orders
       this.createdOrders = {};
       for (const o of orders) {
         if (o.status === 'pending') {
@@ -54,8 +53,6 @@ export class Reorder implements OnInit {
 
   async createOrder(categoryName: string, products: any[]) {
     if (!products.length) return;
-
-    // Check if order already exists for this category
     if (this.createdOrders[categoryName]) {
       alert(`Order for category "${categoryName}" has already been created.`);
       return;
@@ -64,7 +61,7 @@ export class Reorder implements OnInit {
     const orderItems = products.map(p => ({
       productId: p.id,
       name: p.name,
-      orderQty: p.orderQty, // store ordered quantity
+      orderQty: p.orderQty,
       price: p.price,
       receivedQty: 0,
       received: false
@@ -81,11 +78,9 @@ export class Reorder implements OnInit {
     const docRef = await addDoc(poRef, order);
     alert(`Purchase order created for category "${categoryName}" with ID: ${docRef.id}`);
 
-    // Mark this category as ordered to disable button
     this.createdOrders[categoryName] = true;
   }
 
-  // Calculate total ordered quantity for a category
   getOrderedQty(categoryName: string): number {
     const order = this.orders.find(o => o.categoryName === categoryName && o.status === 'pending');
     if (!order) return 0;
