@@ -1,35 +1,87 @@
-<h2>🛒 New Sale</h2>
+<div class="new-sales-wrapper">
+  <h2 class="page-title">🛒 New Sale</h2>
 
-<div style="display:flex;gap:20px">
-  <!-- Product List -->
-  <div style="flex:1">
-    <h4>Products</h4>
-    <ul>
-      <li *ngFor="let p of products" [style.color]="isLowStock(p) ? 'red' : 'black'">
-        {{ p.name }} ({{ p.stock }} left)
-        <span>- Cost ₹{{ p.price }}</span>
-        <button (click)="addToCart(p)" *ngIf="canAddToCart(p)">Add</button>
-        <span *ngIf="!canAddToCart(p)" style="color:gray; margin-left:6px;">Out of stock</span>
-      </li>
-    </ul>
-  </div>
-
-  <!-- Cart -->
-  <div style="width:380px">
-    <h4>🧾 Cart</h4>
-    <div *ngFor="let c of cart" style="margin-bottom:8px; border-bottom:1px solid #ddd; padding-bottom:6px;">
-      <div><b>{{ c.name }}</b> (x{{ c.qty }})</div>
-      <div>
-        <label>Selling Price:</label>
-        <input type="number" [(ngModel)]="c.sellingPrice" (ngModelChange)="recalc()" min="0" style="width:90px;">
-        <span style="margin-left:6px;">= ₹{{ c.sellingPrice * c.qty }}</span>
+  <div class="sales-container">
+    <!-- ================= PRODUCT LIST ================= -->
+    <div class="products-panel">
+      <div class="panel-header">
+        <h4>Products</h4>
+        <input
+          type="text"
+          placeholder="Search products..."
+          [(ngModel)]="productSearch"
+          class="search-input"
+        />
       </div>
-      <button (click)="removeFromCart(c)" style="margin-top:4px; color:red;">Remove</button>
+
+      <div class="filters">
+        <label>Category:</label>
+        <select [(ngModel)]="selectedCategory">
+          <option value="">All</option>
+          <option *ngFor="let cat of getCategories()" [value]="cat">{{ cat }}</option>
+        </select>
+      </div>
+
+      <div class="products-list">
+        <div
+          class="product-card"
+          *ngFor="let p of filteredProducts()"
+          [ngClass]="{ 'low-stock': isLowStock(p), 'out-of-stock': !canAddToCart(p) }"
+        >
+          <div class="product-info">
+            <h5>{{ p.name }}</h5>
+            <p>Stock: {{ p.stock }}</p>
+            <p>Cost: ₹{{ p.price }}</p>
+            <p *ngIf="p.categoryName">Category: {{ p.categoryName }}</p>
+          </div>
+          <button
+            class="btn-add"
+            (click)="addToCart(p)"
+            [disabled]="!canAddToCart(p)"
+          >
+            {{ canAddToCart(p) ? 'Add' : 'Out of stock' }}
+          </button>
+        </div>
+      </div>
+
+      <div class="pagination">
+        <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1">Prev</button>
+        <span>Page {{ currentPage }} / {{ totalPages() }}</span>
+        <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages()">Next</button>
+      </div>
     </div>
 
-    <div style="margin-top:10px; font-weight:bold;">Total: ₹{{ total }}</div>
+    <!-- ================= CART PANEL ================= -->
+    <div class="cart-panel">
+      <h4>🧾 Cart</h4>
 
-    <input [(ngModel)]="customer" placeholder="Customer name (optional)" style="margin-top:10px; width:100%;">
-    <button (click)="checkout()" style="margin-top:10px; width:100%;">Checkout</button>
+      <div *ngIf="cart.length === 0" class="empty-cart">Cart is empty</div>
+
+      <div class="cart-items" *ngFor="let c of cart">
+        <div class="cart-item-header">
+          <b>{{ c.name }}</b> <span>(x{{ c.qty }})</span>
+        </div>
+        <div class="cart-item-body">
+          <label>Selling Price:</label>
+          <input
+            type="number"
+            [(ngModel)]="c.sellingPrice"
+            (ngModelChange)="recalc()"
+            min="0"
+          />
+          <span>= ₹{{ c.sellingPrice * c.qty }}</span>
+        </div>
+        <button class="btn-remove" (click)="removeFromCart(c)">Remove</button>
+      </div>
+
+      <div class="cart-summary">
+        <div>Total: <b>₹{{ total }}</b></div>
+        <input
+          [(ngModel)]="customer"
+          placeholder="Customer name (optional)"
+        />
+        <button class="btn-checkout" (click)="checkout()">Checkout</button>
+      </div>
+    </div>
   </div>
 </div>
