@@ -1363,6 +1363,9 @@ body {
   }
 }
 
+/* ============================================================
+   LOW STOCK PAGE — CORPORATE THEME STYLES
+   ============================================================ */
 .low-stock {
   /* ================== Page Header ================== */
   .page-header {
@@ -1411,13 +1414,14 @@ body {
     }
   }
 
-  /* ================== Table ================== */
+  /* ================== Low Stock Table ================== */
   .low-stock-table {
      .p-datatable-thead > tr > th {
-      background-color: var(--color-bg-gradient-end);
-      font-weight: 600;
-      color: var(--text-primary);
-      padding: 0.8rem 1rem;
+     background: var(--accent-gradient);
+    color: var(--text-inverse);
+    font-weight: 600;
+    text-transform: uppercase;
+    padding: 0.75rem 1rem;
     }
 
      .p-datatable-tbody > tr > td {
@@ -1504,6 +1508,142 @@ body {
       color: var(--text-muted);
     }
   }
+}
+
+.purchase-order-wrapper{
+  /* ================= Purchase Orders Card ================= */
+.purchase-orders-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 6px 20px var(--shadow-soft);
+  padding: 1rem 1.2rem;
+}
+
+/* Table Styling */
+.purchase-orders-table {
+  .p-datatable-thead > tr > th {
+    background: var(--accent-gradient);
+    color: var(--text-inverse);
+    font-weight: 600;
+    text-transform: uppercase;
+    padding: 0.75rem 1rem;
+  }
+
+  .p-datatable-tbody > tr {
+    td {
+      padding: 0.6rem 1rem;
+      font-size: 0.95rem;
+      color: var(--text-primary);
+    }
+
+    &:nth-child(even) {
+      background-color: rgba(147, 51, 234, 0.05);
+    }
+
+    &:hover {
+      background-color: rgba(147, 51, 234, 0.12);
+      transition: background 0.2s ease;
+    }
+  }
+}
+
+/* Inline Item Rows */
+.inline-item-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  padding: 0.4rem 0;
+  background: rgba(124, 58, 237, 0.03);
+  border-radius: var(--radius-md);
+
+  .item-name {
+    min-width: 150px;
+  }
+
+  .item-order,
+  .item-received,
+  .item-price,
+  .item-action {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .qty-input,
+  .price-input {
+    border-radius: var(--radius-md);
+    border: 1px solid var(--input-border);
+    padding: 0.3rem 0.5rem;
+    text-align: center;
+    width: 60px;
+    background-color: var(--input-bg);
+    transition: all 0.2s ease;
+
+    &:focus {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 4px var(--accent-primary);
+      outline: none;
+    }
+  }
+
+  .price-input {
+    width: 80px;
+  }
+
+  .p-button-success {
+    background: var(--toast-success);
+    color: var(--btn-text);
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    padding: 0.35rem 0.75rem;
+    box-shadow: 0 2px 6px var(--shadow-soft);
+
+    &:hover {
+      background: #16a34a;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px var(--shadow-strong);
+    }
+  }
+
+  .p-tag-success {
+    background-color: var(--toast-success);
+    color: var(--btn-text);
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+/* Danger Button (Delete) */
+.p-button-danger {
+  background: var(--toast-error);
+  color: var(--btn-text);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  box-shadow: 0 2px 6px var(--shadow-soft);
+
+  &:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px var(--shadow-strong);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .inline-item-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .qty-input,
+  .price-input {
+    width: 100%;
+  }
+}
+
 }
 
 
