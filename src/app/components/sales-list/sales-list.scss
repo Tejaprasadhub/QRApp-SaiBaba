@@ -1,67 +1,67 @@
 $primary-color: #1e88e5;
-$success-color: #28a745;
-$danger-color: #dc3545;
 $secondary-color: #6c757d;
 $bg-light: #f9f9f9;
 $text-dark: #333;
 $border-color: #ddd;
-$border-radius: 12px;
+$border-radius: 8px;
 $spacing: 16px;
 $summary-bg: #e3f2fd;
-$hover-bg: #f1f5f9;
+$hover-bg: #e0e0e0;
 
 .sales-wrapper {
 
-  // Header
   .sales-header {
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
     margin-bottom: $spacing;
+    align-items: center;
 
-    h2 {
-      font-size: 2rem;
-      color: $text-dark;
-      font-weight: 700;
-      margin: 0;
-    }
+    h2 { font-size: 1.8rem; margin: 0; color: $text-dark; }
 
-    .btn-new-sale {
-      background-color: $primary-color;
-      color: white;
-      padding: 10px 22px;
-      border-radius: $border-radius;
-      text-decoration: none;
-      font-weight: 600;
-      transition: background 0.3s, transform 0.2s;
-      &:hover {
+    .header-actions {
+      display: flex;
+      gap: 10px;
+
+      .btn-new-sale {
         background-color: $primary-color;
-        transform: translateY(-1px);
+        color: white;
+        padding: 6px 14px;
+        border-radius: $border-radius;
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      .btn-filter {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: $bg-light;
+        padding: 6px 12px;
+        border-radius: $border-radius;
+        border: 1px solid $border-color;
+        font-weight: 600;
+        cursor: pointer;
+        i { font-size: 20px; }
+        &:hover { background: $hover-bg; }
       }
     }
   }
 
-  // Filters
   .sales-filters {
+    margin-bottom: $spacing;
     display: flex;
     gap: 12px;
     flex-wrap: wrap;
-    margin-bottom: $spacing;
 
     .filter-input {
-      padding: 8px 14px;
-      border: 1px solid $border-color;
+      padding: 6px 12px;
       border-radius: $border-radius;
-      font-size: 0.95rem;
-      transition: border 0.3s;
-      &:focus {
-        outline: none;
-        border-color: $primary-color;
-      }
+      border: 1px solid $border-color;
+    //   flex: 1 1 150px;
     }
   }
 
-  // Summary Cards
   .sales-summary {
     display: flex;
     gap: $spacing;
@@ -72,112 +72,64 @@ $hover-bg: #f1f5f9;
       background: $summary-bg;
       padding: $spacing;
       border-radius: $border-radius;
-      text-align: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      transition: transform 0.2s;
-      &:hover { transform: translateY(-3px); }
 
-      h3 { margin: 0 0 10px; font-size: 1.2rem; color: $text-dark; font-weight: 600; }
-      p { margin: 0; font-size: 1.5rem; font-weight: 700; color: $primary-color; }
+      h3 { margin: 0 0 8px; color: $text-dark; font-size: 1.2rem; }
+      p { margin: 0; font-size: 1.4rem; font-weight: 600; color: $primary-color; }
     }
   }
 
-  // Table (desktop)
   .sales-table-wrapper {
     overflow-x: auto;
     .sales-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.95rem;
-      th, td {
-        padding: 12px 10px;
-        border: 1px solid $border-color;
-        text-align: left;
-      }
-      th {
-        background-color: $bg-light;
-        font-weight: 600;
-      }
-      tr:hover { background-color: $hover-bg; }
-      .no-data { text-align: center; color: $secondary-color; font-style: italic; }
+      th, td { padding: 10px; border: 1px solid $border-color; text-align: left; }
+      th { background: $bg-light; }
+      .no-data { text-align: center; color: $secondary-color; }
     }
   }
 
-  // Mobile Cards
   .mobile-table { display: none; }
+
   .sale-card {
-    background: white;
+    background: $bg-light;
     border-radius: $border-radius;
     padding: $spacing;
     margin-bottom: $spacing;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-    transition: transform 0.2s;
-    &:hover { transform: translateY(-2px); }
+    box-shadow: 0 1px 6px rgba(0,0,0,0.05);
 
-    .sale-header { 
-      display: flex; 
-      justify-content: space-between; 
-      font-weight: 600; 
-      margin-bottom: 10px; 
-      font-size: 1rem;
-    }
+    .sale-header { display: flex; justify-content: space-between; font-weight: 600; margin-bottom: 8px; }
+    .sale-info { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; font-size: 0.95rem; }
 
-    .sale-info { 
-      margin-bottom: 10px; 
-      font-size: 0.95rem; 
-      line-height: 1.4; 
-      display: flex; 
-      flex-wrap: wrap; 
-      gap: 8px;
-
-      .info-badge {
-        background: $bg-light;
-        padding: 4px 8px;
-        border-radius: $border-radius;
-        font-weight: 600;
-        font-size: 0.9rem;
-      }
-
-      .profit-positive { color: $success-color; }
-      .profit-negative { color: $danger-color; }
-      .payment-badge { color: $primary-color; }
-    }
-
-    details { 
-      background: $bg-light; 
-      padding: 10px; 
-      border-radius: $border-radius; 
-      border: 1px solid $border-color; 
-      font-size: 0.9rem;
-      margin-top: 6px;
-    }
-
+    details { background: white; padding: 8px; border-radius: $border-radius; border: 1px solid $border-color; }
     summary { font-weight: 600; cursor: pointer; }
-    ul { 
-      margin: 6px 0 0 14px; 
-      padding: 0; 
-      list-style: disc; 
-      font-size: 0.9rem; 
+    ul { margin: 6px 0 0 12px; padding: 0; list-style: disc; font-size: 0.9rem; }
+  }
+
+  .profit-positive { color: #388e3c; font-weight: 600; }
+  .profit-negative { color: #d32f2f; font-weight: 600; }
+
+  .pagination {
+    display: flex;
+    gap: 6px;
+    margin-top: $spacing;
+    flex-wrap: wrap;
+
+    button {
+      padding: 4px 8px;
+      border-radius: $border-radius;
+      border: 1px solid $border-color;
+      cursor: pointer;
+      &.active { background: $primary-color; color: white; }
+      &:disabled { opacity: 0.5; cursor: not-allowed; }
     }
   }
 
-  // Charts
-  .charts-wrapper { margin-top: $spacing; .chart-section { margin-bottom: $spacing; } }
-
-  // Mobile responsive
   @media (max-width: 768px) {
     .sales-table-wrapper { display: none; }
     .mobile-table { display: block; }
-    .sales-filters { 
-      flex-direction: column; 
-      gap: 10px; 
-      .filter-input { width: 100%; } 
-    }
-    .sales-summary { flex-direction: column; gap: 14px; }
-    .sales-header {  
-      align-items: flex-start; 
-      .btn-new-sale { margin-top: 10px; width: 100%; text-align: center; }
-    }
-    .sale-card { font-size: 0.95rem; }
+
+    .sales-filters { flex-direction: column; }
+    .sales-summary { flex-direction: column; }
   }
 }

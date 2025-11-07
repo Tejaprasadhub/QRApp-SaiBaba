@@ -6,13 +6,14 @@ import { ChartConfiguration, ChartOptions } from 'chart.js';
   selector: 'app-sales-list',
   standalone: false,
   templateUrl: './sales-list.html',
-  styleUrl: './sales-list.scss',
+  styleUrls: ['./sales-list.scss'],
 })
 export class SalesList {
   sales: any[] = [];
   filteredSales: any[] = [];
 
   // Filters
+  showFilters: boolean = false;
   filterCustomer: string = '';
   filterFromDate: string = '';
   filterToDate: string = '';
@@ -20,6 +21,11 @@ export class SalesList {
   // Totals
   totalProfit: number = 0;
   totalSales: number = 0;
+
+  // Pagination
+  pageSize: number = 10;
+  currentPage: number = 1;
+  paginatedSales: any[] = [];
 
   // Charts
   public monthlyChartData: ChartConfiguration<'bar'>['data'] = { labels: [], datasets: [] };
@@ -45,7 +51,12 @@ export class SalesList {
       this.recalculateTotals();
       this.updateMonthlyChart();
       this.updateProductSummary();
+      this.updatePagination();
     });
+  }
+
+  toggleFilters() {
+    this.showFilters = !this.showFilters;
   }
 
   getFormattedDate(date: any): Date | null {
@@ -84,6 +95,8 @@ export class SalesList {
     this.recalculateTotals();
     this.updateMonthlyChart();
     this.updateProductSummary();
+    this.currentPage = 1;
+    this.updatePagination();
   }
 
   recalculateTotals() {
@@ -146,5 +159,20 @@ export class SalesList {
       { data: this.productSummary.map((p) => p.qty), label: 'Units Sold' },
       { data: this.productSummary.map((p) => p.profit), label: 'Profit (₹)', backgroundColor: '#FFA726' },
     ];
+  }
+
+  // Pagination
+  updatePagination() {
+    const start = (this.currentPage - 1) * this.pageSize;
+    this.paginatedSales = this.filteredSales.slice(start, start + this.pageSize);
+  }
+
+  goToPage(page: number) {
+    this.currentPage = page;
+    this.updatePagination();
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.filteredSales.length / this.pageSize);
   }
 }

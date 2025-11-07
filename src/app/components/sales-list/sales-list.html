@@ -3,15 +3,20 @@
   <!-- Header -->
   <div class="sales-header">
     <h2>Sales Dashboard</h2>
-    <a routerLink="/sales/add" class="btn-new-sale">New Sale</a>
+    <div class="header-actions">
+      <button class="btn-filter" (click)="toggleFilters()">
+        <i class="pi pi-filter"></i> Filters
+      </button>
+      <a routerLink="/sales/add" class="btn-new-sale">New Sale</a>
+    </div>
   </div>
 
-  <!-- Filters -->
-  <!-- <div class="sales-filters">
-    <input [(ngModel)]="filterCustomer" placeholder="Customer" (input)="applyFilters()" class="filter-input">
+  <!-- Filters (toggleable) -->
+  <div class="sales-filters" *ngIf="showFilters">
+    <input [(ngModel)]="filterCustomer" placeholder="Customer Name" (input)="applyFilters()" class="filter-input">
     <input type="date" [(ngModel)]="filterFromDate" (change)="applyFilters()" class="filter-input">
     <input type="date" [(ngModel)]="filterToDate" (change)="applyFilters()" class="filter-input">
-  </div> -->
+  </div>
 
   <!-- Summary Cards -->
   <div class="sales-summary">
@@ -40,14 +45,13 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let s of filteredSales" class="sale-row">
+        <tr *ngFor="let s of paginatedSales">
           <td>{{ getFormattedDate(s.date) | date:'medium' }}</td>
           <td>{{ s.customer || 'Walk-in' }}</td>
           <td>
             <ul class="item-list">
               <li *ngFor="let i of s.items">
-                {{ i.name }} x {{ i.qty }} |
-                Cost ₹{{ i.costPrice || 0 }} | Sold ₹{{ i.sellingPrice || i.price }} |
+                {{ i.name }} x {{ i.qty }} | Cost ₹{{ i.costPrice || 0 }} | Sold ₹{{ i.sellingPrice || i.price }} |
                 <strong [ngClass]="{'profit-positive': ((i.sellingPrice || i.price) - (i.costPrice || 0)) * i.qty > 0,
                                      'profit-negative': ((i.sellingPrice || i.price) - (i.costPrice || 0)) * i.qty <= 0}">
                   Profit ₹{{ ((i.sellingPrice || i.price) - (i.costPrice || 0)) * i.qty }}
@@ -60,18 +64,28 @@
           <td [ngClass]="{'profit-positive': getSaleProfit(s) > 0, 'profit-negative': getSaleProfit(s) <= 0}">
             ₹{{ getSaleProfit(s) | number:'1.0-2' }}
           </td>
-          <td class="payment-badge">{{ s.paymentMode || 'Cash' }}</td>
+          <td>{{ s.paymentMode || 'Cash' }}</td>
         </tr>
         <tr *ngIf="!filteredSales.length">
           <td colspan="7" class="no-data">No sales found.</td>
         </tr>
       </tbody>
     </table>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button [disabled]="currentPage===1" (click)="goToPage(currentPage-1)">Prev</button>
+      <button *ngFor="let p of [].constructor(totalPages); let i = index" 
+              [class.active]="currentPage===i+1" (click)="goToPage(i+1)">
+        {{ i+1 }}
+      </button>
+      <button [disabled]="currentPage===totalPages" (click)="goToPage(currentPage+1)">Next</button>
+    </div>
   </div>
 
-  <!-- Sales Cards (mobile) -->
-  <div class="mobile-table" *ngIf="filteredSales.length">
-    <div *ngFor="let s of filteredSales" class="sale-card">
+  <!-- Mobile Cards -->
+  <div class="mobile-table" *ngIf="paginatedSales.length">
+    <div *ngFor="let s of paginatedSales" class="sale-card">
       <div class="sale-header">
         <div>{{ getFormattedDate(s.date) | date:'medium' }}</div>
         <div>{{ s.customer || 'Walk-in' }}</div>
@@ -82,7 +96,7 @@
         <span class="info-badge" [ngClass]="{'profit-positive': getSaleProfit(s) > 0, 'profit-negative': getSaleProfit(s) <= 0}">
           Profit: ₹{{ getSaleProfit(s) | number:'1.0-2' }}
         </span>
-        <span class="info-badge payment-badge">{{ s.paymentMode || 'Cash' }}</span>
+        <span class="info-badge">{{ s.paymentMode || 'Cash' }}</span>
       </div>
       <details class="items-details">
         <summary>Items Breakdown</summary>
@@ -97,7 +111,16 @@
         </ul>
       </details>
     </div>
-  </div>
 
+    <!-- Mobile Pagination -->
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button [disabled]="currentPage===1" (click)="goToPage(currentPage-1)">Prev</button>
+      <button *ngFor="let p of [].constructor(totalPages); let i = index" 
+              [class.active]="currentPage===i+1" (click)="goToPage(i+1)">
+        {{ i+1 }}
+      </button>
+      <button [disabled]="currentPage===totalPages" (click)="goToPage(currentPage+1)">Next</button>
+    </div>
+  </div>
 
 </div>
