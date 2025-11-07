@@ -1,0 +1,125 @@
+.categories-card {
+  padding: 24px;
+  border-radius: 12px;
+  background: #f9f9f9;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+.add-category-form {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.add-category-form input {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.add-category-form button {
+  padding: 8px 16px;
+  background-color: #007ad9;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.add-category-form button:hover {
+  background-color: #005bb5;
+}
+
+.category-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.category-list li {
+  background: white;
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.edit-mode {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.edit-mode input {
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.edit-mode button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.edit-mode button:first-child {
+  background-color: #1abc9c;
+  color: white;
+}
+.edit-mode button:first-child:hover {
+  background-color: #15977c;
+}
+
+.edit-mode button:last-child {
+  background-color: #e74c3c;
+  color: white;
+}
+.edit-mode button:last-child:hover {
+  background-color: #c0392b;
+}
+
+.category-item {
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.action-buttons button {
+  margin-left: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.action-buttons button:first-child {
+  background-color: #007ad9;
+  color: white;
+}
+.action-buttons button:first-child:hover {
+  background-color: #005bb5;
+}
+
+.delete-btn {
+  background-color: #e74c3c;
+  color: white;
+}
+.delete-btn:hover {
+  background-color: #c0392b;
+}
+
+.empty-state {
+  color: gray;
+  font-style: italic;
+  margin-top: 10px;
+}

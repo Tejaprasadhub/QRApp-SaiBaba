@@ -1,36 +1,42 @@
-<h2>Categories</h2>
+<p-card class="categories-card">
+  <h2>Categories</h2>
 
-<!-- Add Category -->
-<form (ngSubmit)="add()" style="margin-bottom:15px;">
-  <input
-    [(ngModel)]="newCat.name"
-    name="name"
-    placeholder="Category name"
-    required
-  />
-  <button type="submit" [disabled]="loading">
-    {{ loading ? 'Adding...' : 'Add' }}
-  </button>
-</form>
+  <!-- Add Category -->
+  <form (ngSubmit)="add()" class="add-category-form">
+    <input
+      [(ngModel)]="newCat.name"
+      name="name"
+      placeholder="Category name"
+      required
+    />
+    <button type="submit" [disabled]="loading">
+      {{ loading ? 'Adding...' : 'Add' }}
+    </button>
+  </form>
 
-<!-- Category List -->
-<ul>
-  <li *ngFor="let c of categories">
-    <!-- If editing this category -->
-    <div *ngIf="editCat?.id === c.id; else viewMode">
-      <input [(ngModel)]="editCat.name" name="editName" />
-      <button (click)="saveEdit()">💾 Save</button>
-      <button (click)="cancelEdit()">✖ Cancel</button>
-    </div>
+  <!-- Category List -->
+  <ul class="category-list">
+    <li *ngFor="let c of categories">
+      <!-- If editing this category -->
+      <div *ngIf="editCat?.id === c.id; else viewMode" class="edit-mode">
+        <input [(ngModel)]="editCat.name" name="editName" />
+        <button (click)="saveEdit()">💾 Save</button>
+        <button (click)="cancelEdit()">✖ Cancel</button>
+      </div>
 
-    <!-- Normal view -->
-    <ng-template #viewMode>
-      {{ c.name }}
-      <button (click)="startEdit(c)">✏️ Edit</button>
-      <button (click)="remove(c.id)" style="color:red;">🗑 Delete</button>
-    </ng-template>
-  </li>
-</ul>
+      <!-- Normal view -->
+      <ng-template #viewMode>
+        <div class="category-item">
+          <span>{{ c.name }}</span>
+          <div class="action-buttons">
+            <button (click)="startEdit(c)">✏️ Edit</button>
+            <button (click)="remove(c.id)" class="delete-btn">🗑 Delete</button>
+          </div>
+        </div>
+      </ng-template>
+    </li>
+  </ul>
 
-<!-- Empty state -->
-<p *ngIf="!categories.length" style="color:gray;">No categories found.</p>
+  <!-- Empty state -->
+  <p *ngIf="!categories.length" class="empty-state">No categories found.</p>
+</p-card>

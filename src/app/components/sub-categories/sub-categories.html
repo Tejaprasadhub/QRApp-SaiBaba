@@ -1,48 +1,39 @@
-<h2>Subcategories (Brands)</h2>
+<p-card class="subcategories-card">
+  <h2>Subcategories (Brands)</h2>
 
-<!-- Add new subcategory -->
-<form (ngSubmit)="add()" style="margin-bottom: 15px;">
-  <select [(ngModel)]="newSub.categoryId" name="category" required>
-    <option value="">Select category</option>
-    <option *ngFor="let c of categories" [value]="c.id">{{ c.name }}</option>
-  </select>
+  <!-- Add new subcategory -->
+  <form (ngSubmit)="add()" class="add-subcategory-form">
+    <select [(ngModel)]="newSub.categoryId" name="category" required>
+      <option value="">Select category</option>
+      <option *ngFor="let c of categories" [value]="c.id">{{ c.name }}</option>
+    </select>
 
-  <input [(ngModel)]="newSub.name" name="name" placeholder="Subcategory / Brand name" required />
+    <input [(ngModel)]="newSub.name" name="name" placeholder="Subcategory / Brand name" required />
 
-  <button type="submit" [disabled]="loading">
-    {{ loading ? 'Adding...' : 'Add' }}
-  </button>
-</form>
+    <button type="submit" [disabled]="loading">
+      {{ loading ? 'Adding...' : 'Add' }}
+    </button>
+  </form>
 
-<!-- List of subcategories -->
-<table border="1" cellpadding="6" style="margin-top:10px; width:100%; border-collapse: collapse;">
-  <tr style="background-color:#f3f3f3;">
-    <th>Subcategory / Brand</th>
-    <th>Category</th>
-    <th style="width:160px; text-align:center;">Actions</th>
-  </tr>
-
-  <tr *ngFor="let s of subcategories">
-    <td>
-      <div *ngIf="editSub?.id === s.id; else viewMode">
-        <input [(ngModel)]="editSub.name" name="editName" />
-      </div>
-      <ng-template #viewMode>{{ s.name }}</ng-template>
-    </td>
-    <td>{{ s.categoryName }}</td>
-    <td style="text-align:center;">
-      <div *ngIf="editSub?.id === s.id; else actions">
+  <!-- List of subcategories -->
+  <div class="subcategory-list">
+    <div *ngFor="let s of subcategories" class="subcategory-item">
+      <div *ngIf="editSub?.id === s.id" class="edit-mode">
+        <input class="mb-2" [(ngModel)]="editSub.name" name="editName" />
         <button (click)="saveEdit()">💾 Save</button>
         <button (click)="cancelEdit()">✖ Cancel</button>
       </div>
-      <ng-template #actions>
-        <button (click)="startEdit(s)">✏️ Edit</button>
-        <button (click)="remove(s.id)" style="color:red;">🗑 Delete</button>
-      </ng-template>
-    </td>
-  </tr>
+      <div *ngIf="editSub?.id !== s.id" class="view-mode">
+        <span class="name">{{ s.name }}</span>&nbsp;-&nbsp;
+        <span class="category">{{ s.categoryName }}</span>
+        <div class="mt-2 action-buttons">
+          <button (click)="startEdit(s)">✏️ Edit</button>
+          <button (click)="remove(s.id)" class="delete-btn">🗑 Delete</button>
+        </div>
+      </div>
+    </div>
 
-  <tr *ngIf="!subcategories.length">
-    <td colspan="3" style="text-align:center; color:gray;">No subcategories found.</td>
-  </tr>
-</table>
+    <!-- Empty state -->
+    <p *ngIf="!subcategories.length" class="empty-state">No subcategories found.</p>
+  </div>
+</p-card>
