@@ -8,7 +8,6 @@ $spacing: 16px;
 $summary-bg: #e3f2fd;
 
 .sales-wrapper {
-  padding: $spacing;
 
   // Header
   .sales-header {
@@ -98,6 +97,6 @@ $summary-bg: #e3f2fd;
     .mobile-table { display: block; }
     .sales-filters { flex-direction: column; gap: 8px; .filter-input { width: 100%; } }
     .sales-summary { flex-direction: column; gap: 12px; }
-    .sales-header { flex-direction: column; align-items: flex-start; .btn-new-sale { margin-top: 8px; } }
+    .sales-header {  align-items: flex-start; .btn-new-sale { margin-top: 8px; } }
   }
 }
