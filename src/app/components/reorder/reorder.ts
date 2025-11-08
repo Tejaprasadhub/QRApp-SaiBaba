@@ -15,25 +15,50 @@ export class Reorder implements OnInit {
 
   purchaseOrders$!: Observable<any[]>;
   orders: any[] = [];
-  createdOrders: { [category: string]: boolean } = {}; // track categories with orders
+  createdOrders: { [category: string]: boolean } = {};
 
   constructor(private firestore: Firestore) {}
 
   ngOnInit() {
-    // Load products
     const productsRef = collection(this.firestore, 'products');
     this.products$ = collectionData(productsRef, { idField: 'id' });
 
     this.products$.subscribe((products) => {
       this.loading = false;
-      const lowStock = products.filter(p => (p.stock || 0) <= (p.minStock || 0));
+
+      // ✅ Deduplicate by product name and choose highest minStock
+      const productMap: { [name: string]: any } = {};
+      for (const p of products) {
+        const name = (p.name || '').trim();
+        if (!name) continue;
+
+        if (!productMap[name]) {
+          productMap[name] = { ...p };
+        } else {
+          const existing = productMap[name];
+          existing.stock = (existing.stock || 0) + (p.stock || 0);
+          existing.minStock = Math.max(existing.minStock || 0, p.minStock || 0);
+        }
+      }
+
+      // Filter low stock only
+      const deduped = Object.values(productMap).filter(
+        (p: any) => (p.stock || 0) < (p.minStock || 0)
+      );
 
       // Group low-stock products by category
-      this.grouped = lowStock.reduce((acc: any, p: any) => {
-        if (!acc[p.categoryName]) acc[p.categoryName] = [];
-        acc[p.categoryName].push({ ...p, orderQty: Math.max((p.minStock || 5) - (p.stock || 0), 1) });
-        return acc;
-      }, {});
+      const categoryData: { [key: string]: any[] } = {};
+      deduped.forEach((p: any) => {
+        const cat = p.categoryName || 'Uncategorized';
+        if (!categoryData[cat]) categoryData[cat] = [];
+        const orderQty = Math.max((p.minStock || 0) - (p.stock || 0), 1);
+        categoryData[cat].push({
+          ...p,
+          orderQty,
+        });
+      });
+
+      this.grouped = categoryData;
     });
 
     // Load purchase orders
@@ -58,20 +83,20 @@ export class Reorder implements OnInit {
       return;
     }
 
-    const orderItems = products.map(p => ({
+    const orderItems = products.map((p) => ({
       productId: p.id,
       name: p.name,
       orderQty: p.orderQty,
       price: p.price,
       receivedQty: 0,
-      received: false
+      received: false,
     }));
 
     const order = {
       categoryName,
       date: new Date(),
       status: 'pending',
-      items: orderItems
+      items: orderItems,
     };
 
     const poRef = collection(this.firestore, 'purchaseOrders');
@@ -82,7 +107,9 @@ export class Reorder implements OnInit {
   }
 
   getOrderedQty(categoryName: string): number {
-    const order = this.orders.find(o => o.categoryName === categoryName && o.status === 'pending');
+    const order = this.orders.find(
+      (o) => o.categoryName === categoryName && o.status === 'pending'
+    );
     if (!order) return 0;
     return order.items.reduce((sum: number, item: any) => sum + (item.orderQty || 0), 0);
   }

@@ -11,7 +11,6 @@ import { Firestore, collection, collectionData } from '@angular/fire/firestore';
   styleUrl: './dashboard.scss',
 })
 export class Dashboard implements OnInit {
-  // 📦 Product metrics
   totalProducts = 0;
   totalStock = 0;
   outOfStock = 0;
@@ -19,23 +18,19 @@ export class Dashboard implements OnInit {
   fastMoving = 0;
   deadStock = 0;
 
-  // 💰 Financial metrics
   totalSalesAmount = 0;
   totalProfit = 0;
 
-  // 🧾 Purchase metrics
   totalPurchaseCount = 0;
   totalPurchaseValue = 0;
-  totalPurchaseReceivedValue = 0; // ✅ NEW metric
+  totalPurchaseReceivedValue = 0;
 
-  // 🔍 Filters
   filterFromDate: string = '';
   filterToDate: string = '';
 
   categoryCounts: { [key: string]: number } = {};
   categoryStock: { [key: string]: number } = {};
 
-  // 📊 Charts
   stockPieData: any;
   categoryBarData: any;
   monthlySalesData: any;
@@ -61,7 +56,6 @@ export class Dashboard implements OnInit {
     this.loadPurchaseOrders();
   }
 
-  // ✅ Safely convert values
   private safeNumber(v: any): number {
     if (v == null) return 0;
     if (typeof v === 'number') return isNaN(v) ? 0 : v;
@@ -69,26 +63,44 @@ export class Dashboard implements OnInit {
     return isNaN(n) ? 0 : n;
   }
 
-  // 📦 Load Products
+  // ✅ Aggregate by product name
+  private aggregateProducts(products: any[]) {
+    const grouped: Record<string, any> = {};
+    for (const p of products) {
+      const key = p.name.trim().toUpperCase();
+      if (!grouped[key]) {
+        grouped[key] = { ...p, totalStock: 0, subcategories: [] };
+      }
+      grouped[key].totalStock += this.safeNumber(p.stock);
+      grouped[key].subcategories.push({
+        name: p.subcategoryName,
+        stock: p.stock,
+        minStock: p.minStock,
+      });
+    }
+    return Object.values(grouped);
+  }
+
   private loadProducts() {
     this.ps.getProducts().subscribe((products) => {
-      this.totalProducts = products.length;
-      this.totalStock = products.reduce((s, p) => s + this.safeNumber(p.stock), 0);
+      const aggregated = this.aggregateProducts(products);
 
-      this.lowStock = products.filter(
-        (p) => this.safeNumber(p.stock) <= this.safeNumber(p.minStock || 0)
+      this.totalProducts = aggregated.length;
+      this.totalStock = aggregated.reduce((s, p: any) => s + p.totalStock, 0);
+      this.lowStock = aggregated.filter((p: any) =>
+        p.subcategories.some((s: any) => this.safeNumber(s.stock) <= this.safeNumber(s.minStock))
       ).length;
-      this.outOfStock = products.filter((p) => this.safeNumber(p.stock) <= 0).length;
+      this.outOfStock = aggregated.filter((p: any) => p.totalStock <= 0).length;
 
       const FAST_THRESHOLD = 10;
-      this.fastMoving = products.filter(
-        (p) => this.safeNumber(p.salesCount) > FAST_THRESHOLD
+      this.fastMoving = aggregated.filter(
+        (p: any) => this.safeNumber(p.salesCount) > FAST_THRESHOLD
       ).length;
 
       const now = Date.now();
       const DAYS_90_MS = 90 * 24 * 60 * 60 * 1000;
-      this.deadStock = products.filter((p) => {
-        const stock = this.safeNumber(p.stock);
+      this.deadStock = aggregated.filter((p: any) => {
+        const stock = this.safeNumber(p.totalStock);
         if (stock <= 0) return false;
         if (!p.lastSoldAt) return true;
         const lastSold = p.lastSoldAt.seconds
@@ -99,11 +111,11 @@ export class Dashboard implements OnInit {
 
       this.categoryCounts = {};
       this.categoryStock = {};
-      products.forEach((p) => {
+      aggregated.forEach((p: any) => {
         const cat = p.categoryName || 'Uncategorized';
         this.categoryCounts[cat] = (this.categoryCounts[cat] || 0) + 1;
         this.categoryStock[cat] =
-          (this.categoryStock[cat] || 0) + this.safeNumber(p.stock);
+          (this.categoryStock[cat] || 0) + this.safeNumber(p.totalStock);
       });
 
       this.prepareStockPieChart();
@@ -111,7 +123,6 @@ export class Dashboard implements OnInit {
     });
   }
 
-  // 💰 Load Sales and calculate total + profit
   private loadSales() {
     this.ss.getSales().subscribe((sales) => {
       this.allSales = sales;
@@ -119,7 +130,6 @@ export class Dashboard implements OnInit {
     });
   }
 
-  // 📆 Apply From–To filter
   applyDateFilter() {
     let filtered = [...this.allSales];
     if (this.filterFromDate || this.filterToDate) {
@@ -139,7 +149,6 @@ export class Dashboard implements OnInit {
     this.calculateSalesAndProfit(filtered);
   }
 
-  // 🧮 Compute total sales and profit
   private calculateSalesAndProfit(sales: any[]) {
     let totalSales = 0;
     let totalProfit = 0;
@@ -200,7 +209,6 @@ export class Dashboard implements OnInit {
     };
   }
 
-  // 🧾 Load Purchase Orders & calculate totals
   private loadPurchaseOrders() {
     const purchaseRef = collection(this.firestore, 'purchaseOrders');
     collectionData(purchaseRef, { idField: 'id' }).subscribe((orders) => {
@@ -227,7 +235,6 @@ export class Dashboard implements OnInit {
     });
   }
 
-  // 📊 Charts
   private prepareStockPieChart() {
     this.stockPieData = {
       labels: ['In Stock', 'Out of Stock'],
