@@ -1,6 +1,5 @@
 <div class="purchase-order-wrapper">
   <p-card header="Purchase Orders" class="purchase-orders-card">
-    <!-- Use async as variable for reliable check -->
     <ng-container *ngIf="purchaseOrders$ | async as orders">
       <ng-container *ngIf="orders.length > 0; else noOrdersTpl">
         <p-table
@@ -10,7 +9,6 @@
           responsiveLayout="scroll"
           class="purchase-orders-table"
         >
-          <!-- Table Header -->
           <ng-template pTemplate="header">
             <tr>
               <th>Date</th>
@@ -23,10 +21,15 @@
             </tr>
           </ng-template>
 
-          <!-- Table Body -->
           <ng-template pTemplate="body" let-order>
             <tr>
-              <td>{{ order.date?.toDate ? (order.date.toDate() | date: 'medium') : (order.date | date: 'medium') }}</td>
+              <td>
+                {{
+                  order.date?.toDate
+                    ? (order.date.toDate() | date: 'medium')
+                    : (order.date | date: 'medium')
+                }}
+              </td>
               <td>{{ order.categoryName }}</td>
               <td>{{ order.status | titlecase }}</td>
               <td>{{ order.items?.length }}</td>
@@ -46,7 +49,9 @@
               <td colspan="7">
                 <div class="inline-item-row">
                   <div class="item-name"><strong>{{ item.name }}</strong></div>
+
                   <div class="item-order">Ordered: {{ item.orderQty }}</div>
+
                   <div class="item-received">
                     <label>Received:</label>
                     <input
@@ -56,6 +61,7 @@
                       class="qty-input"
                     />
                   </div>
+
                   <div class="item-price">
                     <label>Price:</label>
                     <input
@@ -65,6 +71,34 @@
                       class="price-input"
                     />
                   </div>
+
+                  <div class="item-subcategory">
+                    <label>Subcategory:</label>
+                    <select
+                      [(ngModel)]="getEditingItem(order.id, item).subCategoryId"
+                      [disabled]="item.received"
+                      class="subcategory-input"
+                      (change)="onSubCategoryChange(order.id, item)"
+                    >
+                      <option value="">Select Subcategory</option>
+                      <option
+                        *ngFor="let sub of getSubsForCategory(item.categoryId)"
+                        [value]="sub.id"
+                      >
+                        {{ sub.name }}
+                      </option>
+                    </select>
+
+                    <div
+                      class="lowest-price"
+                      *ngIf="getLowestPriceSubName(item)"
+                    >
+                      <small
+                        >Lowest Price: {{ getLowestPriceSubName(item) }}</small
+                      >
+                    </div>
+                  </div>
+
                   <div class="item-action">
                     <p-button
                       *ngIf="!item.received"
@@ -73,7 +107,11 @@
                       class="p-button-success p-button-sm"
                       (click)="saveItem(order, item)"
                     ></p-button>
-                    <span *ngIf="item.received" class="p-tag p-tag-success">✔ Received</span>
+                    <span
+                      *ngIf="item.received"
+                      class="p-tag p-tag-success"
+                      >✔ Received</span
+                    >
                   </div>
                 </div>
               </td>
@@ -83,10 +121,11 @@
       </ng-container>
     </ng-container>
 
-    <!-- Empty State -->
     <ng-template #noOrdersTpl>
       <div class="no-orders-container">
-        <p class="p-text-center p-text-lg">🎉 No purchase orders found. All orders are up to date!</p>
+        <p class="p-text-center p-text-lg">
+          🎉 No purchase orders found. All orders are up to date!
+        </p>
       </div>
     </ng-template>
   </p-card>
