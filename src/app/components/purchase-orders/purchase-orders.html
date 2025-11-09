@@ -93,9 +93,9 @@
                       class="lowest-price"
                       *ngIf="getLowestPriceSubName(item)"
                     >
-                      <small
-                        >Lowest Price: {{ getLowestPriceSubName(item) }}</small
-                      >
+                      <small>
+                        Lowest Price: {{ getLowestPriceSubName(item) }}
+                      </small>
                     </div>
                   </div>
 
@@ -107,11 +107,9 @@
                       class="p-button-success p-button-sm"
                       (click)="saveItem(order, item)"
                     ></p-button>
-                    <span
-                      *ngIf="item.received"
-                      class="p-tag p-tag-success"
-                      >✔ Received</span
-                    >
+                    <span *ngIf="item.received" class="p-tag p-tag-success">
+                      ✔ Received
+                    </span>
                   </div>
                 </div>
               </td>
