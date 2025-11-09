@@ -17,6 +17,11 @@ export class ProductList {
   editingProduct: any = null;
   loading = false;
 
+  // Pagination
+  totalRecords = 0;
+  currentPage = 0;
+  rowsPerPage = 10;
+
   // Filter variables
   showFilters = false;
   filterName = '';
@@ -33,7 +38,10 @@ export class ProductList {
   ) {}
 
   ngOnInit() {
-    this.ps.getProducts().subscribe(p => (this.products = p));
+    this.ps.getProducts().subscribe(p => {
+      this.products = p;
+      this.totalRecords = this.filteredProducts.length;
+    });
     this.cs.getCategories().subscribe(c => (this.categories = c));
     this.ss.getSubcategories().subscribe(s => (this.subcategories = s));
   }
@@ -69,6 +77,7 @@ export class ProductList {
         subcategoryName: sub?.name || '',
         price: Number(this.editingProduct.price),
         stock: Number(this.editingProduct.stock),
+        minStock: Number(this.editingProduct.minStock) || 5,
       });
 
       alert('✅ Product updated successfully!');
@@ -98,7 +107,7 @@ export class ProductList {
     this.filterStockMax = null;
   }
 
-  // Subcategories filtered for filter dropdown
+  // Filtered subcategories for dropdown
   get filteredSubcategoriesForFilter() {
     if (!this.subcategories) return [];
     if (!this.filterCategoryId) return this.subcategories;
@@ -109,14 +118,23 @@ export class ProductList {
   get filteredProducts() {
     return (this.products || []).filter(p => {
       let match = true;
-
       if (this.filterName) match = match && p.name.toLowerCase().includes(this.filterName.toLowerCase());
       if (this.filterCategoryId) match = match && p.categoryId === this.filterCategoryId;
       if (this.filterSubcategoryId) match = match && p.subcategoryId === this.filterSubcategoryId;
       if (this.filterStockMin != null) match = match && p.stock >= this.filterStockMin;
       if (this.filterStockMax != null) match = match && p.stock <= this.filterStockMax;
-
       return match;
     });
+  }
+
+  // Pagination slice
+  get paginatedProducts() {
+    const start = this.currentPage * this.rowsPerPage;
+    return this.filteredProducts.slice(start, start + this.rowsPerPage);
+  }
+
+  onPageChange(event: any) {
+    this.currentPage = event.page;
+    this.rowsPerPage = event.rows;
   }
 }

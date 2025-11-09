@@ -14,26 +14,22 @@
   <!-- Filters Panel -->
   <div class="filters-wrapper" [class.show]="showFilters">
     <input type="text" placeholder="Search by name..." [(ngModel)]="filterName" class="filter-input" />
-
     <select [(ngModel)]="filterCategoryId" (change)="onCategoryChange(filterCategoryId)" class="filter-select">
       <option value="">All Categories</option>
       <option *ngFor="let c of categories" [value]="c.id">{{ c.name }}</option>
     </select>
-
     <select [(ngModel)]="filterSubcategoryId" class="filter-select">
       <option value="">All Subcategories</option>
       <option *ngFor="let s of filteredSubcategoriesForFilter" [value]="s.id">{{ s.name }}</option>
     </select>
-
     <input type="number" placeholder="Min Stock" [(ngModel)]="filterStockMin" class="filter-input" />
     <input type="number" placeholder="Max Stock" [(ngModel)]="filterStockMax" class="filter-input" />
-
     <button (click)="clearFilters()" class="filter-toggle">✖ Clear</button>
   </div>
 
   <!-- Products Grid -->
   <div class="products-grid">
-    <div *ngFor="let p of filteredProducts" class="product-card">
+    <div *ngFor="let p of paginatedProducts" class="product-card">
       <ng-container *ngIf="editingProduct?.id === p.id; else viewMode">
 
         <!-- Edit Mode -->
@@ -42,13 +38,12 @@
           <option value="">Select Category</option>
           <option *ngFor="let c of categories" [value]="c.id">{{ c.name }}</option>
         </select>
-
         <select [(ngModel)]="editingProduct.subcategoryId" class="edit-select">
           <option value="">Select Subcategory</option>
           <option *ngFor="let s of filteredSubcategories()" [value]="s.id">{{ s.name }}</option>
         </select>
-
         <input type="number" [(ngModel)]="editingProduct.stock" placeholder="Stock" class="edit-input" />
+        <input type="number" [(ngModel)]="editingProduct.minStock" placeholder="Min Stock" class="edit-input" />
 
         <div class="edit-actions">
           <button (click)="saveEdit()" [disabled]="loading">💾 Save</button>
@@ -60,23 +55,31 @@
       <ng-template #viewMode>
         <div class="product-name">
           {{ p.name }}
+          <div *ngIf="p.categoryName" class="category-tag">{{ p.categoryName }}</div>
           <span class="action-icons">
             <button (click)="startEdit(p)" title="Edit"><i class="pi pi-pencil"></i></button>
             <button (click)="delete(p.id)" title="Delete"><i class="pi pi-trash"></i></button>
           </span>
         </div>
 
+        <!-- Show Category Tag -->
+        
+
         <div *ngIf="p.subcategoryName" class="product-subcategory">{{ p.subcategoryName }}</div>
-        <div class="product-stock">Stock: {{ p.stock }}</div>
+        <div class="d-flex">
+<div class="product-stock">Stock: {{ p.stock }}</div>
+        <div class="pl-6 product-min-stock">Min Stock: {{ p.minStock || 5 }}</div>
+        </div>        
       </ng-template>
     </div>
   </div>
 
   <!-- Pagination -->
   <p-paginator
-    [rows]="10"
+    [rows]="rowsPerPage"
     [totalRecords]="filteredProducts.length"
     [rowsPerPageOptions]="[5,10,20]"
+    (onPageChange)="onPageChange($event)"
     styleClass="custom-paginator"
   ></p-paginator>
 </div>
