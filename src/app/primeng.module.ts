@@ -14,6 +14,7 @@ import { MessageModule } from 'primeng/message';
 import { ChartModule } from 'primeng/chart';
 import { DrawerModule } from 'primeng/drawer';
 import { PaginatorModule } from 'primeng/paginator'; // <-- import paginator module
+import { AccordionModule } from 'primeng/accordion';
 
 @NgModule({
   exports: [
@@ -29,7 +30,8 @@ import { PaginatorModule } from 'primeng/paginator'; // <-- import paginator mod
     TooltipModule,
     ChartModule,
     DrawerModule,
-    PaginatorModule
+    PaginatorModule,
+    AccordionModule
   ]
 })
 export class PrimengModule {}

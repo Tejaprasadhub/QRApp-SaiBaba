@@ -17,6 +17,8 @@ export class Reorder implements OnInit {
   orders: any[] = [];
   createdOrders: { [category: string]: boolean } = {};
 
+  activeCategory: string | null = null; // ✅ Manage open/close manually
+
   constructor(private firestore: Firestore) {}
 
   ngOnInit() {
@@ -26,27 +28,23 @@ export class Reorder implements OnInit {
     this.products$.subscribe((products) => {
       this.loading = false;
 
-      // ✅ Deduplicate by product name and sum stocks
       const productMap: { [name: string]: any } = {};
       for (const p of products) {
         const name = (p.name || '').trim();
         if (!name) continue;
 
-        if (!productMap[name]) {
-          productMap[name] = { ...p };
-        } else {
+        if (!productMap[name]) productMap[name] = { ...p };
+        else {
           const existing = productMap[name];
           existing.stock = (existing.stock || 0) + (p.stock || 0);
           existing.minStock = Math.max(existing.minStock || 0, p.minStock || 0);
         }
       }
 
-      // ✅ Filter low-stock only
       const lowStock = Object.values(productMap).filter(
         (p: any) => (p.stock || 0) < (p.minStock || 0)
       );
 
-      // ✅ Group by categoryName
       const categoryGroups: { [key: string]: any[] } = {};
       lowStock.forEach((p: any) => {
         const catName = p.categoryName || 'Uncategorized';
@@ -62,7 +60,6 @@ export class Reorder implements OnInit {
         });
       });
 
-      // ✅ Sort subcategories within each category by lowest price
       for (const key of Object.keys(categoryGroups)) {
         categoryGroups[key].sort((a, b) => (a.price || 0) - (b.price || 0));
       }
@@ -70,7 +67,6 @@ export class Reorder implements OnInit {
       this.grouped = categoryGroups;
     });
 
-    // ✅ Load purchase orders
     const poRef = collection(this.firestore, 'purchaseOrders');
     this.purchaseOrders$ = collectionData(poRef, { idField: 'id' });
 
@@ -88,14 +84,13 @@ export class Reorder implements OnInit {
   async createOrder(categoryName: string, products: any[]) {
     if (!products.length) return;
     if (this.createdOrders[categoryName]) {
-      alert(`Order for category "${categoryName}" has already been created.`);
+      alert(`Order for category "${categoryName}" already exists.`);
       return;
     }
 
     const first = products[0];
     const categoryId = first.categoryId || null;
 
-    // ✅ Build full order item details
     const orderItems = products.map((p) => ({
       productId: p.id,
       name: p.name,
@@ -119,7 +114,7 @@ export class Reorder implements OnInit {
 
     const poRef = collection(this.firestore, 'purchaseOrders');
     const docRef = await addDoc(poRef, order);
-    alert(`Purchase order created for category "${categoryName}" (ID: ${docRef.id})`);
+    alert(`Purchase order created for "${categoryName}" (ID: ${docRef.id})`);
     this.createdOrders[categoryName] = true;
   }
 
@@ -129,5 +124,9 @@ export class Reorder implements OnInit {
     );
     if (!order) return 0;
     return order.items.reduce((sum: number, item: any) => sum + (item.orderQty || 0), 0);
+  }
+
+  toggleCategory(category: string) {
+    this.activeCategory = this.activeCategory === category ? null : category;
   }
 }

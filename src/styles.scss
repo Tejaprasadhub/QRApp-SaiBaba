@@ -1364,7 +1364,7 @@ body {
 }
 
 /* ============================================================
-   LOW STOCK PAGE — CORPORATE THEME STYLES
+   LOW STOCK PAGE — ENHANCED CATEGORY ACCORDION
    ============================================================ */
 .low-stock {
   /* ================== Page Header ================== */
@@ -1385,49 +1385,113 @@ body {
     }
   }
 
-  /* ================== Category Section ================== */
-  .category-section {
-    background: var(--color-bg);
-    padding: var(--padding-section);
+  /* ================== Category Accordion ================== */
+  .category-panel {
     border-radius: var(--radius-md);
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
     box-shadow: 0 2px 6px var(--shadow-soft);
+    background: var(--color-bg);
+    transition: all 0.3s ease-in-out;
+
+    &:nth-child(odd) .category-header {
+      background: linear-gradient(135deg, #007ad9 0%, #0a5ca8 100%);
+    }
+
+    &:nth-child(even) .category-header {
+      background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
+    }
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px var(--shadow-soft);
+    }
   }
 
+  /* ================== Header Row ================== */
+  .category-header {
+    display: flex;
+    justify-content: space-between; /* ✅ Arrow on right side */
+    align-items: center;
+    padding: 1rem 1.25rem;
+    color: var(--text-inverse);
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s ease-in-out;
+
+    &.active {
+      box-shadow: inset 0 -4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    i {
+      font-size: 1.2rem;
+      transition: transform 0.3s ease;
+    }
+
+    &.active i {
+      transform: rotate(180deg);
+    }
+  }
+
+  /* ================== Header Title ================== */
   .category-title {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 1.1rem;
-    font-weight: 500;
-    margin-bottom: 1rem;
-    color: var(--text-primary);
+    gap: 0.75rem;
+    font-weight: 600;
+    color: var(--text-inverse);
 
     .ordered-badge {
-      background-color: var(--secondary-color, #6c757d); // fallback if variable not set
-      color: var(--text-inverse);
+      background-color: rgba(255, 255, 255, 0.25);
+      color: #fff;
       font-size: 0.85rem;
       font-weight: 500;
       padding: 0.25rem 0.6rem;
       border-radius: 1rem;
-      opacity: 0.9;
+      text-transform: uppercase;
     }
   }
 
-  /* ================== Low Stock Table ================== */
+  /* ================== Body (Animated Expand/Collapse) ================== */
+  .category-body {
+    background: var(--color-bg);
+    overflow: hidden;
+    padding: 0 1.25rem;
+    max-height: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s ease;
+
+    &.expanded {
+      padding: 1.25rem;
+      max-height: 1000px; /* enough space for table */
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+
+  /* ================== Table ================== */
   .low-stock-table {
-     .p-datatable-thead > tr > th {
-     background: var(--accent-gradient);
-    color: var(--text-inverse);
-    font-weight: 600;
-    text-transform: uppercase;
-    padding: 0.75rem 1rem;
+    .p-datatable-thead > tr > th {
+      background: var(--accent-gradient);
+      color: var(--text-inverse);
+      font-weight: 600;
+      text-transform: uppercase;
+      padding: 0.75rem 1rem;
     }
 
-     .p-datatable-tbody > tr > td {
+    .p-datatable-tbody > tr > td {
       padding: 0.6rem 1rem;
       font-size: 0.95rem;
       color: var(--text-primary);
+    }
+
+    .p-paginator {
+      background: var(--color-bg);
+      border: none;
+      padding-top: 0.75rem;
     }
   }
 
@@ -1466,15 +1530,12 @@ body {
     transition: all 0.2s ease-in-out;
   }
 
-  /* Create Purchase Order - Green using theme success */
   .create-btn {
     background-color: var(--toast-success) !important;
     border-color: var(--toast-success) !important;
     color: var(--text-inverse) !important;
 
     &:hover {
-      background-color: var(--toast-success)!important;
-      border-color: var(--toast-success)!important;
       transform: scale(1.05);
     }
 
@@ -1483,18 +1544,12 @@ body {
     }
   }
 
-  /* Ordered - Gray */
   .ordered-btn {
     background-color: var(--secondary-color, #6c757d) !important;
     border-color: var(--secondary-color, #6c757d) !important;
     color: var(--text-inverse) !important;
     cursor: default;
     opacity: 0.85;
-  }
-
-  /* Icon spacing */
-  .p-button .pi {
-    margin-right: 0.4rem;
   }
 
   /* ================== Loading / No Data ================== */
@@ -1509,6 +1564,7 @@ body {
     }
   }
 }
+
 
 .purchase-order-wrapper{
   /* ================= Purchase Orders Card ================= */

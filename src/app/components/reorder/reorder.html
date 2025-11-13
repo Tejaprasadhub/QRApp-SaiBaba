@@ -1,23 +1,40 @@
 <div class="low-stock">
   <p-card>
-    <div class="page-header p-mb-4">
+    <div class="page-header">
       <h2>Low Stock Products</h2>
       <p class="page-subtitle">Products that need reordering</p>
     </div>
 
     <ng-container *ngIf="!loading; else loadingTpl">
       <ng-container *ngIf="grouped | keyvalue as groupedData; else noDataTpl">
-        <div *ngIf="groupedData.length > 0; else noDataTpl">
-          <div *ngFor="let cat of groupedData" class="category-section">
-            <h4 class="category-title">
+        <div *ngFor="let cat of groupedData" class="category-panel">
+          <div
+            class="category-header"
+            (click)="toggleCategory(cat.key)"
+            [class.active]="activeCategory === cat.key"
+          >
+            <div class="category-title">
               {{ cat.key }}
               <span *ngIf="createdOrders[cat.key]" class="ordered-badge">
                 {{ getOrderedQty(cat.key) }} Ordered
               </span>
-            </h4>
+            </div>
+            <i
+              class="pi"
+              [ngClass]="
+                activeCategory === cat.key ? 'pi-chevron-up' : 'pi-chevron-down'
+              "
+            ></i>
+          </div>
 
+          <div
+            class="category-body"
+            [class.expanded]="activeCategory === cat.key"
+          >
             <p-table
               [value]="cat.value"
+              [paginator]="true"
+              [rows]="5"
               responsiveLayout="scroll"
               [showGridlines]="true"
               class="low-stock-table"
@@ -85,8 +102,6 @@
 
 <ng-template #noDataTpl>
   <div class="no-data-container">
-    <p class="p-text-center p-text-lg">
-      🎉 All products are sufficiently stocked! No low-stock products found.
-    </p>
+    <p>🎉 All products are sufficiently stocked!</p>
   </div>
 </ng-template>
