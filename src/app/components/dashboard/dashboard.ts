@@ -209,15 +209,22 @@ export class Dashboard implements OnInit {
     };
   }
 
+  // ✅ UPDATED — ONLY COMPLETED PURCHASE ORDERS CALCULATED
   private loadPurchaseOrders() {
     const purchaseRef = collection(this.firestore, 'purchaseOrders');
     collectionData(purchaseRef, { idField: 'id' }).subscribe((orders) => {
-      this.totalPurchaseCount = orders.length || 0;
+
+      // Only include completed orders
+      const completedOrders = orders.filter(
+        (o: any) => (o.status || '').toLowerCase() === 'completed'
+      );
+
+      this.totalPurchaseCount = completedOrders.length || 0;
 
       let totalValue = 0;
       let totalReceived = 0;
 
-      for (const o of orders) {
+      for (const o of completedOrders) {
         if (Array.isArray(o['items'])) {
           for (const i of o['items']) {
             const qty = this.safeNumber(i.orderQty || 0);
