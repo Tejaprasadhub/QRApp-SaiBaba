@@ -11,6 +11,7 @@
         >
           <ng-template pTemplate="header">
             <tr>
+              <th>S No.</th>
               <th>Date</th>
               <th>Category</th>
               <th>Status</th>
@@ -21,8 +22,9 @@
             </tr>
           </ng-template>
 
-          <ng-template pTemplate="body" let-order>
+          <ng-template pTemplate="body" let-order let-i="rowIndex">
             <tr>
+               <td><b>{{ i + 1 }}</b></td>
               <td>
                 {{
                   order.date?.toDate
@@ -46,15 +48,21 @@
 
                 <span
                   *ngIf="order.status === 'completed'"
-                  class="p-tag p-tag-info"
+                  class="p-tag p-tag-info inline-item-row"
                 >
-                  Completed
+                  
+                  <div class="item-action">
+                    <span  class="p-tag p-tag-success">
+                       Completed
+                    </span>
+                  </div>
                 </span>
               </td>
             </tr>
 
             <!-- READ ONLY LABEL -->
             <tr *ngIf="order.status === 'completed'">
+              <td colspan="1"></td>
               <td colspan="7">
                 <div class="p-tag p-tag-success" style="margin:10px 0;">
                   This purchase order is completed and cannot be edited.
@@ -64,6 +72,7 @@
 
             <!-- ITEMS -->
             <tr *ngFor="let item of order.items">
+              <td colspan="1"></td>
               <td colspan="7">
                 <div class="inline-item-row">
                   <div class="item-name"><strong>{{ item.name }}</strong></div>

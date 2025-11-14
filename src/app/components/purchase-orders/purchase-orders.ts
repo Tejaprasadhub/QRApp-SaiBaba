@@ -11,7 +11,8 @@ import {
   increment,
   query,
   where,
-  getDocs
+  getDocs,
+  orderBy
 } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 
@@ -29,10 +30,18 @@ export class PurchaseOrders implements OnInit {
   constructor(private firestore: Firestore) {}
 
   ngOnInit() {
-    this.purchaseOrders$ = collectionData(
-      collection(this.firestore, 'purchaseOrders'),
-      { idField: 'id' }
-    );
+    const ordersRef = collection(this.firestore, 'purchaseOrders');
+
+  const ordersQuery = query(
+    ordersRef,
+    orderBy('date', 'desc')   // 👈 LATEST FIRST
+  );
+
+  this.purchaseOrders$ = collectionData(ordersQuery, { idField: 'id' });
+    // this.purchaseOrders$ = collectionData(
+    //   collection(this.firestore, 'purchaseOrders'),
+    //   { idField: 'id' }
+    // );
 
     collectionData(collection(this.firestore, 'subcategories'), {
       idField: 'id',
