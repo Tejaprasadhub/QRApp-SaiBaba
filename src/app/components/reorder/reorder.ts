@@ -17,7 +17,7 @@ export class Reorder implements OnInit {
   orders: any[] = [];
   createdOrders: { [category: string]: boolean } = {};
 
-  activeCategory: string | null = null; // ✅ Manage open/close manually
+  activeCategory: string | null = null;
 
   constructor(private firestore: Firestore) {}
 
@@ -73,6 +73,8 @@ export class Reorder implements OnInit {
     this.purchaseOrders$.subscribe((orders) => {
       this.orders = orders;
       this.createdOrders = {};
+
+      // 🚀 only block categories that have "pending" orders
       for (const o of orders) {
         if (o.status === 'pending') {
           this.createdOrders[o.categoryName] = true;
@@ -84,7 +86,7 @@ export class Reorder implements OnInit {
   async createOrder(categoryName: string, products: any[]) {
     if (!products.length) return;
     if (this.createdOrders[categoryName]) {
-      alert(`Order for category "${categoryName}" already exists.`);
+      alert(`A pending order already exists for "${categoryName}".`);
       return;
     }
 
@@ -127,6 +129,7 @@ export class Reorder implements OnInit {
   }
 
   toggleCategory(category: string) {
-    this.activeCategory = this.activeCategory === category ? null : category;
+    this.activeCategory =
+      this.activeCategory === category ? null : category;
   }
 }

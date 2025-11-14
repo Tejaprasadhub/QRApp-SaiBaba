@@ -29,19 +29,24 @@ export class PurchaseOrders implements OnInit {
   constructor(private firestore: Firestore) {}
 
   ngOnInit() {
-    this.purchaseOrders$ = collectionData(collection(this.firestore, 'purchaseOrders'), { idField: 'id' });
+    this.purchaseOrders$ = collectionData(
+      collection(this.firestore, 'purchaseOrders'),
+      { idField: 'id' }
+    );
 
-    collectionData(collection(this.firestore, 'subcategories'), { idField: 'id' })
-      .subscribe((subs: any[]) => {
-        this.subcategories = subs || [];
-      });
+    collectionData(collection(this.firestore, 'subcategories'), {
+      idField: 'id',
+    }).subscribe((subs: any[]) => {
+      this.subcategories = subs || [];
+    });
   }
 
-  /** Return only subcategories for a given category */
   getSubsForCategory(categoryId: string): any[] {
     if (!categoryId || !Array.isArray(this.subcategories)) return [];
     return this.subcategories.filter(
-      (s) => (typeof s.categoryId === 'string' ? s.categoryId : s.categoryId.id).trim() === categoryId.trim()
+      (s) =>
+        (typeof s.categoryId === 'string' ? s.categoryId : s.categoryId.id).trim() ===
+        categoryId.trim()
     );
   }
 
@@ -64,6 +69,7 @@ export class PurchaseOrders implements OnInit {
 
     const subRef = doc(this.firestore, `subcategories/${editData.subCategoryId}`);
     const subSnap = await getDoc(subRef);
+
     if (subSnap.exists()) {
       const subData = subSnap.data() as any;
       editData.subCategoryName = subData.name;
@@ -71,14 +77,17 @@ export class PurchaseOrders implements OnInit {
   }
 
   async saveItem(order: any, item: any) {
+    if (order.status === 'completed') {
+      return alert('Cannot edit completed order.');
+    }
+
     const editData = this.getEditingItem(order.id, item);
-    const subList = this.getSubsForCategory(item.categoryId); // find if subcategories exist for this product
+    const subList = this.getSubsForCategory(item.categoryId);
 
     if (!editData.receivedQty || editData.receivedQty <= 0) {
       return alert('Enter received quantity');
     }
 
-    // ✅ Only check subcategory if product actually has subcategories
     if (subList.length > 0 && !editData.subCategoryId) {
       return alert('Please select a subcategory');
     }
@@ -88,9 +97,9 @@ export class PurchaseOrders implements OnInit {
       subRef = doc(this.firestore, `subcategories/${editData.subCategoryId}`);
     }
 
-    // Build product query conditionally based on subcategory
     const productsCollection = collection(this.firestore, 'products');
     let q;
+
     if (editData.subCategoryId) {
       q = query(
         productsCollection,
@@ -104,18 +113,14 @@ export class PurchaseOrders implements OnInit {
     const existingProductsSnap = await getDocs(q);
 
     if (!existingProductsSnap.empty) {
-      // Existing product → update stock and price
       const prodDoc = existingProductsSnap.docs[0];
       const prodData = prodDoc.data() as any;
-      const newStock = (prodData.stock || 0) + Number(editData.receivedQty);
-      const newPrice = editData.newPrice || prodData.price;
 
       await updateDoc(prodDoc.ref, {
-        stock: newStock,
-        price: newPrice,
+        stock: (prodData.stock || 0) + Number(editData.receivedQty),
+        price: editData.newPrice || prodData.price,
       });
     } else {
-      // New product → create with minStock: 5
       await addDoc(productsCollection, {
         name: item.name,
         categoryId: item.categoryId,
@@ -128,12 +133,10 @@ export class PurchaseOrders implements OnInit {
       });
     }
 
-    // Update subcategory count only if subCategoryId exists
     if (subRef) {
       await updateDoc(subRef, { count: increment(Number(editData.receivedQty)) });
     }
 
-    // Update purchase order item as received
     const updatedItems = order.items.map((p: any) =>
       p.productId === item.productId
         ? {
@@ -150,8 +153,15 @@ export class PurchaseOrders implements OnInit {
     const orderRef = doc(this.firestore, `purchaseOrders/${order.id}`);
     await updateDoc(orderRef, { items: updatedItems });
 
-    const subMsg = editData.subCategoryName ? ` under subcategory ${editData.subCategoryName}` : '';
-    alert(`${item.name} received (${editData.receivedQty}) successfully${subMsg}.`);
+    // 🚀 CHECK IF ORDER COMPLETED
+    const allReceived = updatedItems.every((it: any) => it.received === true);
+
+    if (allReceived) {
+      await updateDoc(orderRef, { status: 'completed' });
+      alert('Order completed successfully.');
+    } else {
+      alert(`${item.name} received (${editData.receivedQty}) successfully.`);
+    }
   }
 
   getLowestPriceSubName(item: any): string | null {
@@ -159,8 +169,16 @@ export class PurchaseOrders implements OnInit {
   }
 
   async deleteOrder(orderId: string) {
+    const orderRef = doc(this.firestore, `purchaseOrders/${orderId}`);
+    const docSnap = await getDoc(orderRef);
+
+    if (docSnap.exists() && docSnap.data()['status'] === 'completed') {
+      return alert('Cannot delete completed order.');
+    }
+
     if (!confirm('Are you sure you want to delete this purchase order?')) return;
-    await deleteDoc(doc(this.firestore, `purchaseOrders/${orderId}`));
+
+    await deleteDoc(orderRef);
     alert('Purchase order deleted');
   }
 
@@ -170,7 +188,8 @@ export class PurchaseOrders implements OnInit {
 
   totalReceivedPrice(order: any) {
     return order.items.reduce(
-      (sum: number, i: any) => sum + ((i.receivedPrice || i.price || 0) * (i.receivedQty || 0)),
+      (sum: number, i: any) =>
+        sum + ((i.receivedPrice || i.price || 0) * (i.receivedQty || 0)),
       0
     );
   }
