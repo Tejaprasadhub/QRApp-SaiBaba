@@ -17,18 +17,18 @@ export class ProductList {
   editingProduct: any = null;
   loading = false;
 
-  // Pagination
   totalRecords = 0;
   currentPage = 0;
   rowsPerPage = 10;
 
-  // Filter variables
   showFilters = false;
   filterName = '';
   filterCategoryId = '';
   filterSubcategoryId = '';
   filterStockMin: number | null = null;
   filterStockMax: number | null = null;
+
+  isMobile = window.innerWidth < 768;
 
   constructor(
     private ps: ProductService,
@@ -38,10 +38,15 @@ export class ProductList {
   ) {}
 
   ngOnInit() {
+    window.addEventListener('resize', () => {
+      this.isMobile = window.innerWidth < 768;
+    });
+
     this.ps.getProducts().subscribe(p => {
       this.products = p;
       this.totalRecords = this.filteredProducts.length;
     });
+
     this.cs.getCategories().subscribe(c => (this.categories = c));
     this.ss.getSubcategories().subscribe(s => (this.subcategories = s));
   }
@@ -80,11 +85,11 @@ export class ProductList {
         minStock: Number(this.editingProduct.minStock) || 5,
       });
 
-      alert('✅ Product updated successfully!');
+      alert('Product updated successfully!');
       this.editingProduct = null;
     } catch (err) {
       console.error('Error updating product:', err);
-      alert('Error updating product. Please try again.');
+      alert('Error updating product.');
     } finally {
       this.loading = false;
     }
@@ -107,18 +112,17 @@ export class ProductList {
     this.filterStockMax = null;
   }
 
-  // Filtered subcategories for dropdown
   get filteredSubcategoriesForFilter() {
     if (!this.subcategories) return [];
     if (!this.filterCategoryId) return this.subcategories;
     return this.subcategories.filter(s => s.categoryId === this.filterCategoryId);
   }
 
-  // Filtered products for display
   get filteredProducts() {
     return (this.products || []).filter(p => {
       let match = true;
-      if (this.filterName) match = match && p.name.toLowerCase().includes(this.filterName.toLowerCase());
+      if (this.filterName)
+        match = match && p.name.toLowerCase().includes(this.filterName.toLowerCase());
       if (this.filterCategoryId) match = match && p.categoryId === this.filterCategoryId;
       if (this.filterSubcategoryId) match = match && p.subcategoryId === this.filterSubcategoryId;
       if (this.filterStockMin != null) match = match && p.stock >= this.filterStockMin;
@@ -127,7 +131,6 @@ export class ProductList {
     });
   }
 
-  // Pagination slice
   get paginatedProducts() {
     const start = this.currentPage * this.rowsPerPage;
     return this.filteredProducts.slice(start, start + this.rowsPerPage);
