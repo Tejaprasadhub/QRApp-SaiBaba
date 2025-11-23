@@ -140,4 +140,20 @@ export class ProductList {
     this.currentPage = event.page;
     this.rowsPerPage = event.rows;
   }
+
+  get totalStock() {
+  return this.filteredProducts.reduce((sum, p) => sum + Number(p.stock || 0), 0);
+}
+
+get totalMinStock() {
+  return this.filteredProducts.reduce((sum, p) => sum + Number(p.minStock || 0), 0);
+}
+get totalLowStock() {
+  return this.filteredProducts.filter(p => Number(p.stock) < Number(p.minStock || 5)).length;
+}
+get totalProducts() {
+  return this.filteredProducts.length;
+}
+
+
 }

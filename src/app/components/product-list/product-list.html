@@ -31,7 +31,25 @@
     <input type="number" placeholder="Max Stock" [(ngModel)]="filterStockMax" class="filter-input" />
 
     <button (click)="clearFilters()" class="filter-toggle">✖ Clear</button>
+    <div class="totals-bar mobile w-100" *ngIf="isMobile">
+    <div>Total Products: <strong>{{ totalProducts }}</strong></div>
+  <div>Total Stock: <strong>{{ totalStock }}</strong></div>
+  <div>Total Min Stock: <strong>{{ totalMinStock }}</strong></div>
+   <div>Low Stock Items: 
+    <strong style="color:red">{{ totalLowStock }}</strong>
   </div>
+</div>
+  </div>
+
+  <div class="totals-bar" *ngIf="!isMobile">
+      <div>Total Products: <strong>{{ totalProducts }}</strong></div>
+  <div>Total Stock: <strong>{{ totalStock }}</strong></div>
+  <div>Total Min Stock: <strong>{{ totalMinStock }}</strong></div>
+   <div>Low Stock Items: 
+    <strong style="color:red">{{ totalLowStock }}</strong>
+  </div>
+</div>
+
 
   <!-- MOBILE VIEW (cards) -->
   <div class="products-grid" *ngIf="isMobile">

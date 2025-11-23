@@ -29,6 +29,23 @@
   }
 }
 
+.totals-bar {
+  display: flex;
+  justify-content: space-between;
+  background: #f5f5f5;
+  padding: 10px 15px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  font-size: 16px;
+
+  &.mobile {
+    flex-direction: column;
+    gap: 5px;
+    text-align: left;
+  }
+}
+
+
 /* HIDE TABLE ON MOBILE */
 @media (max-width: 767px) {
   .desktop-table {
