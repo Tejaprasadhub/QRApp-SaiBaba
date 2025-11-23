@@ -28,18 +28,40 @@ export class Reorder implements OnInit {
     this.products$.subscribe((products) => {
       this.loading = false;
 
-      const productMap: { [name: string]: any } = {};
-      for (const p of products) {
-        const name = (p.name || '').trim();
-        if (!name) continue;
+      // const productMap: { [name: string]: any } = {};
+      // for (const p of products) {
+      //   const name = (p.name || '').trim();
+      //   if (!name) continue;
 
-        if (!productMap[name]) productMap[name] = { ...p };
-        else {
-          const existing = productMap[name];
-          existing.stock = (existing.stock || 0) + (p.stock || 0);
-          existing.minStock = Math.max(existing.minStock || 0, p.minStock || 0);
-        }
-      }
+      //   if (!productMap[name]) productMap[name] = { ...p };
+      //   else {
+      //     const existing = productMap[name];
+      //     existing.stock = (existing.stock || 0) + (p.stock || 0);
+      //     existing.minStock = Math.max(existing.minStock || 0, p.minStock || 0);
+      //   }
+      // }
+
+      const productMap: { [key: string]: any } = {};
+
+for (const p of products) {
+  const name = (p.name || '').trim();
+  const categoryId = p.categoryId || 'unknown';
+  if (!name) continue;
+
+  // Unique key: product name + category
+  const key = `${categoryId}_${name}`;
+
+  if (!productMap[key]) {
+    productMap[key] = { ...p };
+  } else {
+    const existing = productMap[key];
+
+    // Merge only within same category
+    existing.stock = (existing.stock || 0) + (p.stock || 0);
+    existing.minStock = Math.max(existing.minStock || 0, p.minStock || 0);
+  }
+}
+
 
       const lowStock = Object.values(productMap).filter(
         (p: any) => (p.stock || 0) < (p.minStock || 0)
