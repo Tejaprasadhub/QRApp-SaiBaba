@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
-import { ProductService } from '../../services/product';
 import { SalesService } from '../../services/sales';
+import { Subject, debounceTime } from 'rxjs';
+import { QueryDocumentSnapshot, DocumentData } from '@angular/fire/firestore';
+import { Product, SalesProductService } from '../../services/sales-product-service';
 
 @Component({
   selector: 'app-sales-form',
@@ -9,80 +11,103 @@ import { SalesService } from '../../services/sales';
   styleUrls: ['./sales-form.scss'],
 })
 export class SalesForm {
-  products: any[] = [];
+  products: Product[] = [];
   cart: any[] = [];
   total = 0;
   customer = '';
   productSearch = '';
   selectedCategory = '';
 
-  // Pagination
-  currentPage = 1;
-  pageSize = 20;
+  pageSize = 10;
+  lastDoc: QueryDocumentSnapshot<DocumentData> | null = null;
 
-  constructor(private ps: ProductService, private ss: SalesService) {}
+  private searchSubject = new Subject<void>();
+
+  constructor(private ps: SalesProductService, private ss: SalesService) {}
 
   ngOnInit() {
     this.loadProducts();
-  }
 
-  loadProducts() {
-    this.ps.getProducts().subscribe((p) => {
-      this.products = p.map((pr) => ({ ...pr }));
+    this.searchSubject.pipe(debounceTime(300)).subscribe(() => {
+      this.lastDoc = null; // Reset pagination when search changes
+      this.loadProducts();
     });
   }
 
-  addToCart(product: any) {
+  onSearchChange() {
+    this.searchSubject.next();
+  }
+
+  loadProducts() {
+    this.ps.getProducts({
+      name: this.productSearch.toUpperCase(),
+      category: this.selectedCategory,
+      pageSize: this.pageSize,
+      lastDoc: this.lastDoc,
+    }).subscribe(res => {
+      this.products = res.data;
+      this.lastDoc = res.lastDoc || null;
+    });
+  }
+
+  loadNextPage() {
+    if (!this.lastDoc) return;
+    this.ps.getProducts({
+      name: this.productSearch.toUpperCase(),
+      category: this.selectedCategory,
+      pageSize: this.pageSize,
+      lastDoc: this.lastDoc,
+    }).subscribe(res => {
+      this.products = [...this.products, ...res.data];
+      this.lastDoc = res.lastDoc || null;
+    });
+  }
+
+  addToCart(product: Product) {
     if ((product.stock || 0) <= 0) return alert('Out of stock');
 
-    const existing = this.cart.find((c) => c.productId === product.id);
-    if (existing) {
-      existing.qty++;
-    } else {
-      this.cart.push({
-        productId: product.id,
-        name: product.name,
-        costPrice: product.price,
-        sellingPrice: product.sellingPrice || product.price,
-        qty: 1,
-        categoryName: product.categoryName || 'Uncategorized',
-      });
-    }
+    const existing = this.cart.find(c => c.productId === product.id);
+    if (existing) existing.qty++;
+    else this.cart.push({
+      productId: product.id,
+      name: product.name,
+      costPrice: product.price,
+      sellingPrice: product.sellingPrice || product.price,
+      qty: 1,
+      categoryName: product.categoryName || 'Uncategorized',
+      subcategoryName: product.subcategoryName || 'Uncategorized',
+    });
 
-    product.stock--;
+    product.stock!--;
     this.recalc();
   }
 
   removeFromCart(item: any) {
-    const index = this.cart.findIndex((c) => c.productId === item.productId);
+    const index = this.cart.findIndex(c => c.productId === item.productId);
     if (index === -1) return;
 
-    const product = this.products.find((p) => p.id === item.productId);
-    if (product) product.stock += item.qty;
+    const product = this.products.find(p => p.id === item.productId);
+    if (product) product.stock! += item.qty;
 
     this.cart.splice(index, 1);
     this.recalc();
   }
 
   recalc() {
-    this.total = this.cart.reduce(
-      (s, i) => s + this.safeNumber(i.sellingPrice) * this.safeNumber(i.qty),
-      0
-    );
+    this.total = this.cart.reduce((s, i) => s + this.safeNumber(i.sellingPrice) * this.safeNumber(i.qty), 0);
   }
 
   private safeNumber(v: any): number {
-    if (v == null) return 0;
     const n = Number(v);
     return isNaN(n) ? 0 : n;
   }
 
   async checkout() {
-    if (this.cart.length === 0) return alert('Cart empty');
+    if (!this.cart.length) return alert('Cart empty');
 
     const sale = {
       date: new Date(),
-      items: this.cart.map((c) => ({
+      items: this.cart.map(c => ({
         productId: c.productId,
         name: c.name,
         qty: c.qty,
@@ -101,44 +126,22 @@ export class SalesForm {
     this.cart = [];
     this.total = 0;
     this.customer = '';
+    this.lastDoc = null;
     this.loadProducts();
   }
 
-  canAddToCart(product: any): boolean {
+  canAddToCart(product: Product): boolean {
     return (product.stock || 0) > 0;
   }
 
-  isLowStock(product: any): boolean {
+  isLowStock(product: Product): boolean {
     return (product.stock || 0) > 0 && (product.stock || 0) <= (product.minStock || 5);
   }
 
-  getCategories(): string[] {
-    const cats = this.products.map((p) => p.categoryName).filter((c) => !!c);
-    return Array.from(new Set(cats));
-  }
-
-  filteredProducts(): any[] {
-    const filtered = this.products.filter((p) => {
-      const matchesCategory = this.selectedCategory ? p.categoryName === this.selectedCategory : true;
-      const matchesSearch = p.name.toLowerCase().includes(this.productSearch.toLowerCase());
-      return matchesCategory && matchesSearch;
-    });
-    // Pagination
-    const start = (this.currentPage - 1) * this.pageSize;
-    return filtered.slice(start, start + this.pageSize);
-  }
-
-  totalPages(): number {
-    const filteredLength = this.products.filter((p) => {
-      const matchesCategory = this.selectedCategory ? p.categoryName === this.selectedCategory : true;
-      const matchesSearch = p.name.toLowerCase().includes(this.productSearch.toLowerCase());
-      return matchesCategory && matchesSearch;
-    }).length;
-    return Math.ceil(filteredLength / this.pageSize);
-  }
-
-  changePage(page: number) {
-    if (page < 1 || page > this.totalPages()) return;
-    this.currentPage = page;
-  }
+ getCategories(): string[] {
+  const cats = this.products
+    .map(p => p.categoryName)
+    .filter((c): c is string => !!c); // Type guard ensures c is string
+  return Array.from(new Set(cats));
+}
 }

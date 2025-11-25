@@ -11,12 +11,13 @@
           placeholder="Search products..."
           [(ngModel)]="productSearch"
           class="search-input"
+          (ngModelChange)="onSearchChange()"
         />
       </div>
 
       <div class="filters">
         <label>Category:</label>
-        <select [(ngModel)]="selectedCategory">
+        <select [(ngModel)]="selectedCategory" (change)="loadProducts()">
           <option value="">All</option>
           <option *ngFor="let cat of getCategories()" [value]="cat">{{ cat }}</option>
         </select>
@@ -25,14 +26,15 @@
       <div class="products-list">
         <div
           class="product-card"
-          *ngFor="let p of filteredProducts()"
+          *ngFor="let p of products"
           [ngClass]="{ 'low-stock': isLowStock(p), 'out-of-stock': !canAddToCart(p) }"
         >
           <div class="product-info">
-            <h5>{{ p.name }}</h5>
-            <p>Stock: {{ p.stock }}</p>
-            <p>Cost: ₹{{ p.price }}</p>
-            <p *ngIf="p.categoryName">Category: {{ p.categoryName }}</p>
+            <h5>{{ p?.name }}</h5>
+            <p>Stock: {{ p?.stock }}</p>
+            <p>Cost: ₹{{ p?.price }}</p>
+            <p *ngIf="p?.categoryName">Category: {{ p?.categoryName }}</p>
+            <p *ngIf="p?.subcategoryName">Sub Category: {{ p?.subcategoryName }}</p>
           </div>
           <button
             class="btn-add"
@@ -44,10 +46,9 @@
         </div>
       </div>
 
+      <!-- Load More button for pagination -->
       <div class="pagination">
-        <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1">Prev</button>
-        <span>Page {{ currentPage }} / {{ totalPages() }}</span>
-        <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages()">Next</button>
+        <button (click)="loadNextPage()" [disabled]="!lastDoc">Load More</button>
       </div>
     </div>
 
@@ -59,13 +60,15 @@
 
       <div class="cart-items" *ngFor="let c of cart">
         <div class="cart-item-header">
-          <b>{{ c.name }}</b> <span>(x{{ c.qty }})</span>
+          <b>{{ c.name }}</b> <span>(x{{ c.qty }})</span>           
         </div>
+        <p *ngIf="c?.categoryName">Category: {{ c?.categoryName }}</p>
+        <p *ngIf="c?.subcategoryName">Sub Category: {{ c?.subcategoryName }}</p>
         <div class="cart-item-body">
           <label>Selling Price:</label>
           <input
             type="number"
-            [(ngModel)]="c.sellingPrice"
+            [(ngModel)]="c.sellingPrice" 
             (ngModelChange)="recalc()"
             min="0"
           />
@@ -76,10 +79,7 @@
 
       <div class="cart-summary">
         <div>Total: <b>₹{{ total }}</b></div>
-        <input
-          [(ngModel)]="customer"
-          placeholder="Customer name (optional)"
-        />
+        <input [(ngModel)]="customer" placeholder="Customer name (optional)" />
         <button class="btn-checkout" (click)="checkout()">Checkout</button>
       </div>
     </div>
