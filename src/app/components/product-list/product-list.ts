@@ -3,6 +3,7 @@ import { ProductService } from '../../services/product';
 import { CategoryService } from '../../services/category';
 import { SubcategoryService } from '../../services/sub-category';
 import { Firestore, doc, updateDoc } from '@angular/fire/firestore';
+import { Subject, debounceTime } from 'rxjs';
 
 @Component({
   selector: 'app-product-list',
@@ -14,12 +15,18 @@ export class ProductList {
   products: any[] = [];
   categories: any[] = [];
   subcategories: any[] = [];
+
   editingProduct: any = null;
   loading = false;
 
+  // 🔥 debounce subject
+  nameFilter$ = new Subject<string>();
+
+  // pagination
   totalRecords = 0;
   currentPage = 0;
   rowsPerPage = 10;
+  lastDoc: any = null;
 
   showFilters = false;
   filterName = '';
@@ -42,22 +49,103 @@ export class ProductList {
       this.isMobile = window.innerWidth < 768;
     });
 
-    this.ps.getProducts().subscribe(p => {
-      this.products = p;
-      this.totalRecords = this.filteredProducts.length;
-    });
-
     this.cs.getCategories().subscribe(c => (this.categories = c));
     this.ss.getSubcategories().subscribe(s => (this.subcategories = s));
+
+    // 🔥 Debounce for name input
+    this.nameFilter$
+      .pipe(debounceTime(250))
+      .subscribe(value => {
+        this.filterName = value.toUpperCase();
+        // this.loadServerProducts();
+        // Pass a pageChange object with page:0 so loadServerProducts resets properly
+        this.loadServerProducts({ page: 0 });
+      });
+
+    this.loadServerProducts();
   }
 
-  delete(id: string) {
-    if (!confirm('Delete product?')) return;
-    this.ps.deleteProduct(id);
+  // -------------------------------------------------------
+  // LOAD SERVER PRODUCTS + COUNT
+  // -------------------------------------------------------
+  async loadServerProducts(pageChange: any = null) {
+    this.loading = true;
+
+    if (!pageChange || pageChange.page === 0) {
+      this.products = [];
+      this.lastDoc = null;
+      this.currentPage = 0;
+    }
+
+    try {
+      // 🔥 accurate count
+      this.totalRecords = await this.ps.getProductsCount({
+        name: this.filterName.trim(),
+        categoryId: this.filterCategoryId,
+        subcategoryId: this.filterSubcategoryId
+      });
+
+      const res = await this.ps.getProductsPaginated(
+        {
+          name: this.filterName.trim(),
+          categoryId: this.filterCategoryId,
+          subcategoryId: this.filterSubcategoryId
+        },
+        this.rowsPerPage,
+        this.lastDoc
+      );
+
+      this.products = [...this.products, ...res.products];
+      this.lastDoc = res.lastDoc;
+
+    } finally {
+      this.loading = false;
+    }
   }
 
-  startEdit(product: any) {
-    this.editingProduct = { ...product };
+  // -------------------------------------------------------
+  // FILTER EVENTS
+  // -------------------------------------------------------
+  onNameInput(event: any) {
+    this.nameFilter$.next(event.target.value);
+  }
+
+  onFiltersChanged() {
+    this.loadServerProducts();
+  }
+
+  onCategoryChange(categoryId: string) {
+    this.filterCategoryId = categoryId;
+    this.filterSubcategoryId = '';
+            this.loadServerProducts({ page: 0 });
+
+    //this.onFiltersChanged();
+  }
+
+  clearFilters() {
+    this.filterName = '';
+    this.filterCategoryId = '';
+    this.filterSubcategoryId = '';
+    this.filterStockMin = null;
+    this.filterStockMax = null;
+    this.loadServerProducts();
+  }
+
+  // -------------------------------------------------------
+  // Pagination
+  // -------------------------------------------------------
+  onPageChange(event: any) {
+    this.rowsPerPage = event.rows;
+    this.currentPage = event.page;
+    this.loadServerProducts(event);
+  }
+
+  // -------------------------------------------------------
+  // Helpers
+  // -------------------------------------------------------
+  filteredSubcategoriesForFilter() {
+    if (!this.filterCategoryId) return this.subcategories;
+    return this.subcategories.filter(s => s.categoryId === this.filterCategoryId);
   }
 
   filteredSubcategories() {
@@ -65,10 +153,67 @@ export class ProductList {
     return this.subcategories.filter(s => s.categoryId === this.editingProduct.categoryId);
   }
 
-  async saveEdit() {
-    if (!this.editingProduct.name.trim()) return alert('Product name cannot be empty.');
-    this.loading = true;
+  get filteredProducts() {
+    return this.products.filter(p => {
+      let match = true;
+      if (this.filterStockMin != null) match = match && p.stock >= this.filterStockMin;
+      if (this.filterStockMax != null) match = match && p.stock <= this.filterStockMax;
+      return match;
+    });
+  }
 
+  get paginatedProducts() {
+    const start = this.currentPage * this.rowsPerPage;
+    return this.filteredProducts.slice(start, start + this.rowsPerPage);
+  }
+
+  // totals
+// Count *only current page*
+get totalProducts() {
+  return this.filteredProducts.length;
+}
+
+get totalStock() {
+  return this.paginatedProducts.reduce(
+    (sum, p) => sum + Number(p.stock || 0),
+    0
+  );
+}
+
+get totalMinStock() {
+  return this.paginatedProducts.reduce(
+    (sum, p) => sum + Number(p.minStock || 0),
+    0
+  );
+}
+
+
+  // get totalStock() {
+  //   return this.filteredProducts.reduce((sum, p) => sum + Number(p.stock || 0), 0);
+  // }
+  // get totalMinStock() {
+  //   return this.filteredProducts.reduce((sum, p) => sum + Number(p.minStock || 0), 0);
+  // }
+  get totalLowStock() {
+    return this.paginatedProducts.filter(p => Number(p.stock) < Number(p.minStock || 5)).length;
+  }
+
+  // -------------------------------------------------------
+  // Edit / Delete
+  // -------------------------------------------------------
+  startEdit(product: any) {
+    this.editingProduct = { ...product };
+  }
+
+  cancelEdit() {
+    this.editingProduct = null;
+  }
+
+  async saveEdit() {
+    if (!this.editingProduct) return;
+    if (!this.editingProduct.name.trim()) return alert('Product name cannot be empty.');
+
+    this.loading = true;
     try {
       const productDoc = doc(this.firestore, 'products', this.editingProduct.id);
       const cat = this.categories.find(c => c.id === this.editingProduct.categoryId);
@@ -82,78 +227,22 @@ export class ProductList {
         subcategoryName: sub?.name || '',
         price: Number(this.editingProduct.price),
         stock: Number(this.editingProduct.stock),
-        minStock: Number(this.editingProduct.minStock) || 5,
+        minStock: Number(this.editingProduct.minStock || 5)
       });
 
       alert('Product updated successfully!');
       this.editingProduct = null;
-    } catch (err) {
-      console.error('Error updating product:', err);
-      alert('Error updating product.');
+
+      this.loadServerProducts({ page: 0 });
     } finally {
       this.loading = false;
     }
   }
 
-  cancelEdit() {
-    this.editingProduct = null;
-  }
-
-  onCategoryChange(categoryId: string) {
-    this.filterCategoryId = categoryId;
-    this.filterSubcategoryId = '';
-  }
-
-  clearFilters() {
-    this.filterName = '';
-    this.filterCategoryId = '';
-    this.filterSubcategoryId = '';
-    this.filterStockMin = null;
-    this.filterStockMax = null;
-  }
-
-  get filteredSubcategoriesForFilter() {
-    if (!this.subcategories) return [];
-    if (!this.filterCategoryId) return this.subcategories;
-    return this.subcategories.filter(s => s.categoryId === this.filterCategoryId);
-  }
-
-  get filteredProducts() {
-    return (this.products || []).filter(p => {
-      let match = true;
-      if (this.filterName)
-        match = match && p.name.toLowerCase().includes(this.filterName.toLowerCase());
-      if (this.filterCategoryId) match = match && p.categoryId === this.filterCategoryId;
-      if (this.filterSubcategoryId) match = match && p.subcategoryId === this.filterSubcategoryId;
-      if (this.filterStockMin != null) match = match && p.stock >= this.filterStockMin;
-      if (this.filterStockMax != null) match = match && p.stock <= this.filterStockMax;
-      return match;
+  delete(id: string) {
+    if (!confirm('Delete product?')) return;
+    this.ps.deleteProduct(id).then(() => {
+      this.loadServerProducts({ page: 0 });
     });
   }
-
-  get paginatedProducts() {
-    const start = this.currentPage * this.rowsPerPage;
-    return this.filteredProducts.slice(start, start + this.rowsPerPage);
-  }
-
-  onPageChange(event: any) {
-    this.currentPage = event.page;
-    this.rowsPerPage = event.rows;
-  }
-
-  get totalStock() {
-  return this.filteredProducts.reduce((sum, p) => sum + Number(p.stock || 0), 0);
-}
-
-get totalMinStock() {
-  return this.filteredProducts.reduce((sum, p) => sum + Number(p.minStock || 0), 0);
-}
-get totalLowStock() {
-  return this.filteredProducts.filter(p => Number(p.stock) < Number(p.minStock || 5)).length;
-}
-get totalProducts() {
-  return this.filteredProducts.length;
-}
-
-
 }

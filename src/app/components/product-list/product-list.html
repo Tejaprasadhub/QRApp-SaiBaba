@@ -1,60 +1,62 @@
 <div class="product-list-wrapper">
 
-  <!-- Page Header -->
   <div class="page-header">
     <h2>Products</h2>
     <div class="header-actions">
       <button class="filter-toggle" (click)="showFilters = !showFilters">
         <i class="pi pi-filter"></i> Filters
       </button>
-      <a routerLink="/products/add" class="add-product"> 
+      <a routerLink="/products/add" class="add-product">
         <i class="pi pi-plus"></i> Product
       </a>
     </div>
   </div>
 
-  <!-- Filters Panel -->
   <div class="filters-wrapper" [class.show]="showFilters">
-    <input type="text" placeholder="Search by name..." [(ngModel)]="filterName" class="filter-input" />
 
-    <select [(ngModel)]="filterCategoryId" (change)="onCategoryChange(filterCategoryId)" class="filter-select">
+    <!-- 🔥 Updated with debounce -->
+    <input
+      type="text"
+      placeholder="Search by name..."
+      [ngModel]="filterName"
+      (input)="onNameInput($event)"
+      class="filter-input" />
+
+    <select [(ngModel)]="filterCategoryId"
+            (change)="onCategoryChange(filterCategoryId)"
+            class="filter-select">
       <option value="">All Categories</option>
       <option *ngFor="let c of categories" [value]="c.id">{{ c.name }}</option>
     </select>
 
-    <select [(ngModel)]="filterSubcategoryId" class="filter-select">
+    <select [(ngModel)]="filterSubcategoryId"
+            (change)="onFiltersChanged()"
+            class="filter-select">
       <option value="">All Subcategories</option>
-      <option *ngFor="let s of filteredSubcategoriesForFilter" [value]="s.id">{{ s.name }}</option>
+      <option *ngFor="let s of filteredSubcategoriesForFilter()" [value]="s.id">{{ s.name }}</option>
     </select>
 
-    <input type="number" placeholder="Min Stock" [(ngModel)]="filterStockMin" class="filter-input" />
-    <input type="number" placeholder="Max Stock" [(ngModel)]="filterStockMax" class="filter-input" />
-
     <button (click)="clearFilters()" class="filter-toggle">✖ Clear</button>
+
     <div class="totals-bar mobile w-100" *ngIf="isMobile">
-    <div>Total Products: <strong>{{ totalProducts }}</strong></div>
-  <div>Total Stock: <strong>{{ totalStock }}</strong></div>
-  <div>Total Min Stock: <strong>{{ totalMinStock }}</strong></div>
-   <div>Low Stock Items: 
-    <strong style="color:red">{{ totalLowStock }}</strong>
-  </div>
-</div>
+      <div>Total Products: <strong>{{ totalProducts }}</strong></div>
+      <div>Total Stock: <strong>{{ totalStock }}</strong></div>
+      <div>Total Min Stock: <strong>{{ totalMinStock }}</strong></div>
+      <div>Low Stock Items: <strong style="color:red">{{ totalLowStock }}</strong></div>
+    </div>
   </div>
 
   <div class="totals-bar" *ngIf="!isMobile">
-      <div>Total Products: <strong>{{ totalProducts }}</strong></div>
-  <div>Total Stock: <strong>{{ totalStock }}</strong></div>
-  <div>Total Min Stock: <strong>{{ totalMinStock }}</strong></div>
-   <div>Low Stock Items: 
-    <strong style="color:red">{{ totalLowStock }}</strong>
+    <div>Total Products: <strong>{{ totalProducts }}</strong></div>
+    <div>Total Stock: <strong>{{ totalStock }}</strong></div>
+    <div>Total Min Stock: <strong>{{ totalMinStock }}</strong></div>
+    <div>Low Stock Items: <strong style="color:red">{{ totalLowStock }}</strong></div>
   </div>
-</div>
 
-
-  <!-- MOBILE VIEW (cards) -->
+  <!-- MOBILE VIEW -->
   <div class="products-grid" *ngIf="isMobile">
     <div *ngFor="let p of paginatedProducts" class="product-card">
-      
+
       <ng-container *ngIf="editingProduct?.id === p.id; else viewCard">
 
         <input [(ngModel)]="editingProduct.name" class="edit-input" placeholder="Product Name" />
@@ -118,7 +120,6 @@
     <tbody>
       <tr *ngFor="let p of paginatedProducts">
 
-        <!-- VIEW MODE -->
         <ng-container *ngIf="editingProduct?.id !== p.id; else editRow">
           <td>{{ p.name }}</td>
           <td>{{ p.categoryName }}</td>
@@ -132,7 +133,6 @@
           </td>
         </ng-container>
 
-        <!-- EDIT MODE -->
         <ng-template #editRow>
           <td><input [(ngModel)]="editingProduct.name" /></td>
 
@@ -164,10 +164,9 @@
     </tbody>
   </table>
 
-  <!-- Pagination -->
   <p-paginator
     [rows]="rowsPerPage"
-    [totalRecords]="filteredProducts.length"
+    [totalRecords]="totalRecords"
     [rowsPerPageOptions]="[5,10,20]"
     (onPageChange)="onPageChange($event)"
     styleClass="custom-paginator">
