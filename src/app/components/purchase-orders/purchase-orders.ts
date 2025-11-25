@@ -18,37 +18,61 @@ import {
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Observable } from 'rxjs';
+import { trigger, state, style, transition, animate } from '@angular/animations';
 
 @Component({
   selector: 'app-purchase-orders',
   standalone: false,
   templateUrl: './purchase-orders.html',
   styleUrls: ['./purchase-orders.scss'],
+  animations: [
+    trigger('slideFadeToggle', [
+      state(
+        'void',
+        style({ height: '0px', opacity: 0, transform: 'translateY(-10px)', overflow: 'hidden' })
+      ),
+      state(
+        '*',
+        style({ height: '*', opacity: 1, transform: 'translateY(0)', overflow: 'hidden' })
+      ),
+      transition('void <=> *', animate('300ms ease-in-out')),
+    ]),
+  ],
 })
 export class PurchaseOrders implements OnInit {
   purchaseOrders$!: Observable<any[]>;
   subcategories: any[] = [];
   editingItemMap: { [key: string]: any } = {};
+  expandedOrders: Set<string> = new Set();
 
   constructor(private firestore: Firestore) {}
 
   ngOnInit() {
     const ordersRef = collection(this.firestore, 'purchaseOrders');
-
-    const ordersQuery = query(
-      ordersRef,
-      orderBy('date', 'desc')
-    );
-
+    const ordersQuery = query(ordersRef, orderBy('date', 'desc'));
     this.purchaseOrders$ = collectionData(ordersQuery, { idField: 'id' });
 
-    collectionData(collection(this.firestore, 'subcategories'), {
-      idField: 'id',
-    }).subscribe((subs: any[]) => {
-      this.subcategories = subs || [];
-    });
+    collectionData(collection(this.firestore, 'subcategories'), { idField: 'id' }).subscribe(
+      (subs: any[]) => {
+        this.subcategories = subs || [];
+      }
+    );
   }
 
+  // ----------------- Collapsible logic -----------------
+  toggleOrderItems(orderId: string) {
+    if (this.expandedOrders.has(orderId)) {
+      this.expandedOrders.delete(orderId);
+    } else {
+      this.expandedOrders.add(orderId);
+    }
+  }
+
+  isOrderExpanded(orderId: string): boolean {
+    return this.expandedOrders.has(orderId);
+  }
+
+  // ----------------- Items & Subcategory -----------------
   getSubsForCategory(categoryId: string): any[] {
     if (!categoryId || !Array.isArray(this.subcategories)) return [];
     return this.subcategories.filter(
@@ -204,121 +228,94 @@ export class PurchaseOrders implements OnInit {
   // --------------------------------------------------------
   // 🚀 PRINT PDF (only for pending orders)
   // --------------------------------------------------------
-printPDF(order: any) {
-  if (order.status === 'completed') return;
+  printPDF(order: any) {
+    if (order.status === 'completed') return;
 
-  const doc = new jsPDF();
+    const doc = new jsPDF();
 
-  // ===== PAGE BORDER =====
-  doc.setDrawColor(180);
-  doc.setLineWidth(0.5);
-  doc.rect(5, 5, 200, 287);
+    // ===== PAGE BORDER =====
+    doc.setDrawColor(180);
+    doc.setLineWidth(0.5);
+    doc.rect(5, 5, 200, 287);
 
-  // ===== WATERMARK =====
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(235);
-  doc.setFontSize(48);
-  doc.text("Sai Baba Cellpoint", 28, 165, { angle: 30 });
+    // ===== WATERMARK =====
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(235);
+    doc.setFontSize(48);
+    doc.text('Sai Baba Cellpoint', 28, 165, { angle: 30 });
 
-  // ===== LOGO =====
-  const logo = "assets/logo.png"; 
-  doc.addImage(logo, "PNG", 10, 8, 40, 38); 
+    // ===== LOGO =====
+    const logo = 'assets/logo.png';
+    doc.addImage(logo, 'PNG', 10, 8, 40, 38);
 
-  // ===== HEADER =====
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(16);
-  doc.setTextColor(0);
-  doc.text("Sai Baba Cellpoint", 105, 18, { align: "center" });
+    // ===== HEADER =====
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.setTextColor(0);
+    doc.text('Sai Baba Cellpoint', 105, 18, { align: 'center' });
 
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.text("Owner: Gedela Narendra", 105, 25, { align: "center" });
-  doc.text(
-    "RTC Complex Center Gate, Opp Apollo, S.kota, Vizianagaram (AP) - 535145",
-    105,
-    31,
-    { align: "center" }
-  );
-  doc.text("Phone/WhatsApp: 9502049996", 105, 37, { align: "center" });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text('Owner: Gedela Narendra', 105, 25, { align: 'center' });
+    doc.text(
+      'RTC Complex Center Gate, Opp Apollo, S.kota, Vizianagaram (AP) - 535145',
+      105,
+      31,
+      { align: 'center' }
+    );
+    doc.text('Phone/WhatsApp: 9502049996', 105, 37, { align: 'center' });
 
-  // Divider
-  doc.line(10, 48, 200, 48);
+    // Divider
+    doc.line(10, 48, 200, 48);
 
-  // ===== TITLE =====
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(14);
-  doc.text("PURCHASE ORDER", 105, 60, { align: "center" });
+    // ===== TITLE =====
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.text('PURCHASE ORDER', 105, 60, { align: 'center' });
 
-  // ===== ORDER DETAILS =====
-  const formattedDate =
-    order.date?.toDate
-      ? order.date.toDate().toLocaleString()
-      : new Date(order.date).toLocaleString();
+    // ===== ORDER DETAILS =====
+    const formattedDate =
+      order.date?.toDate
+        ? order.date.toDate().toLocaleString()
+        : new Date(order.date).toLocaleString();
 
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
 
-  doc.text(`Order ID: ${order.id}`, 14, 75);
-  doc.text(`Category: ${order.categoryName}`, 14, 83);
-  doc.text(`Date: ${formattedDate}`, 14, 91);
+    doc.text(`Order ID: ${order.id}`, 14, 75);
+    doc.text(`Category: ${order.categoryName}`, 14, 83);
+    doc.text(`Date: ${formattedDate}`, 14, 91);
 
-  // ===== TABLE =====
-    const tableBody = order.items.map((item: any, i: number) => [
-      i + 1,
-      item.name,
-      item.orderQty
-    ]);
-  
+    // ===== TABLE =====
+    const tableBody = order.items.map((item: any, i: number) => [i + 1, item.name, item.orderQty]);
+
     autoTable(doc, {
       startY: 105,
       head: [['#', 'Item Name', 'Ordered Qty']],
       body: tableBody,
-  
-      styles: {
-        fontSize: 11,
-        valign: "middle"
-      },
-  
-      headStyles: {
-        fillColor: [0, 102, 204],
-        textColor: 255,
-        fontSize: 12,
-        fontStyle: "bold"
-      },
-  
-      columnStyles: {
-        0: { halign: "center", cellWidth: 18 },
-        1: { halign: "left", cellWidth: 120 },
-        2: { halign: "center", cellWidth: 40 }
-      },
-  
-      margin: { left: 14, right: 14 }
+      styles: { fontSize: 11, valign: 'middle' },
+      headStyles: { fillColor: [0, 102, 204], textColor: 255, fontSize: 12, fontStyle: 'bold' },
+      columnStyles: { 0: { halign: 'center', cellWidth: 18 }, 1: { halign: 'left', cellWidth: 120 }, 2: { halign: 'center', cellWidth: 40 } },
+      margin: { left: 14, right: 14 },
     });
-  
-    // Determine final Y of the table; cast doc to any because typings may not include lastAutoTable
+
     const finalY =
       (doc as any).lastAutoTable && (doc as any).lastAutoTable.finalY
         ? (doc as any).lastAutoTable.finalY
         : doc.internal.pageSize.height - 60;
-  
-    // ===== 🔥 TOTAL ORDERED QUANTITY (ADDED) =====
+
     const totalQty = order.items.reduce((sum: number, item: any) => sum + item.orderQty, 0);
-    doc.setFont("helvetica", "bold");
+    doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
     doc.text(`Total Ordered Quantity: ${totalQty}`, 14, finalY + 10);
-  
-    // ===== FOOTER =====
-    doc.setFont("helvetica", "normal");
+
+    doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
     doc.setTextColor(120);
-    doc.text(
-      "Thank you for choosing Sai Baba Cellpoint",
-      105,
-      doc.internal.pageSize.height - 10,
-      { align: "center" }
-    );
-  
-    doc.save(`PurchaseOrder-${order.id}.pdf`);
-}
+    doc.text('Thank you for choosing Sai Baba Cellpoint', 105, doc.internal.pageSize.height - 10, {
+      align: 'center',
+    });
 
+    doc.save(`PurchaseOrder-${order.id}.pdf`);
+  }
 }

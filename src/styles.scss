@@ -1645,9 +1645,18 @@ body {
 
   .price-input {
     width: 80px;
-  }
+  } 
 
-  .p-button-success {
+  .p-tag-success {
+    background-color: var(--toast-success);
+    color: var(--btn-text);
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+.p-button-success {
     background: var(--toast-success);
     color: var(--btn-text);
     border-radius: var(--radius-md);
@@ -1661,15 +1670,6 @@ body {
       box-shadow: 0 4px 12px var(--shadow-strong);
     }
   }
-
-  .p-tag-success {
-    background-color: var(--toast-success);
-    color: var(--btn-text);
-    font-weight: 600;
-    border-radius: var(--radius-md);
-    padding: 0.25rem 0.5rem;
-  }
-}
 
 /* Danger Button (Delete) */
 .p-button-danger {

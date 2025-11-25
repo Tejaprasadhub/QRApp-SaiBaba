@@ -9,8 +9,10 @@
           responsiveLayout="scroll"
           class="purchase-orders-table"
         >
+          <!-- Main table header -->
           <ng-template pTemplate="header">
             <tr>
+              <th></th>
               <th>S No.</th>
               <th>Date</th>
               <th>Category</th>
@@ -22,10 +24,18 @@
             </tr>
           </ng-template>
 
+          <!-- Main table body -->
           <ng-template pTemplate="body" let-order let-i="rowIndex">
-
             <tr>
-               <td><b>{{ i + 1 }}</b></td>
+              <td>
+                 <p-button
+                  label=""
+                  icon="{{ isOrderExpanded(order.id) ? 'pi pi-chevron-up' : 'pi pi-chevron-down' }} "
+                  class="p-button-sm p-button-secondary"
+                  (click)="toggleOrderItems(order.id)"
+                ></p-button>
+              </td>
+              <td><b>{{ i + 1 }}</b></td>
               <td>
                 {{
                   order.date?.toDate
@@ -38,114 +48,129 @@
               <td>{{ order.items?.length }}</td>
               <td>{{ totalReceived(order) }}</td>
               <td>₹{{ totalReceivedPrice(order) }}</td>
+              <td class="d-flex">
+                <p-button
+                  *ngIf="order.status !== 'completed'"
+                  label=""
+                  icon="pi pi-print"
+                  class="p-button-success p-button-sm"
+                  (click)="printPDF(order)"
+                ></p-button>
 
-              <td>
+                <p-button
+                  *ngIf="order.status !== 'completed'"
+                  label=""
+                  icon="pi pi-trash"
+                  class="p-button-danger p-button-sm"
+                  (click)="deleteOrder(order.id)"
+                ></p-button>
 
-               <p-button
-  *ngIf="order.status !== 'completed'"
-  label="Print PDF"
-  icon="pi pi-print"
-  class="p-button-info p-button-sm"
-  (click)="printPDF(order)"
-></p-button>
+                <span
+                  *ngIf="order.status === 'completed'"
+                  class="p-tag p-tag-success inline-item-row"
+                  >Completed</span
+                >
 
-<p-button
-  *ngIf="order.status !== 'completed'"
-  label="Delete"
-  icon="pi pi-trash"
-  class="p-button-danger p-button-sm"
-  (click)="deleteOrder(order.id)"
-></p-button>
-
-<span
-  *ngIf="order.status === 'completed'"
-  class="p-tag p-tag-success inline-item-row">
-  Completed
-</span>
-
+                <!-- Toggle items button -->
+               
               </td>
             </tr>
 
-            <!-- READ ONLY LABEL -->
+            <!-- Completed order notice -->
             <tr *ngIf="order.status === 'completed'">
               <td colspan="1"></td>
-              <td colspan="7">
+              <td colspan="8">
                 <div class="p-tag p-tag-success" style="margin:10px 0;">
                   This purchase order is completed and cannot be edited.
                 </div>
               </td>
             </tr>
 
-            <!-- ITEMS DISPLAY (NO CHANGE) -->
-            <tr *ngFor="let item of order.items">
-              <td colspan="1"></td>
-              <td colspan="7">
-                <div class="inline-item-row">
+            <!-- Collapsible items table -->
+            <tr *ngIf="isOrderExpanded(order.id)">
+              <td colspan="9" class="p-0">
+                <div
+                  class="items-container"
+                  [@slideFadeToggle]
+                  style="overflow: hidden; padding: 0 1rem 1rem 1rem;"
+                >
+                  <p-table
+                    [value]="order.items"
+                    [paginator]="true"
+                    [rows]="5"
+                    [responsiveLayout]="'scroll'"
+                    class="nested-items-table"
+                  >
+                    <ng-template pTemplate="header">
+                      <tr>
+                        <th>Item Name</th>
+                        <th>Ordered Qty</th>
+                        <th>Received Qty</th>
+                        <th>Price</th>
+                        <th>Subcategory</th>
+                        <th>Action</th>
+                      </tr>
+                    </ng-template>
 
-                  <div class="item-name"><strong>{{ item.name }}</strong></div>
+                    <ng-template pTemplate="body" let-item>
+                      <tr>
+                        <td><strong>{{ item.name }}</strong></td>
+                        <td>{{ item.orderQty }}</td>
+                        <td>
+                          <input
+                            type="number"
+                            [(ngModel)]="getEditingItem(order.id, item).receivedQty"
+                            [disabled]="item.received || order.status === 'completed'"
+                            class="qty-input"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="number"
+                            [(ngModel)]="getEditingItem(order.id, item).newPrice"
+                            [disabled]="item.received || order.status === 'completed'"
+                            class="price-input"
+                          />
+                        </td>
+                        <td>
+                          <select
+                            [(ngModel)]="getEditingItem(order.id, item).subCategoryId"
+                            [disabled]="item.received || order.status === 'completed'"
+                            class="subcategory-input w-100"
+                            (change)="onSubCategoryChange(order.id, item)"
+                          >
+                            <option value="">Select Subcategory</option>
+                            <option
+                              *ngFor="let sub of getSubsForCategory(item.categoryId)"
+                              [value]="sub.id"
+                            >
+                              {{ sub.name }}
+                            </option>
+                          </select>
 
-                  <div class="item-order">Ordered: {{ item.orderQty }}</div>
+                          <div class="lowest-price" *ngIf="getLowestPriceSubName(item)">
+                            <small>Lowest Price: {{ getLowestPriceSubName(item) }}</small>
+                          </div>
+                        </td>
+                        <td>
+                          <p-button
+                            *ngIf="!item.received && order.status !== 'completed'"
+                            label="Save & Mark Received"
+                            icon="pi pi-check"
+                            class="p-button-success p-button-sm"
+                            (click)="saveItem(order, item)"
+                          ></p-button>
 
-                  <div class="item-received">
-                    <label>Received:</label>
-                    <input
-                      type="number"
-                      [(ngModel)]="getEditingItem(order.id, item).receivedQty"
-                      [disabled]="item.received || order.status === 'completed'"
-                      class="qty-input"
-                    />
-                  </div>
-
-                  <div class="item-price">
-                    <label>Price:</label>
-                    <input
-                      type="number"
-                      [(ngModel)]="getEditingItem(order.id, item).newPrice"
-                      [disabled]="item.received || order.status === 'completed'"
-                      class="price-input"
-                    />
-                  </div>
-
-                  <div class="item-subcategory">
-                    <label>Subcategory:</label>
-                    <select
-                      [(ngModel)]="getEditingItem(order.id, item).subCategoryId"
-                      [disabled]="item.received || order.status === 'completed'"
-                      class="subcategory-input"
-                      (change)="onSubCategoryChange(order.id, item)"
-                    >
-                      <option value="">Select Subcategory</option>
-                      <option
-                        *ngFor="let sub of getSubsForCategory(item.categoryId)"
-                        [value]="sub.id"
-                      >
-                        {{ sub.name }}
-                      </option>
-                    </select>
-
-                    <div class="lowest-price" *ngIf="getLowestPriceSubName(item)">
-                      <small>Lowest Price: {{ getLowestPriceSubName(item) }}</small>
-                    </div>
-                  </div>
-
-                  <div class="item-action">
-                    <p-button
-                      *ngIf="!item.received && order.status !== 'completed'"
-                      label="Save & Mark Received"
-                      icon="pi pi-check"
-                      class="p-button-success p-button-sm"
-                      (click)="saveItem(order, item)"
-                    ></p-button>
-
-                    <span *ngIf="item.received" class="p-tag p-tag-success">
-                      ✔ Received
-                    </span>
-                  </div>
-
+                          <span *ngIf="item.received" class="p-tag p-tag-success">
+                            ✔ Received
+                          </span>
+                        </td>
+                      </tr>
+                    </ng-template>
+                  </p-table>
                 </div>
               </td>
             </tr>
-
           </ng-template>
         </p-table>
       </ng-container>
