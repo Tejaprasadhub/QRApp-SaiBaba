@@ -75,37 +75,45 @@ export class ProductService {
   // Pagination
   // ---------------------------------------------------------------
   async getProductsPaginated(filters: any, pageSize: number, lastDoc: any = null) {
-    let ref = collection(this.firestore, 'products');
-    let q: any = query(ref);
+  let ref = collection(this.firestore, 'products');
+  let q: any = query(ref);
 
-    if (filters.name) {
-      q = query(
-        q,
-        where('name', '>=', filters.name),
-        where('name', '<=', filters.name + '\uf8ff')
-      );
-    }
-
-    if (filters.categoryId) {
-      q = query(q, where('categoryId', '==', filters.categoryId));
-    }
-
-    if (filters.subcategoryId) {
-      q = query(q, where('subcategoryId', '==', filters.subcategoryId));
-    }
-
-    q = query(q, orderBy('name'), limit(pageSize));
-
-    if (lastDoc) q = query(q, startAfter(lastDoc));
-
-    const snapshot = await getDocs(q);
-
-    return {
-      products: snapshot.docs.map(d => ({
-        id: d.id,
-        ...(d.data() as any)
-      })),
-      lastDoc: snapshot.docs.at(-1) || null
-    };
+  // NAME SEARCH
+  if (filters.name) {
+    q = query(
+      q,
+      where('name', '>=', filters.name),
+      where('name', '<=', filters.name + '\uf8ff')
+    );
   }
+
+  // CATEGORY FILTER
+  if (filters.categoryId) {
+    q = query(q, where('categoryId', '==', filters.categoryId));
+  }
+
+  // SUBCATEGORY FILTER
+  if (filters.subcategoryId) {
+    q = query(q, where('subcategoryId', '==', filters.subcategoryId));
+  }
+
+  // 🔥 Pagination must be applied BEFORE ordering
+  if (lastDoc) {
+    q = query(q, startAfter(lastDoc));
+  }
+
+  // 🔥 Correct final order
+  q = query(q, orderBy('name', 'desc'), limit(pageSize));
+
+  const snapshot = await getDocs(q);
+
+  return {
+    products: snapshot.docs.map(d => ({
+      id: d.id,
+      ...(d.data() as any)
+    })),
+    lastDoc: snapshot.docs.at(-1) || null
+  };
+}
+
 }
