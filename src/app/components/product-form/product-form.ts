@@ -22,6 +22,7 @@ export class ProductForm {
     minStock: 5 
   };
   loading = false;
+  filteredSubcategories: any[] = [];
 
   constructor(
     private cs: CategoryService,
@@ -34,14 +35,26 @@ export class ProductForm {
     this.cs.getCategories().subscribe(c => this.categories = c);
   }
 
-  loadSubcats() {
-    if (!this.product.categoryId) { 
-      this.subcategories = []; 
-      this.product.subcategoryId = '';
-      return; 
-    }
-    this.ss.getByCategory(this.product.categoryId).subscribe(s => this.subcategories = s);
+ loadSubcats() {
+  if (!this.product.categoryId) { 
+    this.subcategories = [];
+    this.filteredSubcategories = [];
+    this.product.subcategoryId = '';
+    return; 
   }
+
+  this.ss.getByCategory(this.product.categoryId).subscribe(s => {
+    this.subcategories = s;
+    this.filteredSubcategories = [...s]; // initialize filter list
+  });
+}
+
+filterSubcats(text: string) {
+  const t = text.toLowerCase();
+  this.filteredSubcategories = this.subcategories.filter(sc =>
+    sc.name.toLowerCase().includes(t)
+  );
+}
 
   async add() {
     if (!this.product.name.trim()) return alert('Product name is required');
