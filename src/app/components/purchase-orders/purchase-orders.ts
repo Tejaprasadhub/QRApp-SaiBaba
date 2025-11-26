@@ -60,13 +60,16 @@ export class PurchaseOrders implements OnInit {
   }
 
   // ----------------- Collapsible logic -----------------
-  toggleOrderItems(orderId: string) {
-    if (this.expandedOrders.has(orderId)) {
-      this.expandedOrders.delete(orderId);
-    } else {
-      this.expandedOrders.add(orderId);
-    }
+toggleOrderItems(orderId: string) {
+  if (this.expandedOrders.has(orderId)) {
+    // If already expanded, collapse it
+    this.expandedOrders.clear();
+  } else {
+    // Collapse all others and expand only this one
+    this.expandedOrders.clear();
+    this.expandedOrders.add(orderId);
   }
+}
 
   isOrderExpanded(orderId: string): boolean {
     return this.expandedOrders.has(orderId);
