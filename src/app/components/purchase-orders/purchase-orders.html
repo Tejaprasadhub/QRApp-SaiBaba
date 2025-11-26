@@ -92,8 +92,16 @@
                   [@slideFadeToggle]
                   style="overflow: hidden; padding: 0 1rem 1rem 1rem;"
                 >
-                  <p-table
-                    [value]="order.items"
+                  <!-- 🔍 NAME SEARCH BOX -->
+      <input
+        type="text"
+        [(ngModel)]="itemSearchMap[order.id]"
+        placeholder="Search item by name"
+        class="item-search-box"
+      />
+
+      <p-table
+        [value]="getFilteredItems(order)"
                     [paginator]="true"
                     [rows]="5"
                     [responsiveLayout]="'scroll'"

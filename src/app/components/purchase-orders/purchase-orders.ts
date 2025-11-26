@@ -44,6 +44,7 @@ export class PurchaseOrders implements OnInit {
   subcategories: any[] = [];
   editingItemMap: { [key: string]: any } = {};
   expandedOrders: Set<string> = new Set();
+itemSearchMap: { [orderId: string]: string } = {};
 
   constructor(private firestore: Firestore) {}
 
@@ -58,6 +59,16 @@ export class PurchaseOrders implements OnInit {
       }
     );
   }
+
+  getFilteredItems(order: any) {
+  const search = this.itemSearchMap[order.id]?.toLowerCase() || '';
+  if (!search) return order.items;
+
+  return order.items.filter((item: any) =>
+    item.name.toLowerCase().includes(search)
+  );
+}
+
 
   // ----------------- Collapsible logic -----------------
 toggleOrderItems(orderId: string) {
