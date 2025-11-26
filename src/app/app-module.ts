@@ -30,7 +30,8 @@ import { SalesForm } from './components/sales-form/sales-form';
 import { Reorder } from './components/reorder/reorder';
 import { SubCategories } from './components/sub-categories/sub-categories';
 import { PurchaseOrders } from './components/purchase-orders/purchase-orders';
-
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { LoaderInterceptor } from './services/loader.interceptor';
 @NgModule({
   declarations: [
     App,
@@ -57,13 +58,16 @@ ReactiveFormsModule,
 AppRoutingModule,
 BrowserAnimationsModule,
 FormsModule,
+    HttpClientModule,
+
 PrimengModule
   ],
   providers: [
     // ✅ These go in providers, not imports
     provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
     provideAuth(() => getAuth()),
-    provideFirestore(() => getFirestore())
+    provideFirestore(() => getFirestore()),
+    { provide: HTTP_INTERCEPTORS, useClass: LoaderInterceptor, multi: true }
   ],
   bootstrap: [App]
 })

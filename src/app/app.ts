@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { AuthService } from './services/AuthService';
-import { Router } from '@angular/router';
+import { NavigationCancel, NavigationEnd, NavigationError, NavigationStart, Router } from '@angular/router';
+import { LoaderService } from './services/loader.service';
 
 @Component({
   selector: 'app-root',
@@ -9,6 +10,8 @@ import { Router } from '@angular/router';
   styleUrl: './app.scss'
 })
 export class App {
+    loading = false;
+
  drawerVisible = false;
   currentYear = new Date().getFullYear();
   user: any = null;
@@ -24,8 +27,12 @@ export class App {
 { label: 'Low Stock', icon: 'pi pi-exclamation-triangle', route: '/reorder' }
   ];
 
-  constructor(private auth: AuthService, private router: Router) {
+  constructor(private auth: AuthService, private router: Router,private loaderService: LoaderService) {
     this.auth.user$.subscribe(u => (this.user = u));
+// HTTP loader
+    this.loaderService.loading$.subscribe(state => {
+      this.loading = state;
+    });    
   }
 
   toggleDrawer() {
