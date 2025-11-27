@@ -49,7 +49,7 @@
               <td>{{ order.items?.length }}</td>
               <td>{{ totalReceived(order) }}</td>
               <td>₹{{ totalReceivedPrice(order) }}</td>
-              <td class="d-flex">
+              <td class="">
                 <p-button
                   *ngIf="order.status !== 'completed'"
                   label=""

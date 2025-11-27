@@ -266,4 +266,21 @@
   }
 }
 
+/* Hide mobile layout on desktop */
+.mobile-orders-list {
+  display: none;
+}
+
+/* Show mobile layout only on screens <= 768px */
+@media (max-width: 768px) {
+  .purchase-orders-table { 
+    display: none !important; 
+  }
+
+  .mobile-orders-list {
+    display: block;
+  }
+}
+
+
 
