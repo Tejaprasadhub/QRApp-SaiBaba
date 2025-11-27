@@ -69,3 +69,201 @@
   font-size: 1.2rem;
   color: #666;
 }
+
+.item-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+  padding: 10px;
+  background: #f8f8f8;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+
+  .page-info {
+    font-size: 14px;
+    font-weight: 600;
+    color: #555;
+  }
+
+  ::ng-deep .p-button.p-button-sm {
+    border-radius: 8px;
+    padding: 5px 12px;
+    font-size: 13px;
+  }
+}
+
+
+.inline-item-row {
+  background: #fff;
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+  border: 1px solid rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+
+  &:hover {
+    box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+    transform: translateY(-1px);
+  }
+
+  // --- HEADER ---
+  .item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    h4 {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 600;
+      color: #222;
+    }
+
+    .ordered {
+      font-size: 13px;
+      font-weight: 500;
+      padding: 4px 10px;
+      background: #f6f8fa;
+      border-radius: 8px;
+      color: #555;
+    }
+  }
+
+  // --- GRID FIELDS ---
+  .item-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+
+    .field-block {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+
+      label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #333;
+      }
+
+      input {
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid #d1d5db;
+        font-size: 15px;
+        background: #fafafa;
+        transition: border-color 0.2s ease, background 0.2s;
+
+        &:focus {
+          border-color: #4f46e5;
+          background: #fff;
+          outline: none;
+          box-shadow: 0 0 0 3px rgba(79,70,229,0.15);
+        }
+
+        &:disabled {
+          background: #f0f0f0;
+          color: #777;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+
+  // --- SUBCATEGORY BLOCK ---
+  .subcategory-block {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    input,
+    select {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      font-size: 15px;
+      background: #fafafa;
+      transition: border-color 0.2s ease, background 0.2s;
+
+      &:focus {
+        border-color: #4f46e5;
+        background: #fff;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(79,70,229,0.15);
+      }
+
+      &:disabled {
+        background: #f0f0f0;
+        cursor: not-allowed;
+      }
+    }
+
+    .lowest-price {
+      font-size: 12px;
+      font-weight: 500;
+      color: #059669;
+      margin-top: 4px;
+    }
+  }
+
+  // --- ACTIONS ---
+  .item-action {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 4px;
+
+    button,
+    .p-button {
+      font-size: 14px;
+      padding: 10px 16px !important;
+      border-radius: 10px !important;
+    }
+  }
+}
+
+/* --- MOBILE OPTIMIZED --- */
+@media (max-width: 600px) {
+
+  .inline-item-row {
+    padding: 14px 15px;
+    gap: 16px;
+
+    .item-header h4 {
+      font-size: 16px;
+    }
+
+    .item-fields {
+      grid-template-columns: 1fr;  // Single column for mobile
+      gap: 12px;
+    }
+
+    input,
+    select {
+      font-size: 15px;
+      padding: 12px !important; // larger tap target
+    }
+
+    .item-action {
+      justify-content: stretch;
+
+      button,
+      .p-button {
+        width: 100% !important;
+      }
+    }
+  }
+}
+
+

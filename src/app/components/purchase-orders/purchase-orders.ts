@@ -45,8 +45,44 @@ export class PurchaseOrders implements OnInit {
   editingItemMap: { [key: string]: any } = {};
   expandedOrders: Set<string> = new Set();
 itemSearchMap: { [orderId: string]: string } = {};
+itemsPerPage = 5;
+
+// Store pagination state per order
+itemPages: { [orderId: string]: number } = {};
 
   constructor(private firestore: Firestore) {}
+
+getItemPage(orderId: string) {
+  return this.itemPages[orderId] || 1;
+}
+
+setItemPage(orderId: string, page: number) {
+  this.itemPages[orderId] = page;
+}
+
+getPaginatedItems(order: any) {
+  const page = this.getItemPage(order.id);
+  const start = (page - 1) * this.itemsPerPage;
+  return order.items.slice(start, start + this.itemsPerPage);
+}
+
+getTotalItemPages(order: any) {
+  return Math.ceil(order.items.length / this.itemsPerPage);
+}
+
+nextItemPage(order: any) {
+  const page = this.getItemPage(order.id);
+  if (page < this.getTotalItemPages(order)) {
+    this.setItemPage(order.id, page + 1);
+  }
+}
+
+prevItemPage(order: any) {
+  const page = this.getItemPage(order.id);
+  if (page > 1) {
+    this.setItemPage(order.id, page - 1);
+  }
+}
 
   ngOnInit() {
     const ordersRef = collection(this.firestore, 'purchaseOrders');
@@ -61,14 +97,15 @@ itemSearchMap: { [orderId: string]: string } = {};
   }
 
   filterSubcategories(categoryId: number, search: string) {
-  const list = this.getSubsForCategory(categoryId.toString()) || [];
+  const list = this.subcategories.filter(s => s.categoryId === categoryId);
 
   if (!search) return list;
 
-  return list.filter(sub =>
-    sub.name.toLowerCase().includes(search.toLowerCase())
+  return list.filter(s =>
+    s.name.toLowerCase().includes(search.toLowerCase())
   );
 }
+
 
 
   getFilteredItems(order: any) {

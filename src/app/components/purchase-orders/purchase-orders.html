@@ -139,14 +139,15 @@
                           />
                         </td>
                         <td>
-                          <input  class="mb-2"
+                          <input
   type="text"
   placeholder="Search subcategories..."
   #search
-  class="subcat-filter-input"
+  class="subcat-filter-input mb-2"
+  (input)="0" 
 />
 
-                         <select
+<select
   [(ngModel)]="getEditingItem(order.id, item).subCategoryId"
   [disabled]="item.received || order.status === 'completed'"
   class="subcategory-input w-100 mt-2"
@@ -161,6 +162,7 @@
     {{ sub.name }}
   </option>
 </select>
+
 
                           <div class="lowest-price" *ngIf="getLowestPriceSubName(item)">
                             <small>Lowest Price: {{ getLowestPriceSubName(item) }}</small>
@@ -227,61 +229,107 @@
 
               <!-- Collapsible items -->
               <div class="order-items" *ngIf="isOrderExpanded(order.id)">
-                <ng-container *ngFor="let item of order.items">
+                <ng-container *ngFor="let item of getPaginatedItems(order)">
                   <div class="inline-item-row">
-                    <div class="item-name">{{ item.name }}</div>
-                    <div class="item-order">
-                      Ordered: {{ item.orderQty }}
-                    </div>
-                    <div class="item-received">
-                      Received:
-                      <input
-                        type="number"
-                        [(ngModel)]="getEditingItem(order.id, item).receivedQty"
-                        [disabled]="item.received || order.status === 'completed'"
-                        class="qty-input"
-                      />
-                    </div>
-                    <div class="item-price">
-                      Price:
-                      <input
-                        type="number"
-                        [(ngModel)]="getEditingItem(order.id, item).newPrice"
-                        [disabled]="item.received || order.status === 'completed'"
-                        class="price-input"
-                      />
-                    </div>
-                    <div class="item-subcategory">
-                      <select
-                        [(ngModel)]="getEditingItem(order.id, item).subCategoryId"
-                        [disabled]="item.received || order.status === 'completed'"
-                        class="subcategory-input w-100"
-                        (change)="onSubCategoryChange(order.id, item)"
-                      >
-                        <option value="">Select Subcategory</option>
-                        <option
-                          *ngFor="let sub of getSubsForCategory(item.categoryId)"
-                          [value]="sub.id"
-                        >
-                          {{ sub.name }}
-                        </option>
-                      </select>
-                      <div class="lowest-price" *ngIf="getLowestPriceSubName(item)">
-                        <small>Lowest Price: {{ getLowestPriceSubName(item) }}</small>
-                      </div>
-                    </div>
-                    <div class="item-action">
-                      <p-button
-                        *ngIf="!item.received && order.status !== 'completed'"
-                        label="Save & Mark Received"
-                        icon="pi pi-check"
-                        class="p-button-success p-button-sm"
-                        (click)="saveItem(order, item)"
-                      ></p-button>
-                      <span *ngIf="item.received" class="p-tag p-tag-success">✔ Received</span>
-                    </div>
-                  </div>
+
+  <!-- Item title -->
+  <div class="item-header d-block">
+    <h4 class="text-center mb-2">{{ item.name }}</h4>
+    <span class="ordered">Ordered: {{ item.orderQty }}</span>
+  </div>
+
+  <!-- Qty + Price -->
+  <div class="item-fields">
+    <div class="field-block">
+      <label>Received</label>
+      <input
+        type="number"
+        [(ngModel)]="getEditingItem(order.id, item).receivedQty"
+        [disabled]="item.received || order.status === 'completed'"
+      />
+    </div>
+
+    <div class="field-block">
+      <label>Price</label>
+      <input
+        type="number"
+        [(ngModel)]="getEditingItem(order.id, item).newPrice"
+        [disabled]="item.received || order.status === 'completed'"
+      />
+    </div>
+  </div>
+
+  <!-- Subcategory -->
+  <div class="subcategory-block">
+
+    <input
+      type="text"
+      placeholder="Search subcategories..."
+      #search
+      [disabled]="item.received || order.status === 'completed'"
+      (input)="0"
+      class="subcat-filter-input"
+    />
+
+    <select
+      [(ngModel)]="getEditingItem(order.id, item).subCategoryId"
+      [disabled]="item.received || order.status === 'completed'"
+      (change)="onSubCategoryChange(order.id, item)"
+    >
+      <option value="">Select Subcategory</option>
+      <option
+        *ngFor="let sub of filterSubcategories(item.categoryId, search.value)"
+        [value]="sub.id"
+      >
+        {{ sub.name }}
+      </option>
+    </select>
+
+    <small *ngIf="getLowestPriceSubName(item)" class="lowest-price">
+      Lowest Price: {{ getLowestPriceSubName(item) }}
+    </small>
+  </div>
+
+  <!-- Action -->
+  <div class="item-action">
+    <p-button
+      *ngIf="!item.received && order.status !== 'completed'"
+      label="Save & Mark Received"
+      icon="pi pi-check"
+      class="p-button-success p-button-sm"
+      (click)="saveItem(order, item)"
+    ></p-button>
+
+    <span *ngIf="item.received"  class="p-tag p-tag-success">
+      ✔ Received
+    </span>
+  </div>
+
+</div>
+
                 </ng-container>
+                <div class="item-pagination" *ngIf="order.items.length > itemsPerPage">
+  <p-button
+    label="Previous"
+    icon="pi pi-angle-left"
+    [disabled]="getItemPage(order.id) === 1"
+    class="p-button-secondary p-button-sm"
+    (click)="prevItemPage(order)"
+  ></p-button>
+
+  <span class="page-info">
+    Page {{ getItemPage(order.id) }} / {{ getTotalItemPages(order) }}
+  </span>
+
+  <p-button
+    label="Next"
+    icon="pi pi-angle-right"
+    [disabled]="getItemPage(order.id) === getTotalItemPages(order)"
+    class="p-button-secondary p-button-sm"
+    (click)="nextItemPage(order)"
+  ></p-button>
+</div>
+
               </div>
 
               <!-- Completed notice -->
