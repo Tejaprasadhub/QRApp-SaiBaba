@@ -111,41 +111,39 @@ public generateKeywords(text: string): string[] {
     return snapshot.data().count;
   }
 
-  // ---------------------------------------------------------------
+    // ---------------------------------------------------------------
   // Pagination + Filters (with keyword search special handling)
   // ---------------------------------------------------------------
   async getProductsPaginated(filters: any, pageSize: number, lastDoc: any = null) {
     const ref = collection(this.firestore, 'products');
 
-    // 📌 CASE 1 — SEARCH MODE (keyword search)
-    // Firestore DOES NOT allow:
-    // array-contains + orderBy + startAfter
+    // 📌 CASE 1 — NAME FILTER APPLIED → CLIENT-SIDE PAGINATION MODE
+    // Because Firestore cannot paginate on array-contains
     if (filters.name) {
-      let searchQ: any = query(
+      let q: any = query(
         ref,
         where('keywords', 'array-contains', filters.name.toLowerCase())
       );
 
-      // Apply category filters (allowed)
       if (filters.categoryId) {
-        searchQ = query(searchQ, where('categoryId', '==', filters.categoryId));
+        q = query(q, where('categoryId', '==', filters.categoryId));
       }
 
       if (filters.subcategoryId) {
-        searchQ = query(searchQ, where('subcategoryId', '==', filters.subcategoryId));
+        q = query(q, where('subcategoryId', '==', filters.subcategoryId));
       }
 
-      // ❗ No pagination & No ordering allowed
-      const snapshot = await getDocs(searchQ);
+      const snapshot = await getDocs(q);
 
+      // Return *all products* — UI will paginate
       return {
+        mode: 'client',
         products: snapshot.docs.map(d => ({ id: d.id, ...(d.data() as any) })),
-        lastDoc: null, // No pagination possible
+        lastDoc: null
       };
     }
 
-    // 📌 CASE 2 — NORMAL MODE (no keyword search)
-    // Pagination + orderBy works normally
+    // 📌 CASE 2 — NORMAL FILTERS → SERVER-SIDE PAGINATION
     let q: any = query(ref);
 
     if (filters.categoryId) {
@@ -156,22 +154,27 @@ public generateKeywords(text: string): string[] {
       q = query(q, where('subcategoryId', '==', filters.subcategoryId));
     }
 
-    // Pagination
-    if (lastDoc) {
-      q = query(q, startAfter(lastDoc));
-    }
+    // 🔥 Order must be applied BEFORE startAfter
+q = query(q, orderBy('name'));
 
-    // Order + limit
-    q = query(q, orderBy('name'), limit(pageSize));
+// 🔥 Apply cursor AFTER orderBy
+if (lastDoc) {
+  q = query(q, startAfter(lastDoc));
+}
+
+// Finally apply limit
+q = query(q, limit(pageSize));
 
     const snapshot = await getDocs(q);
 
     return {
+      mode: 'server',
       products: snapshot.docs.map(d => ({
         id: d.id,
         ...(d.data() as any),
       })),
-      lastDoc: snapshot.docs.at(-1) || null,
+      lastDoc: snapshot.docs.at(-1) || null
     };
   }
+
 }

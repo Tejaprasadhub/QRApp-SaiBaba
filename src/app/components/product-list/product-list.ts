@@ -65,29 +65,47 @@ export class ProductList {
     this.loadServerProducts();
   }
 
-  // -------------------------------------------------------
-  // LOAD SERVER PRODUCTS + COUNT
-  // -------------------------------------------------------
   async loadServerProducts(pageChange: any = null) {
     this.loading = true;
 
-    if (!pageChange || pageChange.page === 0) {
+    const isNameFilter = !!this.filterName.trim();
+
+    // Reset on page=0 or filter change
+    if (!pageChange || pageChange.page === 0 || isNameFilter) {
       this.products = [];
       this.lastDoc = null;
       this.currentPage = 0;
     }
 
     try {
-      // 🔥 accurate count
+
+      // If name filter → client-side pagination mode
+      if (isNameFilter) {
+        const res = await this.ps.getProductsPaginated(
+          {
+            name: this.filterName.trim(),
+            categoryId: this.filterCategoryId,
+            subcategoryId: this.filterSubcategoryId
+          },
+          this.rowsPerPage,
+          null
+        );
+
+        this.products = res.products;       // load all
+        this.totalRecords = this.products.length;  // full count
+        return;
+      }
+
+      // Otherwise → server-side pagination
       this.totalRecords = await this.ps.getProductsCount({
-        name: this.filterName.trim(),
+        name: '',
         categoryId: this.filterCategoryId,
         subcategoryId: this.filterSubcategoryId
       });
 
       const res = await this.ps.getProductsPaginated(
         {
-          name: this.filterName.trim(),
+          name: '',
           categoryId: this.filterCategoryId,
           subcategoryId: this.filterSubcategoryId
         },
@@ -95,13 +113,17 @@ export class ProductList {
         this.lastDoc
       );
 
-      this.products = [...this.products, ...res.products];
+      // 🔥 IMPORTANT FIX → REPLACE instead of APPEND
+  this.products = res.products;
+
+      // this.products = [...this.products, ...res.products];
       this.lastDoc = res.lastDoc;
 
     } finally {
       this.loading = false;
     }
   }
+
 
   // -------------------------------------------------------
   // FILTER EVENTS
@@ -162,10 +184,19 @@ export class ProductList {
     });
   }
 
-  get paginatedProducts() {
+ get paginatedProducts() {
+
+  // NAME filter → CLIENT pagination
+  if (this.filterName.trim()) {
     const start = this.currentPage * this.rowsPerPage;
     return this.filteredProducts.slice(start, start + this.rowsPerPage);
   }
+
+  // NO NAME filter → SERVER pagination
+  // Firestore already returns only the correct page
+  return this.products;
+}
+
 
   // totals
 // Count *only current page*
