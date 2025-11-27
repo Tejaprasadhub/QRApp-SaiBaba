@@ -95,7 +95,7 @@ filterSubcats(text: string) {
       }
 
       // ✅ Proceed with adding
-      const payload = {
+      const payload:any = {
         name: this.product.name.trim().toUpperCase(),
         price: Number(this.product.price),
         stock: Number(this.product.stock),
@@ -108,6 +108,11 @@ filterSubcats(text: string) {
         lastSoldAt: null,
         createdAt: new Date(),
       };
+
+      
+       if (payload.name) {
+      payload.keywords = this.ps.generateKeywords(payload.name);
+      }
 
       await this.ps.addProduct(payload);
       alert('✅ Product added successfully!');

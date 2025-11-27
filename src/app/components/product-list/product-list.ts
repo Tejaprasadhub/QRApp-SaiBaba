@@ -56,7 +56,7 @@ export class ProductList {
     this.nameFilter$
       .pipe(debounceTime(250))
       .subscribe(value => {
-        this.filterName = value.toUpperCase();
+        this.filterName = value.toLowerCase();
         // this.loadServerProducts();
         // Pass a pageChange object with page:0 so loadServerProducts resets properly
         this.loadServerProducts({ page: 0 });
@@ -219,6 +219,11 @@ get totalMinStock() {
       const cat = this.categories.find(c => c.id === this.editingProduct.categoryId);
       const sub = this.subcategories.find(s => s.id === this.editingProduct.subcategoryId);
 
+      let namekeyWords: string[] = [];
+       if (this.editingProduct.name) {
+      namekeyWords = this.ps.generateKeywords(this.editingProduct.name);
+      }
+
       await updateDoc(productDoc, {
         name: this.editingProduct.name,
         categoryId: cat?.id || '',
@@ -227,7 +232,8 @@ get totalMinStock() {
         subcategoryName: sub?.name || '',
         price: Number(this.editingProduct.price),
         stock: Number(this.editingProduct.stock),
-        minStock: Number(this.editingProduct.minStock || 5)
+        minStock: Number(this.editingProduct.minStock || 5),
+        keywords: namekeyWords
       });
 
       alert('Product updated successfully!');
@@ -245,4 +251,6 @@ get totalMinStock() {
       this.loadServerProducts({ page: 0 });
     });
   }
+
+
 }

@@ -139,20 +139,28 @@
                           />
                         </td>
                         <td>
-                          <select
-                            [(ngModel)]="getEditingItem(order.id, item).subCategoryId"
-                            [disabled]="item.received || order.status === 'completed'"
-                            class="subcategory-input w-100"
-                            (change)="onSubCategoryChange(order.id, item)"
-                          >
-                            <option value="">Select Subcategory</option>
-                            <option
-                              *ngFor="let sub of getSubsForCategory(item.categoryId)"
-                              [value]="sub.id"
-                            >
-                              {{ sub.name }}
-                            </option>
-                          </select>
+                          <input  class="mb-2"
+  type="text"
+  placeholder="Search subcategories..."
+  #search
+  class="subcat-filter-input"
+/>
+
+                         <select
+  [(ngModel)]="getEditingItem(order.id, item).subCategoryId"
+  [disabled]="item.received || order.status === 'completed'"
+  class="subcategory-input w-100 mt-2"
+  (change)="onSubCategoryChange(order.id, item)"
+>
+  <option value="">Select Subcategory</option>
+
+  <option
+    *ngFor="let sub of filterSubcategories(item.categoryId, search.value)"
+    [value]="sub.id"
+  >
+    {{ sub.name }}
+  </option>
+</select>
 
                           <div class="lowest-price" *ngIf="getLowestPriceSubName(item)">
                             <small>Lowest Price: {{ getLowestPriceSubName(item) }}</small>

@@ -60,6 +60,17 @@ itemSearchMap: { [orderId: string]: string } = {};
     );
   }
 
+  filterSubcategories(categoryId: number, search: string) {
+  const list = this.getSubsForCategory(categoryId.toString()) || [];
+
+  if (!search) return list;
+
+  return list.filter(sub =>
+    sub.name.toLowerCase().includes(search.toLowerCase())
+  );
+}
+
+
   getFilteredItems(order: any) {
   const search = this.itemSearchMap[order.id]?.toLowerCase() || '';
   if (!search) return order.items;
