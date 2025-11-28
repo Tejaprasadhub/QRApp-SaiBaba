@@ -19,6 +19,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Observable } from 'rxjs';
 import { trigger, state, style, transition, animate } from '@angular/animations';
+import { ProductService } from '../../services/product';
 
 @Component({
   selector: 'app-purchase-orders',
@@ -50,7 +51,7 @@ itemsPerPage = 5;
 // Store pagination state per order
 itemPages: { [orderId: string]: number } = {};
 
-  constructor(private firestore: Firestore) {}
+  constructor(private firestore: Firestore,private ps:ProductService) {}
 
 getItemPage(orderId: string) {
   return this.itemPages[orderId] || 1;
@@ -237,6 +238,8 @@ toggleOrderItems(orderId: string) {
       await updateDoc(prodDoc.ref, {
         stock: (prodData.stock || 0) + Number(editData.receivedQty),
         price: editData.newPrice || prodData.price,
+        // ✅ FIX: insert keywords
+        keywords: this.ps.generateKeywords(item.name)
       });
     } else {
       await addDoc(productsCollection, {
@@ -247,7 +250,9 @@ toggleOrderItems(orderId: string) {
         subcategoryName: editData.subCategoryName || '',
         stock: Number(editData.receivedQty),
         price: editData.newPrice || item.price,
-        minStock: 5,
+        minStock: 5,        
+        // ✅ FIX: insert keywords
+        keywords: this.ps.generateKeywords(item.name)
       });
     }
 
