@@ -84,7 +84,7 @@
 
       <ng-template #viewCard>
         <div class="product-name">
-          {{ p.name }} 
+          <span class="name-text">{{ p.name }}</span>
           <div class="category-tag" *ngIf="p.categoryName">{{ p.categoryName }}</div>
           <span class="action-icons">
             <button (click)="startEdit(p)"><i class="pi pi-pencil"></i></button>
@@ -93,7 +93,7 @@
         </div>
 
         <div class="product-subcategory" *ngIf="p.subcategoryName">{{ p.subcategoryName }}</div>
-        <div class="product-price">Price: {{ p.price }}</div>
+        <!-- <div class="product-price">Price: {{ p.price }}</div> -->
 
         <div class="d-flex">
           <div class="product-stock">Stock: {{ p.stock }}</div>

@@ -1163,7 +1163,11 @@ body {
         justify-content: space-between;
         margin-bottom: 0.4rem;
         align-items: center;
-
+        .name-text {
+  flex: 1;
+  word-wrap: break-word; /* break long words */
+  max-width: 60%;        /* prevent pushing icons */
+}
         .category-tag {
           background: rgba(147, 51, 234, 0.15);
           padding: 2px 7px;
