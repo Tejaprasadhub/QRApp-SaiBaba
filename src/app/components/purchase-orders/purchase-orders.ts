@@ -60,6 +60,30 @@ setItemPage(orderId: string, page: number) {
   this.itemPages[orderId] = page;
 }
 
+filterItemsByName(order: any, search: string) {
+  const items = order.items; // always use full list
+
+  // Filter first
+  let filtered = items;
+
+  if (search && search.trim() !== '') {
+    const term = search.toLowerCase();
+    filtered = items.filter((item: any) =>
+      item.name.toLowerCase().includes(term)
+    );
+  }
+
+  // Then paginate filtered results
+  const page = this.getItemPage(order.id);
+  const start = (page - 1) * this.itemsPerPage;
+
+  return filtered.slice(start, start + this.itemsPerPage);
+}
+
+
+
+
+
 getPaginatedItems(order: any) {
   const page = this.getItemPage(order.id);
   const start = (page - 1) * this.itemsPerPage;

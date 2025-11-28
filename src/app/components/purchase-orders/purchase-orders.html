@@ -229,7 +229,13 @@
 
               <!-- Collapsible items -->
               <div class="order-items" *ngIf="isOrderExpanded(order.id)">
-                <ng-container *ngFor="let item of getPaginatedItems(order)">
+                <input
+  type="text"
+  placeholder="Search items..."
+  #itemSearch
+  (input)="0"
+/>
+<ng-container *ngFor="let item of filterItemsByName(order, itemSearch.value)">
                   <div class="inline-item-row">
 
   <!-- Item title -->
