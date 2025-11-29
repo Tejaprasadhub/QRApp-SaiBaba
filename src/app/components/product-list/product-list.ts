@@ -156,11 +156,19 @@ export class ProductList {
   // -------------------------------------------------------
   // Pagination
   // -------------------------------------------------------
-  onPageChange(event: any) {
-    this.rowsPerPage = event.rows;
-    this.currentPage = event.page;
-    this.loadServerProducts(event);
+ onPageChange(event: any) {
+  this.rowsPerPage = event.rows;
+  this.currentPage = event.page;
+
+  // 🔥 If NAME filter is active ⇒ CLIENT pagination ⇒ DO NOT call server
+  if (this.filterName.trim()) {
+    return;
   }
+
+  // Normal server-side pagination
+  this.loadServerProducts(event);
+}
+
 
   // -------------------------------------------------------
   // Helpers
