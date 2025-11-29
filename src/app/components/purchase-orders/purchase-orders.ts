@@ -204,7 +204,8 @@ toggleOrderItems(orderId: string) {
     const subList = this.getSubsForCategory(item.categoryId);
 
     if (!editData.receivedQty || editData.receivedQty <= 0) {
-      return alert('Enter received quantity');
+      editData.receivedQty = 0;
+      // return alert('Enter received quantity');
     }
 
     if (subList.length > 0 && !editData.subCategoryId) {
