@@ -46,7 +46,7 @@ export class PurchaseOrders implements OnInit {
   editingItemMap: { [key: string]: any } = {};
   expandedOrders: Set<string> = new Set();
 itemSearchMap: { [orderId: string]: string } = {};
-itemsPerPage = 5;
+itemsPerPage = 1000;
 
 // Store pagination state per order
 itemPages: { [orderId: string]: number } = {};

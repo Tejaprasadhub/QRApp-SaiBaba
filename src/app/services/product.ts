@@ -25,33 +25,27 @@ public generateKeywords(text: string): string[] {
   text = (text || '').toLowerCase().trim();
 
   const keywords = new Set<string>();
+  if (!text) return [];
 
-  // First, split by spaces
-  const spaceParts = text.split(/\s+/).filter(Boolean);
+  // 1. Split ONLY by slash (/) NOT by all non-alphanumeric chars
+  const firstSplit = text.split(/\//).map(t => t.trim()).filter(Boolean);
 
-  for (let part of spaceParts) {
-    // Then, split each part by non-alphanumeric characters
-    const subParts = part.split(/[^a-z0-9]+/).filter(Boolean);
+  for (let chunk of firstSplit) {
 
-    for (let subPart of subParts) {
-      // Skip empty strings just in case
-      if (!subPart) continue;
+    // Add the chunk exactly as is (e.g., "a04e f02s")
+    keywords.add(chunk);
 
-      // Generate progressive prefixes
-      let current = '';
-      for (let char of subPart) {
-        current += char;
-        keywords.add(current);
-      }
+    // 2. Split the chunk by spaces
+    const spaceParts = chunk.split(/\s+/).filter(Boolean);
 
-      // Add full token explicitly
-      keywords.add(subPart);
+    // Add each space-split part
+    for (let part of spaceParts) {
+      keywords.add(part);
     }
   }
 
   return Array.from(keywords);
 }
-
 
 
   getProducts(): Observable<any[]> {
