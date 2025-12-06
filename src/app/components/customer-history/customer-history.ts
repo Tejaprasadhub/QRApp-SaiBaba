@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { Firestore, collection, query, where, collectionData } from '@angular/fire/firestore';
-import { debounceTime, Subject, switchMap, of } from 'rxjs';
+import { debounceTime, Subject, switchMap, of, firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-customer-history',
@@ -49,13 +49,17 @@ export class CustomerHistory {
   }
 
   async loadCustomerData(phone: string) {
-    debugger
-    this.reset();
+    phone = phone.trim();
+  if (!/^[6-9][0-9]{9}$/.test(phone)) return;
+
+  this.reset();
 
     // ---- Load Customer ----
     const customersRef = collection(this.firestore, 'customers');
     const q = query(customersRef, where('phone', '==', phone));
-    const custList = await collectionData(q, { idField: 'id' }).toPromise();
+   const custList = await firstValueFrom(
+      collectionData(q, { idField: 'id' })
+    );
 
     if (!custList || custList.length === 0) {
       this.customer = null;
@@ -67,13 +71,15 @@ export class CustomerHistory {
     // ---- Load Sales ----
     const salesRef = collection(this.firestore, 'sales');
     const qSales = query(salesRef, where('customerPhone', '==', phone));
-    this.sales = await collectionData(qSales, { idField: 'id' }).toPromise() || [];
-
+this.sales = await firstValueFrom(
+  collectionData(qSales, { idField: 'id' })
+);
     // ---- Load Repairs ----
     const repairsRef = collection(this.firestore, 'repairs');
     const qRep = query(repairsRef, where('customerPhone', '==', phone));
-    this.repairs = await collectionData(qRep, { idField: 'id' }).toPromise() || [];
-
+this.repairs = await firstValueFrom(
+  collectionData(qRep, { idField: 'id' })
+);
     // ---- Calculate Summary ----
     this.totalSpent = this.sales.reduce((s, x) => s + (x.total || 0), 0);
     this.totalPending =
