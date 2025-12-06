@@ -10,12 +10,18 @@
       <div class="row1">
         <div>
           <b>{{ p.customerName || 'Unknown' }}</b>
-          <p>{{ p.customerPhone }}</p>
+          <p>{{ p.customerPhone }}</p>         
         </div>
 
-        <div class="amount">
+        <div class="amount d-grid">          
           <span class="pending">₹{{ p.pendingAmount }}</span>
         </div>
+      </div>
+      <div class="row1">
+         <small class="type-badge" [ngClass]="p.type">
+  {{ p.type | titlecase }}
+</small>
+<small><b>Sale Id:</b> {{p.id}}</small>
       </div>
 
       <div class="row2">

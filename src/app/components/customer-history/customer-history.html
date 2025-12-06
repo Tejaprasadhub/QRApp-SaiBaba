@@ -36,18 +36,28 @@
           <b>Date:</b> <span>{{ s.date?.toDate() | date:'short' }}</span>
         </div>
         <div class="row">
-          <b>Total:</b> <span>₹{{ s.total }}</span>
+          <b>Estimated Amount:</b> <span>₹{{ s.total }}</span>
         </div>
         <div class="row">
-          <b>Pending:</b> 
+          <b>Paid Amount:</b> <span>₹{{ s.paidAmount }}</span>
+        </div>
+        <div class="row">
+          <b>Pending Amount:</b> 
           <span [class.pending]="s.pendingAmount > 0">
             ₹{{ s.pendingAmount }}
           </span>
         </div>
+        <div class="row">
+          <b>Status:</b> <span>{{ s.paymentStatus }}</span>
+        </div>
 
         <div class="items">
           <div *ngFor="let i of s.items">
-            {{ i.name }} (x{{ i.qty }}) – ₹{{ i.sellingPrice }}
+             {{ i.name }} x {{ i.qty }} | Cost ₹{{ i.costPrice || 0 }} | Sold ₹{{ i.sellingPrice || i.price }} |
+                <strong [ngClass]="{'profit-positive': ((i.sellingPrice || i.price) - (i.costPrice || 0)) * i.qty > 0,
+                                     'profit-negative': ((i.sellingPrice || i.price) - (i.costPrice || 0)) * i.qty <= 0}">
+                  Profit ₹{{ ((i.sellingPrice || i.price) - (i.costPrice || 0)) * i.qty }}
+                </strong>
           </div>
         </div>
       </div>
@@ -59,11 +69,13 @@
       <div *ngIf="repairs.length === 0" class="empty">No repairs found</div>
 
       <div class="card" *ngFor="let r of repairs">
-        <div class="row"><b>Device:</b> {{ r.deviceName }}</div>
-        <div class="row"><b>Date:</b> {{ r.createdAt?.toDate() | date:'short' }}</div>
-        <div class="row"><b>Cost:</b> ₹{{ r.cost }}</div>
-        <div class="row"><b>Pending:</b> <span class="pending">₹{{ r.pendingAmount }}</span></div>
-        <div class="row"><b>Status:</b> {{ r.status }}</div>
+        <div class="row"><b>Device:</b> <span>{{ r.deviceName }}</span></div>
+        <div class="row"><b>Issue:</b> <span>{{ r.issue }}</span></div>
+        <div class="row"><b>Date:</b> <span>{{ r.inDate?.toDate() | date:'short' }}</span></div>
+        <div class="row"><b>Estimated Amount:</b> <span>₹{{ r.estimatedAmount }}</span></div>
+        <div class="row"><b>Paid Amount:</b> <span>₹{{ r.paidAmount }}</span></div>
+        <div class="row"><b>Pending Amount:</b> <span class="pending">₹{{ r.pendingAmount }}</span></div>
+        <div class="row"><b>Status:</b> <span>{{ r.status }}</span></div>
       </div>
     </div>
 

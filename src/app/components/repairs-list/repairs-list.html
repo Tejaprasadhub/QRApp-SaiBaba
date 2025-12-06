@@ -1,6 +1,12 @@
-<div class="repair-wrapper">
+<div class="pending-wrapper">   <!-- reuse wrapper -->
 
-  <h2 class="page-title">🛠 Repairs List</h2>
+  <div class="header-row d-flex justify-space-between align-center">
+    <h2 class="page-title">🛠 Repairs List</h2>
+
+    <button class="btn-add" routerLink="/repair-form">
+      ➕ Add Repair
+    </button>
+  </div>
 
   <!-- Filter -->
   <div class="filter-row">
@@ -13,78 +19,74 @@
     </select>
   </div>
 
-  <!-- Repair Items -->
+  <!-- List -->
   <div *ngIf="filteredRepairs.length > 0">
 
-    <div class="repair-card" *ngFor="let r of filteredRepairs">
+    <div class="pending-card" *ngFor="let r of filteredRepairs">
 
-      <!-- Header -->
+      <!-- ROW 1 -->
       <div class="row1">
         <div>
           <b>{{ r.customerName || 'Unknown' }}</b>
           <p>{{ r.customerPhone }}</p>
         </div>
 
-        <span class="status" [ngClass]="r.status">
+        <div class="amount d-grid" *ngIf="r.pendingAmount > 0">
+          <span class="pending">₹{{ r.pendingAmount }}</span>
+        </div>
+      </div>
+
+      <!-- ROW 1.5 : Type + Status -->
+      <div class="row1">
+        <small class="type-badge Repair">Repair</small>
+
+        <small
+          class="status-pill"
+          [ngClass]="r.status"
+        >
           {{ r.status | titlecase }}
-        </span>
+        </small>
       </div>
 
-      <!-- Device -->
+      <!-- ROW 2 -->
       <div class="row2">
-        <b>{{ r.deviceName }}</b>
+        <span><b>Total:</b> ₹{{ r.estimatedAmount }}</span>
+        <span><b>Paid:</b> ₹{{ r.paidAmount }}</span>
       </div>
 
-      <!-- Issue -->
-      <div class="row-issue">
-        <p>{{ r.issue }}</p>
-      </div>
-
-      <!-- Amounts -->
+      <!-- ROW 3 -->
       <div class="row3">
-        <span>Est: ₹{{ r.estimatedAmount }}</span>
-        <span>Paid: ₹{{ r.paidAmount }}</span>
-        <span class="pending">Pending: ₹{{ r.pendingAmount }}</span>
+        <span><b>Device:</b> {{ r.deviceName }}</span>
+        <span><b>Date:</b> {{ r.inDate?.toDate() | date:'mediumDate' }}</span>        
       </div>
 
-      <!-- Dates -->
-      <div class="row4">
-        <span>In: {{ r.inDate?.toDate() | date:'mediumDate' }}</span>
-
-        <span *ngIf="r.completedAt">
-          Out: {{ r.completedAt?.toDate() | date:'mediumDate' }}
-        </span>
+      <div class="row3">
+        <span><b>Issue:</b> {{r.issue }}</span>
       </div>
 
-      <!-- ACTION BUTTONS -->
-      <div class="actions">
+      <!-- ACTIONS -->
+      <button
+        *ngIf="r.pendingAmount > 0"
+        class="button-complete"
+        (click)="addPayment(r)"
+      >
+        Add Payment
+      </button>
 
-        <!-- Add Payment Button -->
-        <button
-          class="btn-pay"
-          *ngIf="r.pendingAmount > 0"
-          (click)="addPayment(r)"
-        >
-          Add Payment
-        </button>
-
-        <!-- Mark Completed Button -->
-        <button
-          *ngIf="r.status !== 'completed'"
-          class="btn-complete"
-          (click)="completeWithPayment(r)"
-        >
-          Mark as Completed
-        </button>
-
-      </div>
+      <button
+        *ngIf="r.status !== 'completed'"
+        class="button-complete"
+        (click)="completeWithPayment(r)"
+      >
+        Mark as Completed
+      </button>
 
     </div>
 
   </div>
 
   <!-- Empty -->
-  <div *ngIf="filteredRepairs.length === 0" class="empty-box">
+  <div *ngIf="filteredRepairs.length === 0" class="info-box">
     No repair jobs found.
   </div>
 

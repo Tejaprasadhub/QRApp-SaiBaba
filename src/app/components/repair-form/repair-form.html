@@ -8,12 +8,16 @@
     <div class="form-group">
       <label>Customer Phone*</label>
       <input
-        type="text"
-        [(ngModel)]="model.customerPhone"
-        name="customerPhone"
-        required
-        maxlength="15"
-      />
+  type="text"
+  [(ngModel)]="model.customerPhone"
+  name="customerPhone"
+  required
+  maxlength="15"
+  (ngModelChange)="onPhoneChange($event)"
+/>
+<small *ngIf="model.customerName">
+  ✅ Existing customer found
+</small>
     </div>
 
     <div class="form-group">

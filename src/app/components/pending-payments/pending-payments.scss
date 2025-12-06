@@ -1,7 +1,6 @@
 .pending-wrapper {
   max-width: 900px;
   margin: auto;
-  padding: 20px;
 }
 
 .pending-card {
@@ -25,6 +24,23 @@
       color: #d9534f;
     }
   }
+
+  .type-badge.Sale { 
+    background: green;
+    color: #fff;
+    padding: 5px 5px;
+    border-radius: 10%;
+    font-size: 15px;
+    letter-spacing: 1px;
+  }
+.type-badge.Repair { 
+  background: orange;
+    color: #fff;
+    padding: 5px 5px;
+    border-radius: 10%;
+    font-size: 15px;
+    letter-spacing: 1px;
+}
 }
 
 .row2, .row3 {
@@ -52,3 +68,4 @@
   padding: 15px;
   border-left: 4px solid #1484d6;
 }
+

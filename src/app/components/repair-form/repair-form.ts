@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Firestore, collection, addDoc } from '@angular/fire/firestore';
+import { Firestore, collection, addDoc, query, where, collectionData, getDocs } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-repair-form',
@@ -62,4 +62,26 @@ export class RepairForm {
     };
   }
 
+  async onPhoneChange(phone: string) {
+  if (!phone || phone.length < 5) {
+    this.model.customerName = '';
+    return;
+  }
+
+  const customersRef = collection(this.firestore, 'customers');
+  const q = query(customersRef, where('phone', '==', phone));
+  const snapshot = await getDocs(q);
+
+  if (!snapshot.empty) {
+    const customer = snapshot.docs[0].data() as any;
+    this.model.customerName = customer.name || '';
+  } else {
+    this.model.customerName = '';
+  }
 }
+
+
+}
+
+
+
