@@ -1,0 +1,91 @@
+<div class="repair-wrapper">
+
+  <h2 class="page-title">🛠 Repairs List</h2>
+
+  <!-- Filter -->
+  <div class="filter-row">
+    <label>Status:</label>
+    <select [(ngModel)]="filterStatus" (change)="applyFilter()">
+      <option value="">All</option>
+      <option value="pending">Pending</option>
+      <option value="in-progress">In Progress</option>
+      <option value="completed">Completed</option>
+    </select>
+  </div>
+
+  <!-- Repair Items -->
+  <div *ngIf="filteredRepairs.length > 0">
+
+    <div class="repair-card" *ngFor="let r of filteredRepairs">
+
+      <!-- Header -->
+      <div class="row1">
+        <div>
+          <b>{{ r.customerName || 'Unknown' }}</b>
+          <p>{{ r.customerPhone }}</p>
+        </div>
+
+        <span class="status" [ngClass]="r.status">
+          {{ r.status | titlecase }}
+        </span>
+      </div>
+
+      <!-- Device -->
+      <div class="row2">
+        <b>{{ r.deviceName }}</b>
+      </div>
+
+      <!-- Issue -->
+      <div class="row-issue">
+        <p>{{ r.issue }}</p>
+      </div>
+
+      <!-- Amounts -->
+      <div class="row3">
+        <span>Est: ₹{{ r.estimatedAmount }}</span>
+        <span>Paid: ₹{{ r.paidAmount }}</span>
+        <span class="pending">Pending: ₹{{ r.pendingAmount }}</span>
+      </div>
+
+      <!-- Dates -->
+      <div class="row4">
+        <span>In: {{ r.inDate?.toDate() | date:'mediumDate' }}</span>
+
+        <span *ngIf="r.completedAt">
+          Out: {{ r.completedAt?.toDate() | date:'mediumDate' }}
+        </span>
+      </div>
+
+      <!-- ACTION BUTTONS -->
+      <div class="actions">
+
+        <!-- Add Payment Button -->
+        <button
+          class="btn-pay"
+          *ngIf="r.pendingAmount > 0"
+          (click)="addPayment(r)"
+        >
+          Add Payment
+        </button>
+
+        <!-- Mark Completed Button -->
+        <button
+          *ngIf="r.status !== 'completed'"
+          class="btn-complete"
+          (click)="completeWithPayment(r)"
+        >
+          Mark as Completed
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Empty -->
+  <div *ngIf="filteredRepairs.length === 0" class="empty-box">
+    No repair jobs found.
+  </div>
+
+</div>

@@ -1,0 +1,54 @@
+.pending-wrapper {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+}
+
+.pending-card {
+  background: #fff;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  margin-bottom: 15px;
+}
+
+.row1 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .amount {
+    font-size: 22px;
+    font-weight: bold;
+
+    .pending {
+      color: #d9534f;
+    }
+  }
+}
+
+.row2, .row3 {
+  margin-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.button-complete {
+  margin-top: 15px;
+  width: 100%;
+  padding: 10px;
+  border: none;
+  background: #28a745;
+  color: white;
+  font-size: 16px;
+  border-radius: 8px;
+}
+
+.info-box {
+  text-align: center;
+  margin-top: 40px;
+  background: #f0f8ff;
+  padding: 15px;
+  border-left: 4px solid #1484d6;
+}

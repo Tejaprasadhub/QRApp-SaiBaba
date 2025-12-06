@@ -1,0 +1,72 @@
+<div class="customer-history-container">
+
+  <h2>📱 Customer History</h2>
+
+  <input 
+    type="text"
+    placeholder="Enter customer phone..."
+    [(ngModel)]="phone"
+    (ngModelChange)="onPhoneChange()"
+    class="phone-input"
+  />
+
+  <div *ngIf="!customer" class="no-data">
+    Enter customer phone to load history.
+  </div>
+
+  <div *ngIf="customer" class="history-content">
+
+    <!-- CUSTOMER INFO -->
+    <div class="customer-card">
+      <h3>{{ customer.name }}</h3>
+      <p>📞 {{ customer.phone }}</p>
+      <p>Total Pending: <b>₹{{ totalPending }}</b></p>
+    </div>
+
+    <!-- SALES HISTORY -->
+    <div class="section">
+      <h3>🧾 Sales History</h3>
+      <div *ngIf="sales.length === 0" class="empty">No sales found</div>
+
+      <div class="card" *ngFor="let s of sales">
+        <div class="row">
+          <b>Sale ID:</b> <span>{{ s.id }}</span>
+        </div>
+        <div class="row">
+          <b>Date:</b> <span>{{ s.date?.toDate() | date:'short' }}</span>
+        </div>
+        <div class="row">
+          <b>Total:</b> <span>₹{{ s.total }}</span>
+        </div>
+        <div class="row">
+          <b>Pending:</b> 
+          <span [class.pending]="s.pendingAmount > 0">
+            ₹{{ s.pendingAmount }}
+          </span>
+        </div>
+
+        <div class="items">
+          <div *ngFor="let i of s.items">
+            {{ i.name }} (x{{ i.qty }}) – ₹{{ i.sellingPrice }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPAIRS HISTORY -->
+    <div class="section">
+      <h3>🛠️ Repairs History</h3>
+      <div *ngIf="repairs.length === 0" class="empty">No repairs found</div>
+
+      <div class="card" *ngFor="let r of repairs">
+        <div class="row"><b>Device:</b> {{ r.deviceName }}</div>
+        <div class="row"><b>Date:</b> {{ r.createdAt?.toDate() | date:'short' }}</div>
+        <div class="row"><b>Cost:</b> ₹{{ r.cost }}</div>
+        <div class="row"><b>Pending:</b> <span class="pending">₹{{ r.pendingAmount }}</span></div>
+        <div class="row"><b>Status:</b> {{ r.status }}</div>
+      </div>
+    </div>
+
+  </div>
+
+</div>

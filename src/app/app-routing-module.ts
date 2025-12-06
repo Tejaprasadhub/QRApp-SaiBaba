@@ -18,6 +18,10 @@ import { Reorder } from './components/reorder/reorder';
 import { Dashboard } from './components/dashboard/dashboard';
 import { SubCategories } from './components/sub-categories/sub-categories';
 import { PurchaseOrders } from './components/purchase-orders/purchase-orders';
+import { CustomerHistory } from './components/customer-history/customer-history';
+import { PendingPayments } from './components/pending-payments/pending-payments';
+import { RepairsList } from './components/repairs-list/repairs-list';
+import { RepairForm } from './components/repair-form/repair-form';
 
 const routes: Routes = [
  { path: '', redirectTo: '/customer-form', pathMatch: 'full' },
@@ -39,6 +43,10 @@ const routes: Routes = [
   { path: 'subcategories', component: SubCategories,canActivate: [AuthGuard] },
   { path: 'products/add', component: ProductForm,canActivate: [AuthGuard] },
   { path: 'sales/add', component: SalesForm,canActivate: [AuthGuard] },
+  { path: 'customer-history', component: CustomerHistory,canActivate: [AuthGuard] },
+  { path: 'pending-payments', component: PendingPayments,canActivate: [AuthGuard] },
+  { path: 'repairs-list', component: RepairsList,canActivate: [AuthGuard] },
+  { path: 'repair-form', component: RepairForm,canActivate: [AuthGuard] },
 
   // 👇 wildcard route must always come LAST
   { path: '**', redirectTo: '/customer-form' },

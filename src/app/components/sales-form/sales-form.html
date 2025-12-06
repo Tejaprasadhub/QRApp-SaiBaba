@@ -2,6 +2,7 @@
   <h2 class="page-title">🛒 New Sale</h2>
 
   <div class="sales-container">
+
     <!-- ================= PRODUCT LIST ================= -->
     <div class="products-panel">
       <div class="panel-header">
@@ -36,17 +37,12 @@
             <p *ngIf="p?.categoryName">Category: {{ p?.categoryName }}</p>
             <p *ngIf="p?.subcategoryName">Sub Category: {{ p?.subcategoryName }}</p>
           </div>
-          <button
-            class="btn-add"
-            (click)="addToCart(p)"
-            [disabled]="!canAddToCart(p)"
-          >
+          <button class="btn-add" (click)="addToCart(p)" [disabled]="!canAddToCart(p)">
             {{ canAddToCart(p) ? 'Add' : 'Out of stock' }}
           </button>
         </div>
       </div>
 
-      <!-- Load More button for pagination -->
       <div class="pagination">
         <button (click)="loadNextPage()" [disabled]="!lastDoc">Load More</button>
       </div>
@@ -56,32 +52,102 @@
     <div class="cart-panel">
       <h4>🧾 Cart</h4>
 
+      <!-- Customer Search -->
+      <div class="customer-box">
+        <label>Customer Phone:</label>
+        <!-- <input
+          type="text"
+          [(ngModel)]="customerPhone"
+          placeholder="Enter phone number"
+          (change)="loadCustomerByPhone()"
+        /> -->
+
+        
+  <input
+    type="tel"
+    name="customerPhone"
+    [(ngModel)]="customerPhone"
+    placeholder="Enter 10-digit phone number"
+    pattern="^[6-9][0-9]{9}$"
+    maxlength="10"
+    #phoneCtrl="ngModel"
+    (ngModelChange)="loadCustomerByPhone()"
+    required
+  />
+
+  <!-- Validation messages -->
+  <div class="error" *ngIf="phoneCtrl.invalid && phoneCtrl.touched">
+    <small *ngIf="phoneCtrl.errors?.['required']">Phone number is required</small>
+    <small *ngIf="phoneCtrl.errors?.['pattern']">Enter a valid 10-digit phone number</small>
+  </div>
+
+        <div *ngIf="customerData" class="customer-info">
+          <div class="customer-name-box">
+  <label><b>Name:</b></label>
+  <input
+    type="text"
+    [(ngModel)]="customerData.name"
+    placeholder="Enter customer name"
+    [disabled]="phoneCtrl?.invalid ?? true"
+  />
+</div>
+
+          <p><b>Pending:</b> ₹{{ customerData.totalPendingAmount || 0 }}</p>
+        </div>
+      </div>
+
       <div *ngIf="cart.length === 0" class="empty-cart">Cart is empty</div>
 
       <div class="cart-items" *ngFor="let c of cart">
         <div class="cart-item-header">
-          <b>{{ c.name }}</b> <span>(x{{ c.qty }})</span>           
+          <b>{{ c.name }}</b>
+          <span>(x{{ c.qty }})</span>
         </div>
+
         <p *ngIf="c?.categoryName">Category: {{ c?.categoryName }}</p>
         <p *ngIf="c?.subcategoryName">Sub Category: {{ c?.subcategoryName }}</p>
+
         <div class="cart-item-body">
           <label>Selling Price:</label>
           <input
             type="number"
-            [(ngModel)]="c.sellingPrice" 
+            [(ngModel)]="c.sellingPrice"
             (ngModelChange)="recalc()"
             min="0"
           />
           <span>= ₹{{ c.sellingPrice * c.qty }}</span>
         </div>
+
         <button class="btn-remove" (click)="removeFromCart(c)">Remove</button>
       </div>
 
       <div class="cart-summary">
+        <div class="payment-box">
+  <label>Payment Mode</label>
+
+  <select [(ngModel)]="paymentMode">
+    <option value="cash">Cash (Full)</option>
+    <option value="credit">Credit (No payment)</option>
+    <option value="partial">Partial</option>
+  </select>
+
+  <div *ngIf="paymentMode === 'partial'">
+    <label>Paid Amount</label>
+    <input
+      type="number"
+      [(ngModel)]="paidAmount"
+      min="0"
+      [max]="total"
+      placeholder="Enter paid amount"
+    />
+  </div>
+</div>
+
         <div>Total: <b>₹{{ total }}</b></div>
-        <input [(ngModel)]="customer" placeholder="Customer name (optional)" />
-        <button class="btn-checkout" (click)="checkout()">Checkout</button>
+
+        <button class="btn-checkout"  (click)="checkout()">Checkout</button>
       </div>
     </div>
+
   </div>
 </div>

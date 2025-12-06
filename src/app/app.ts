@@ -24,7 +24,10 @@ export class App {
 { label: 'Sales', icon: 'pi pi-chart-bar', route: '/sales' },
 { label: 'Categories', icon: 'pi pi-tags', route: '/categories' },
 { label: 'Sub Categories', icon: 'pi pi-th-large', route: '/subcategories' },
-{ label: 'Low Stock', icon: 'pi pi-exclamation-triangle', route: '/reorder' }
+{ label: 'Low Stock', icon: 'pi pi-exclamation-triangle', route: '/reorder' },
+{ label: 'Customer History', icon: 'pi pi-history', route: '/customer-history' },
+{ label: 'Pending Payments', icon: 'pi pi-wallet', route: '/pending-payments' },
+{ label: 'Repairs', icon: 'pi pi-wrench', route: '/repairs-list' },
   ];
 
   constructor(private auth: AuthService, private router: Router,private loaderService: LoaderService) {

@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 import { SalesService } from '../../services/sales';
 import { Subject, debounceTime } from 'rxjs';
-import { QueryDocumentSnapshot, DocumentData } from '@angular/fire/firestore';
+import { QueryDocumentSnapshot, DocumentData, Firestore, collection, query, where } from '@angular/fire/firestore';
 import { Product, SalesProductService } from '../../services/sales-product-service';
+import { collectionData } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-sales-form',
@@ -14,7 +15,11 @@ export class SalesForm {
   products: Product[] = [];
   cart: any[] = [];
   total = 0;
-  customer = '';
+
+  // 🟢 NEW — customer phone based
+  customerPhone = '';
+  customerData: any = null;
+
   productSearch = '';
   selectedCategory = '';
 
@@ -23,21 +28,35 @@ export class SalesForm {
 
   private searchSubject = new Subject<void>();
 
-  constructor(private ps: SalesProductService, private ss: SalesService) {}
+  paidAmount = 0;
+paymentMode: 'cash' | 'credit' | 'partial' = 'cash';
+
+  constructor(
+    private ps: SalesProductService,
+    private ss: SalesService,
+    private firestore: Firestore
+  ) {}
 
   ngOnInit() {
     this.loadProducts();
 
     this.searchSubject.pipe(debounceTime(300)).subscribe(() => {
-      this.lastDoc = null; // Reset pagination when search changes
+      this.lastDoc = null;
       this.loadProducts();
     });
   }
-
+ngDoCheck() {
+  if (this.paidAmount > this.total) {
+    this.paidAmount = this.total;
+  }
+}
   onSearchChange() {
     this.searchSubject.next();
   }
 
+  // =====================
+  // 🔥 Load products
+  // =====================
   loadProducts() {
     this.ps.getProducts({
       name: this.productSearch.toUpperCase(),
@@ -63,6 +82,33 @@ export class SalesForm {
     });
   }
 
+  // =====================
+  // 🔥 Load customer by phone
+  // =====================
+  loadCustomerByPhone() {
+    if (!this.customerPhone) {
+      this.customerData = {
+        name: '',
+        totalPendingAmount: 0
+      };
+      return;
+    }
+
+    const ref = collection(this.firestore, 'customers');
+    const q1 = query(ref, where('phone', '==', this.customerPhone));
+
+    collectionData(q1, { idField: 'id' }).subscribe(res => {
+      this.customerData = res[0] || {
+        name: '',
+        totalPendingAmount: 0
+      };;
+    });
+    
+  }
+
+  // =====================
+  // 🔥 Cart Logic
+  // =====================
   addToCart(product: Product) {
     if ((product.stock || 0) <= 0) return alert('Out of stock');
 
@@ -94,41 +140,94 @@ export class SalesForm {
   }
 
   recalc() {
-    this.total = this.cart.reduce((s, i) => s + this.safeNumber(i.sellingPrice) * this.safeNumber(i.qty), 0);
+    this.total = this.cart.reduce((s, i) =>
+      s + Number(i.sellingPrice || 0) * Number(i.qty || 0)
+    , 0);
   }
 
-  private safeNumber(v: any): number {
-    const n = Number(v);
-    return isNaN(n) ? 0 : n;
+  // =====================
+  // 🔥 Checkout
+  // =====================
+ async checkout() {
+  if(!this.customerPhone.match(/^[6-9][0-9]{9}$/)) {
+    alert('Enter a valid 10-digit phone number');
+    return;
+  }
+  // guard clauses
+  if (!this.cart.length) {
+    alert('Cart empty');
+    return;
   }
 
-  async checkout() {
-    if (!this.cart.length) return alert('Cart empty');
+  if (!this.customerPhone) {
+    alert('Enter customer phone');
+    return;
+  }
+  if(!this.customerData || !this.customerData.name) {
+    alert('Enter customer name');
+    return;
+  }
+  if (this.paymentMode === 'partial' && (this.paidAmount <= 0 || this.paidAmount > this.total)) {
+    alert('Enter valid paid amount for partial payment');
+    return;
+  }
+  
 
-    const sale = {
-      date: new Date(),
-      items: this.cart.map(c => ({
-        productId: c.productId,
-        name: c.name,
-        qty: c.qty,
-        costPrice: c.costPrice,
-        sellingPrice: c.sellingPrice,
-        categoryName: c.categoryName,
-      })),
-      total: this.total,
-      customer: this.customer || 'Walk-in',
-      paymentMode: 'cash',
-    };
+  // prevent double click
+  if ((this as any)._saving) return;
+  (this as any)._saving = true;
 
-    await this.ss.addSale(sale);
+  const sale = {
+    date: new Date(),
+    items: this.cart.map(c => ({
+      productId: c.productId,
+      name: c.name,
+      qty: c.qty,
+      costPrice: c.costPrice,
+      sellingPrice: c.sellingPrice,
+      categoryName: c.categoryName,
+    })),
+    customerPhone: this.customerPhone,
+    total: this.total,
+  paymentMode: this.paymentMode,
+  paidAmount:
+    this.paymentMode === 'partial'
+      ? this.paidAmount
+      : this.paymentMode === 'cash'
+      ? this.total
+      : 0,
+      customerName: this.customerData?.name || 'Walk-in Customer'
+  };
+
+  try {
+    const saleId = await this.ss.addSale(sale);
+
+    console.log('✅ Sale saved:', saleId);
+
     alert('✅ Sale recorded successfully!');
 
+    // reset UI
     this.cart = [];
     this.total = 0;
-    this.customer = '';
+    this.customerPhone = '';
+    this.customerData = null;
     this.lastDoc = null;
+
     this.loadProducts();
+
+  } catch (err: any) {
+    console.error('❌ Sale failed', err);
+
+    alert(
+      err?.message
+        ? `❌ Sale failed: ${err.message}`
+        : '❌ Sale failed. Check console.'
+    );
+  } finally {
+    (this as any)._saving = false;
   }
+}
+
 
   canAddToCart(product: Product): boolean {
     return (product.stock || 0) > 0;
@@ -138,10 +237,11 @@ export class SalesForm {
     return (product.stock || 0) > 0 && (product.stock || 0) <= (product.minStock || 5);
   }
 
- getCategories(): string[] {
-  const cats = this.products
-    .map(p => p.categoryName)
-    .filter((c): c is string => !!c); // Type guard ensures c is string
-  return Array.from(new Set(cats));
-}
+  getCategories(): string[] {
+    const cats = this.products
+      .map(p => p.categoryName)
+      .filter((c): c is string => !!c);
+
+    return Array.from(new Set(cats));
+  }
 }

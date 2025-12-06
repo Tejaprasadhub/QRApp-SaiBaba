@@ -1,0 +1,103 @@
+<div class="repair-form-wrapper">
+
+  <h2 class="page-title">🛠 New Repair Job</h2>
+
+  <form (ngSubmit)="saveRepair()" #repairForm="ngForm">
+
+    <!-- Customer -->
+    <div class="form-group">
+      <label>Customer Phone*</label>
+      <input
+        type="text"
+        [(ngModel)]="model.customerPhone"
+        name="customerPhone"
+        required
+        maxlength="15"
+      />
+    </div>
+
+    <div class="form-group">
+      <label>Customer Name</label>
+      <input
+        type="text"
+        [(ngModel)]="model.customerName"
+        name="customerName"
+      />
+    </div>
+
+    <!-- Device -->
+    <div class="form-group">
+      <label>Device Name*</label>
+      <input
+        type="text"
+        [(ngModel)]="model.deviceName"
+        name="deviceName"
+        required
+      />
+    </div>
+
+    <div class="form-group">
+      <label>Device Issue*</label>
+      <textarea
+        [(ngModel)]="model.issue"
+        name="issue"
+        required
+        rows="3"
+      ></textarea>
+    </div>
+
+    <!-- Amounts -->
+    <div class="two-grid">
+      <div class="form-group">
+        <label>Estimated Amount*</label>
+        <input
+          type="number"
+          [(ngModel)]="model.estimatedAmount"
+          name="estimatedAmount"
+          required
+          (ngModelChange)="updatePending()"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Paid Amount</label>
+        <input
+          type="number"
+          [(ngModel)]="model.paidAmount"
+          name="paidAmount"
+          (ngModelChange)="updatePending()"
+        />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Pending Amount</label>
+      <input
+        type="number"
+        [(ngModel)]="model.pendingAmount"
+        name="pendingAmount"
+        readonly
+      />
+    </div>
+
+    <!-- Status -->
+    <div class="form-group">
+      <label>Status</label>
+      <select
+        [(ngModel)]="model.status"
+        name="status"
+      >
+        <option value="pending">Pending</option>
+        <option value="in-progress">In Progress</option>
+        <option value="completed">Completed</option>
+      </select>
+    </div>
+
+    <!-- Save -->
+    <button class="btn-save" type="submit" [disabled]="!repairForm.form.valid">
+      Save Repair Job
+    </button>
+
+  </form>
+
+</div>

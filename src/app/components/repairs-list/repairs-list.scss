@@ -1,0 +1,82 @@
+.repair-wrapper {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+}
+
+.filter-row {
+  margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
+
+  select {
+    padding: 6px;
+    border-radius: 6px;
+  }
+}
+
+.repair-card {
+  background: #fff;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  margin-bottom: 15px;
+  font-size: 15px;
+}
+
+.row1 {
+  display: flex;
+  justify-content: space-between;
+
+  .status {
+    padding: 3px 8px;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 12px;
+    height: 22px;
+
+    &.pending { background: #d9534f; }
+    &.in-progress { background: #f0ad4e; }
+    &.completed { background: #28a745; }
+  }
+}
+
+.row2 {
+  margin-top: 10px;
+  font-size: 16px;
+}
+
+.row3 {
+  margin-top: 12px;
+  display: flex;
+  justify-content: space-between;
+
+  .pending { color: #d9534f; font-weight: bold; }
+}
+
+.row4 {
+  margin-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #555;
+}
+
+.btn-complete {
+  margin-top: 15px;
+  width: 100%;
+  padding: 10px;
+  border: none;
+  background: #28a745;
+  color: white;
+  border-radius: 8px;
+  font-size: 15px;
+}
+
+.empty-box {
+  text-align: center;
+  margin-top: 40px;
+  padding: 20px;
+  background: #f7fbff;
+  border-left: 4px solid #0b6fc2;
+}

@@ -1,0 +1,44 @@
+<div class="pending-wrapper">
+
+  <h2 class="page-title">💰 Pending Payments</h2>
+
+  <!-- List -->
+  <div *ngIf="pendingList.length > 0">
+
+    <div class="pending-card" *ngFor="let p of pendingList">
+      
+      <div class="row1">
+        <div>
+          <b>{{ p.customerName || 'Unknown' }}</b>
+          <p>{{ p.customerPhone }}</p>
+        </div>
+
+        <div class="amount">
+          <span class="pending">₹{{ p.pendingAmount }}</span>
+        </div>
+      </div>
+
+      <div class="row2">
+        <span><b>Total:</b> ₹{{ p.total }}</span>
+        <span><b>Paid:</b> ₹{{ p.paidAmount }}</span>
+      </div>
+
+      <div class="row3">
+        <span><b>Date:</b> {{ p.date.toDate() | date:'medium' }}</span>
+        <span class="mode"><b>Mode:</b> {{ p.paymentMode }}</span>
+      </div>
+
+      <button (click)="markAsPaid(p)" class="button-complete">
+        Mark As Paid
+      </button>
+
+    </div>
+
+  </div>
+
+  <!-- Empty -->
+  <div *ngIf="pendingList.length === 0" class="info-box">
+    🎉 No pending payments!
+  </div>
+
+</div>

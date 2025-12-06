@@ -32,6 +32,10 @@ import { SubCategories } from './components/sub-categories/sub-categories';
 import { PurchaseOrders } from './components/purchase-orders/purchase-orders';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { LoaderInterceptor } from './services/loader.interceptor';
+import { CustomerHistory } from './components/customer-history/customer-history';
+import { PendingPayments } from './components/pending-payments/pending-payments';
+import { RepairForm } from './components/repair-form/repair-form';
+import { RepairsList } from './components/repairs-list/repairs-list';
 @NgModule({
   declarations: [
     App,
@@ -50,7 +54,11 @@ import { LoaderInterceptor } from './services/loader.interceptor';
     SalesForm,
     Reorder,
     SubCategories,
-    PurchaseOrders
+    PurchaseOrders,
+    CustomerHistory,
+    PendingPayments,
+    RepairsList,
+    RepairForm
   ],
   imports: [
     BrowserModule,
