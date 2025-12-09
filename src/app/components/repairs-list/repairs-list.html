@@ -1,92 +1,115 @@
-<div class="pending-wrapper">   <!-- reuse wrapper -->
+<div class="repairs-wrapper">
 
-  <div class="header-row d-flex justify-space-between align-center">
+  <!-- HEADER -->
+  <div class="header-row">
     <h2 class="page-title">🛠 Repairs List</h2>
-
     <button class="btn-add" routerLink="/repair-form">
       ➕ Add Repair
     </button>
   </div>
 
-  <!-- Filter -->
-  <div class="filter-row">
-    <label>Status:</label>
-    <select [(ngModel)]="filterStatus" (change)="applyFilter()">
-      <option value="">All</option>
-      <option value="pending">Pending</option>
-      <option value="in-progress">In Progress</option>
-      <option value="completed">Completed</option>
-    </select>
-  </div>
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
 
-  <!-- List -->
-  <div *ngIf="filteredRepairs.length > 0">
-
-    <div class="pending-card" *ngFor="let r of filteredRepairs">
-
-      <!-- ROW 1 -->
-      <div class="row1">
-        <div>
-          <b>{{ r.customerName || 'Unknown' }}</b>
-          <p>{{ r.customerPhone }}</p>
-        </div>
-
-        <div class="amount d-grid" *ngIf="r.pendingAmount > 0">
-          <span class="pending">₹{{ r.pendingAmount }}</span>
-        </div>
-      </div>
-
-      <!-- ROW 1.5 : Type + Status -->
-      <div class="row1">
-        <small class="type-badge Repair">Repair</small>
-
-        <small
-          class="status-pill"
-          [ngClass]="r.status"
-        >
-          {{ r.status | titlecase }}
-        </small>
-      </div>
-
-      <!-- ROW 2 -->
-      <div class="row2">
-        <span><b>Total:</b> ₹{{ r.estimatedAmount }}</span>
-        <span><b>Paid:</b> ₹{{ r.paidAmount }}</span>
-      </div>
-
-      <!-- ROW 3 -->
-      <div class="row3">
-        <span><b>Device:</b> {{ r.deviceName }}</span>
-        <span><b>Date:</b> {{ r.inDate?.toDate() | date:'mediumDate' }}</span>        
-      </div>
-
-      <div class="row3">
-        <span><b>Issue:</b> {{r.issue }}</span>
-      </div>
-
-      <!-- ACTIONS -->
-      <button
-        *ngIf="r.pendingAmount > 0"
-        class="button-complete"
-        (click)="addPayment(r)"
-      >
-        Add Payment
-      </button>
-
-      <button
-        *ngIf="r.status !== 'completed'"
-        class="button-complete"
-        (click)="completeWithPayment(r)"
-      >
-        Mark as Completed
-      </button>
-
+    <div class="filter-item">
+      <label>From</label>
+      <input
+        type="date"
+        [(ngModel)]="startDateStr"
+        (change)="onFiltersChanged()" />
     </div>
 
+    <div class="filter-item">
+      <label>To</label>
+      <input
+        type="date"
+        [(ngModel)]="endDateStr"
+        (change)="onFiltersChanged()" />
+    </div>
+
+    <div class="filter-item">
+      <!-- <label>Status</label> -->
+      <select [(ngModel)]="filterStatus" (change)="onFiltersChanged()">
+        <option value="">All</option>
+        <option value="pending">Pending</option>
+        <option value="completed">Completed</option>
+      </select>
+    </div>
+
+    <div class="filter-item search">
+      <input
+        type="text"
+        placeholder="🔍 Search name / phone"
+        [(ngModel)]="searchText"
+        (input)="applySearch()" />
+    </div>
+
+    <!-- <div class="filter-item toggle">
+      <label>
+        <input
+          type="checkbox"
+          [(ngModel)]="realtime"
+          (change)="onFiltersChanged()" />
+        <span>Realtime</span>
+      </label>
+    </div> -->
+
   </div>
 
-  <!-- Empty -->
-  <div *ngIf="filteredRepairs.length === 0" class="info-box">
+  <!-- LIST -->
+  <div class="card-list" *ngIf="filtered.length > 0">
+
+    <div class="repair-card" *ngFor="let r of filtered">
+
+      <!-- CARD HEADER -->
+      <div class="card-top">
+        <div>
+          <strong>{{ r.customerName || 'Unknown' }}</strong>
+          <small>{{ r.customerPhone }}</small>
+        </div>
+
+        <span class="status-pill" [ngClass]="r.status">
+          {{ r.status | titlecase }}
+        </span>
+      </div>
+
+      <!-- CARD BODY -->
+      <div class="card-body">
+        <div><b>Device:</b> {{ r.deviceName }}</div>
+        <div><b>Issue:</b> {{ r.issue }}</div>
+        <div class="meta">
+          <span>📅 {{ r.inDate?.toDate() | date:'mediumDate' }}</span>
+          <span>Total: ₹{{ r.estimatedAmount }}</span>
+          <span>Paid: ₹{{ r.paidAmount }}</span>
+        </div>
+      </div>
+
+      <!-- CARD FOOTER -->
+      <div class="card-footer">
+        <span class="pending" *ngIf="r.pendingAmount > 0">
+          Pending ₹{{ r.pendingAmount }}
+        </span>
+        <div class="actions">
+          <button
+            *ngIf="r.pendingAmount > 0"
+            (click)="addPayment(r)">
+            Add Payment
+          </button>
+
+          <button
+            *ngIf="r.status !== 'completed'"
+            class="success"
+            (click)="completeWithPayment(r)">
+            Complete
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- EMPTY -->
+  <div class="empty-state" *ngIf="filtered.length === 0">
     No repair jobs found.
   </div>
 

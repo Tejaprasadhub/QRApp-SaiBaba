@@ -1,91 +1,165 @@
-/* SAME wrapper as pending */
-.pending-wrapper {
-  max-width: 900px;
+.repairs-wrapper {
+  max-width: 1200px;
   margin: auto;
+  // padding: 1rem;
 }
 
-/* SAME card */
-.pending-card {
-  background: #fff;
-  padding: 15px;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  margin-bottom: 15px;
-}
-
-/* SAME rows */
-.row1 {
+/* ===== HEADER ===== */
+.header-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-
-  .amount {
-    font-size: 22px;
-    font-weight: bold;
-
-    .pending {
-      color: #d9534f;
-    }
-  }
+  margin-bottom: 1rem;
 }
 
-.row2, .row3 {
-  margin-top: 12px;
+.page-title {
+  font-size: 1.4rem;
+}
+
+.btn-add {
+  background: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: .6rem 1rem;
+  font-size: .85rem;
+}
+
+/* ===== FILTER BAR ===== */
+.filter-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: .75rem;
+  background: #fff;
+  padding: .75rem;
+  border-radius: 14px;
+  box-shadow: 0 6px 16px #00000014;
+  margin-bottom: 1rem;
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  font-size: .75rem;
+}
+
+.filter-item input,
+.filter-item select {
+  border-radius: 8px;
+  padding: .45rem .5rem;
+  border: 1px solid #ccc;
+}
+
+.filter-item.search input {
+  font-size: .85rem;
+}
+
+/* ===== CARD LIST ===== */
+.card-list {
+  display: grid;
+  gap: 1rem;
+}
+
+/* ===== CARD ===== */
+.repair-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 1rem;
+  box-shadow: 0 8px 18px #00000012;
+}
+
+/* CARD TOP */
+.card-top {
   display: flex;
   justify-content: space-between;
-  font-size: 14px;
+  align-items: start;
 }
 
-/* TYPE BADGE */
-.type-badge.Repair {
-  background: orange;
-  color: #fff;
-  padding: 5px 8px;
-  border-radius: 8px;
-  font-size: 13px;
+.card-top small {
+  display: block;
+  color: #666;
 }
 
-/* STATUS PILL */
+/* STATUS */
 .status-pill {
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 12px;
-  color: #fff;
-
-  &.pending { background: #d9534f; }
-  &.in-progress { background: #f0ad4e; }
-  &.completed { background: #28a745; }
+  padding: .3rem .6rem;
+  border-radius: 12px;
+  font-size: .7rem;
+  white-space: nowrap;
 }
 
-/* BUTTON */
-.button-complete {
-  margin-top: 12px;
-  width: 100%;
-  padding: 10px;
-  border: none;
-  background: #28a745;
-  color: white;
-  font-size: 15px;
-  border-radius: 8px;
+.status-pill.pending {
+  background: #fff3cd;
+  color: #856404;
 }
 
-/* FILTER */
-.filter-row {
-  margin-bottom: 20px;
+.status-pill.completed {
+  background: #d4edda;
+  color: #155724;
+}
+
+/* CARD BODY */
+.card-body {
+  font-size: .85rem;
+  margin: .75rem 0;
+}
+
+.meta {
   display: flex;
-  gap: 10px;
+  justify-content: space-between;
+  color: #555;
+  margin-top: .4rem;
+}
 
-  select {
-    padding: 6px;
-    border-radius: 6px;
-  }
+/* CARD FOOTER */
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: .5rem;
+}
+
+.pending {
+  color: #d32f2f;
+  font-weight: 600;
+}
+
+.actions button {
+  border: none;
+  border-radius: 8px;
+  padding: .45rem .7rem;
+  font-size: .75rem;
+  margin-left: .25rem;
+}
+
+.actions button.success {
+  background: #2e7d32;
+  color: #fff;
 }
 
 /* EMPTY */
-.info-box {
+.empty-state {
   text-align: center;
-  margin-top: 40px;
-  background: #f0f8ff;
-  padding: 15px;
-  border-left: 4px solid #1484d6;
+  padding: 2rem;
+  color: #777;
+}
+
+/* ===== MOBILE ===== */
+@media (max-width: 600px) {
+  .filter-bar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .card-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .actions {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
 }

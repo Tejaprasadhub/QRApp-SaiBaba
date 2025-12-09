@@ -1,84 +1,98 @@
-<div class="customer-history-container">
+<div class="customer-history">
 
-  <h2>📱 Customer History</h2>
-
-  <input 
-    type="text"
-    placeholder="Enter customer phone..."
-    [(ngModel)]="phone"
-    (ngModelChange)="onPhoneChange()"
-    class="phone-input"
-  />
-
-  <div *ngIf="!customer" class="no-data">
-    Enter customer phone to load history.
+  <!-- TITLE -->
+  <div class="page-title">
+    <h2>Customer History</h2>
+    <p>Search customer by phone number</p>
   </div>
 
-  <div *ngIf="customer" class="history-content">
+  <!-- SEARCH -->
+  <div class="search-box">
+    <input
+      type="text"
+      placeholder="Enter customer phone number"
+      [(ngModel)]="phone"
+      (ngModelChange)="onPhoneChange()"
+    />
+  </div>
 
-    <!-- CUSTOMER INFO -->
-    <div class="customer-card">
-      <h3>{{ customer.name }}</h3>
-      <p>📞 {{ customer.phone }}</p>
-      <p>Total Pending: <b>₹{{ totalPending }}</b></p>
+  <!-- EMPTY -->
+  <div *ngIf="!customer" class="hint">
+    Enter phone number to view customer details
+  </div>
+
+  <div *ngIf="customer">
+
+    <!-- CUSTOMER SUMMARY -->
+    <div class="summary-card">
+      <div>
+        <h3>{{ customer.name }}</h3>
+        <span>{{ customer.phone }}</span>
+      </div>
+
+      <div class="pending-box">
+        <span>Total Pending</span>
+        <strong>₹{{ totalPending }}</strong>
+      </div>
     </div>
 
-    <!-- SALES HISTORY -->
-    <div class="section">
-      <h3>🧾 Sales History</h3>
+    <!-- SALES -->
+    <section class="section">
+      <h4>Sales History</h4>
+
       <div *ngIf="sales.length === 0" class="empty">No sales found</div>
 
-      <div class="card" *ngFor="let s of sales">
-        <div class="row">
-          <b>Sale ID:</b> <span>{{ s.id }}</span>
-        </div>
-        <div class="row">
-          <b>Date:</b> <span>{{ s.date?.toDate() | date:'short' }}</span>
-        </div>
-        <div class="row">
-          <b>Estimated Amount:</b> <span>₹{{ s.total }}</span>
-        </div>
-        <div class="row">
-          <b>Paid Amount:</b> <span>₹{{ s.paidAmount }}</span>
-        </div>
-        <div class="row">
-          <b>Pending Amount:</b> 
-          <span [class.pending]="s.pendingAmount > 0">
-            ₹{{ s.pendingAmount }}
-          </span>
-        </div>
-        <div class="row">
-          <b>Status:</b> <span>{{ s.paymentStatus }}</span>
+      <div class="card data-card mb-2" *ngFor="let s of sales">
+
+        <div class="data-grid">
+          <div><label>Sale ID</label><span>{{ s.id }}</span></div>
+          <div><label>Date</label><span>{{ s.date?.toDate() | date:'short' }}</span></div>
+          <div><label>Total</label><span>₹{{ s.total }}</span></div>
+          <div><label>Paid</label><span class="paid">₹{{ s.paidAmount }}</span></div>
+          <div>
+            <label>Pending</label>
+            <span class="pending" [class.zero]="s.pendingAmount === 0">
+              ₹{{ s.pendingAmount }}
+            </span>
+          </div>
+          <div><label>Status</label><span>{{ s.paymentStatus }}</span></div>
         </div>
 
+        <!-- ITEMS -->
         <div class="items">
-          <div *ngFor="let i of s.items">
-             {{ i.name }} x {{ i.qty }} | Cost ₹{{ i.costPrice || 0 }} | Sold ₹{{ i.sellingPrice || i.price }} |
-                <strong [ngClass]="{'profit-positive': ((i.sellingPrice || i.price) - (i.costPrice || 0)) * i.qty > 0,
-                                     'profit-negative': ((i.sellingPrice || i.price) - (i.costPrice || 0)) * i.qty <= 0}">
-                  Profit ₹{{ ((i.sellingPrice || i.price) - (i.costPrice || 0)) * i.qty }}
-                </strong>
+          <div class="item" *ngFor="let i of s.items">
+            <span>{{ i.name }} × {{ i.qty }}</span>
+            <strong
+              [ngClass]="{
+                'profit-positive': ((i.sellingPrice || i.price) - (i.costPrice || 0)) * i.qty > 0,
+                'profit-negative': ((i.sellingPrice || i.price) - (i.costPrice || 0)) * i.qty <= 0
+              }">
+              ₹{{ ((i.sellingPrice || i.price) - (i.costPrice || 0)) * i.qty }}
+            </strong>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- REPAIRS HISTORY -->
-    <div class="section">
-      <h3>🛠️ Repairs History</h3>
+      </div>
+    </section>
+
+    <!-- REPAIRS -->
+    <section class="section">
+      <h4>Repairs History</h4>
+
       <div *ngIf="repairs.length === 0" class="empty">No repairs found</div>
 
-      <div class="card" *ngFor="let r of repairs">
-        <div class="row"><b>Device:</b> <span>{{ r.deviceName }}</span></div>
-        <div class="row"><b>Issue:</b> <span>{{ r.issue }}</span></div>
-        <div class="row"><b>Date:</b> <span>{{ r.inDate?.toDate() | date:'short' }}</span></div>
-        <div class="row"><b>Estimated Amount:</b> <span>₹{{ r.estimatedAmount }}</span></div>
-        <div class="row"><b>Paid Amount:</b> <span>₹{{ r.paidAmount }}</span></div>
-        <div class="row"><b>Pending Amount:</b> <span class="pending">₹{{ r.pendingAmount }}</span></div>
-        <div class="row"><b>Status:</b> <span>{{ r.status }}</span></div>
+      <div class="card data-card mb-2" *ngFor="let r of repairs">
+        <div class="data-grid">
+          <div><label>Device</label><span>{{ r.deviceName }}</span></div>
+          <div><label>Issue</label><span>{{ r.issue }}</span></div>
+          <div><label>Date</label><span>{{ r.inDate?.toDate() | date:'short' }}</span></div>
+          <div><label>Total</label><span>₹{{ r.estimatedAmount }}</span></div>
+          <div><label>Paid</label><span class="paid">₹{{ r.paidAmount }}</span></div>
+          <div><label>Pending</label><span class="pending">₹{{ r.pendingAmount }}</span></div>
+          <div><label>Status</label><span>{{ r.status }}</span></div>
+        </div>
       </div>
-    </div>
+    </section>
 
   </div>
-
 </div>

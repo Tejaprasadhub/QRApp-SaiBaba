@@ -10,28 +10,106 @@ import { RepairsService } from '../../services/repairs.service';
 export class RepairsList implements OnInit {
 
   repairs: any[] = [];
-  filteredRepairs: any[] = [];
-  filterStatus = '';
+  filtered: any[] = [];
+  lastDoc: any = null;
 
+  // filters
+  filterStatus = '';
+  searchText = '';
+
+  // date range
+// ✅ string values for date inputs
+  startDateStr!: string;
+  endDateStr!: string;
+
+  // pagination
+  pageSize = 10;
+
+  // realtime
+  realtime = true;
 
   constructor(private repairService: RepairsService) {}
 
   ngOnInit() {
-    this.repairService.getRepairs().subscribe((list) => {
-      this.repairs = list;
-      this.applyFilter();
+    this.setDefaultDates();
+    this.load(true);
+  }
+
+  // ✅ TODAY default
+  setDefaultDates() {
+    const today = new Date();
+    this.startDateStr = this.formatDate(today);
+    this.endDateStr = this.formatDate(today);
+  }
+
+  // ✅ yyyy-MM-dd
+  private formatDate(d: Date): string {
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  // ✅ convert input values → real range
+  private getDateRange() {
+    const start = new Date(`${this.startDateStr}T00:00:01`);
+    const end = new Date(`${this.endDateStr}T23:59:59`);
+
+    if (end < start) {
+      throw new Error('End date cannot be before start date');
+    }
+
+    return { start, end };
+  }
+
+  load(reset = false) {
+    if (reset) {
+      this.lastDoc = null;
+      this.repairs = [];
+    }
+
+    let range;
+    try {
+      range = this.getDateRange();
+    } catch {
+      alert('Invalid date range');
+      return;
+    }
+
+    this.repairService.getRepairs(
+      {
+        status: this.filterStatus,
+        start: range.start,
+        end: range.end
+      },
+      this.pageSize,
+      this.lastDoc,
+      this.realtime
+    ).subscribe(list => {
+      if (list.length) {
+        this.lastDoc = list[list.length - 1];
+        this.repairs = reset ? list : [...this.repairs, ...list];
+        this.applySearch();
+      } else if (reset) {
+        this.filtered = [];
+      }
     });
   }
 
-  // =============================
-  // APPLY FILTER
-  // =============================
-  applyFilter() {
-    if (!this.filterStatus) {
-      this.filteredRepairs = this.repairs;
-      return;
-    }
-    this.filteredRepairs = this.repairs.filter(r => r.status === this.filterStatus);
+  // 🔍 search
+  applySearch() {
+    const q = this.searchText.toLowerCase();
+    this.filtered = !q
+      ? this.repairs
+      : this.repairs.filter(r =>
+          r.customerName?.toLowerCase().includes(q) ||
+          r.customerPhone?.includes(q)
+        );
+  }
+
+  // ✅ fires for start OR end change
+  onFiltersChanged() {
+    this.load(true);
   }
 
   // ======================================================
