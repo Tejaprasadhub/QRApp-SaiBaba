@@ -3,7 +3,8 @@ import { ProductService } from '../../services/product';
 import { CategoryService } from '../../services/category';
 import { SubcategoryService } from '../../services/sub-category';
 import { Firestore, doc, updateDoc } from '@angular/fire/firestore';
-import { Subject, debounceTime } from 'rxjs';
+import { Subject, debounceTime, take } from 'rxjs';
+import { FirestoreLoaderService } from '../../services/firestore-loader.service';
 
 @Component({
   selector: 'app-product-list',
@@ -41,7 +42,8 @@ export class ProductList {
     private ps: ProductService,
     private cs: CategoryService,
     private ss: SubcategoryService,
-    private firestore: Firestore
+    private firestore: Firestore,
+    private fsLoader: FirestoreLoaderService
   ) {}
 
   ngOnInit() {
@@ -49,8 +51,23 @@ export class ProductList {
       this.isMobile = window.innerWidth < 768;
     });
 
-    this.cs.getCategories().subscribe(c => (this.categories = c));
-    this.ss.getSubcategories().subscribe(s => (this.subcategories = s));
+  this.fsLoader
+  .wrapObservable(
+    this.cs.getCategories().pipe(take(1))
+  )
+  .subscribe(c => {
+    this.categories = c;
+  });
+
+this.fsLoader
+  .wrapObservable(
+    this.ss.getSubcategories().pipe(take(1))
+  )
+  .subscribe(s => {
+    this.subcategories = s;
+  });
+
+
 
     // 🔥 Debounce for name input
     this.nameFilter$
@@ -81,7 +98,7 @@ export class ProductList {
 
       // If name filter → client-side pagination mode
       if (isNameFilter) {
-        const res = await this.ps.getProductsPaginated(
+        const res = await await this.fsLoader.wrapPromise(this.ps.getProductsPaginated(
           {
             name: this.filterName.trim(),
             categoryId: this.filterCategoryId,
@@ -89,21 +106,22 @@ export class ProductList {
           },
           this.rowsPerPage,
           null
-        );
+        ));
 
         this.products = res.products;       // load all
         this.totalRecords = this.products.length;  // full count
         return;
       }
 
-      // Otherwise → server-side pagination
-      this.totalRecords = await this.ps.getProductsCount({
-        name: '',
-        categoryId: this.filterCategoryId,
-        subcategoryId: this.filterSubcategoryId
-      });
+      this.totalRecords = await this.fsLoader.wrapPromise(
+  this.ps.getProductsCount({
+    name: '',
+    categoryId: this.filterCategoryId,
+    subcategoryId: this.filterSubcategoryId
+  })
+);
 
-      const res = await this.ps.getProductsPaginated(
+      const res = await await this.fsLoader.wrapPromise(this.ps.getProductsPaginated(
         {
           name: '',
           categoryId: this.filterCategoryId,
@@ -111,7 +129,7 @@ export class ProductList {
         },
         this.rowsPerPage,
         this.lastDoc
-      );
+      ));
 
       // 🔥 IMPORTANT FIX → REPLACE instead of APPEND
   this.products = res.products;
@@ -263,7 +281,7 @@ get totalMinStock() {
       namekeyWords = this.ps.generateKeywords(this.editingProduct.name);
       }
 
-      await updateDoc(productDoc, {
+      await this.fsLoader.wrapPromise(updateDoc(productDoc, {
         name: this.editingProduct.name,
         categoryId: cat?.id || '',
         categoryName: cat?.name || '',
@@ -273,7 +291,7 @@ get totalMinStock() {
         stock: Number(this.editingProduct.stock),
         minStock: Number(this.editingProduct.minStock || 5),
         keywords: namekeyWords
-      });
+      }));
 
       alert('Product updated successfully!');
       this.editingProduct = null;
@@ -286,9 +304,10 @@ get totalMinStock() {
 
   delete(id: string) {
     if (!confirm('Delete product?')) return;
-    this.ps.deleteProduct(id).then(() => {
+    this.fsLoader
+  .wrapPromise(this.ps.deleteProduct(id).then(() => {
       this.loadServerProducts({ page: 0 });
-    });
+    }));
   }
 
 

@@ -33,10 +33,12 @@ export class App {
   constructor(private auth: AuthService, private router: Router,private loaderService: LoaderService) {
     this.auth.user$.subscribe(u => (this.user = u));
 // HTTP loader
-    this.loaderService.loading$.subscribe(state => {
-      this.loading = state;
-    });    
+   this.loaderService.loading$.subscribe(v => {
+      this.loading = v;
+    });
   }
+
+ 
 
   toggleDrawer() {
     this.drawerVisible = !this.drawerVisible;
