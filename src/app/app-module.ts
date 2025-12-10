@@ -36,9 +36,14 @@ import { CustomerHistory } from './components/customer-history/customer-history'
 import { PendingPayments } from './components/pending-payments/pending-payments';
 import { RepairForm } from './components/repair-form/repair-form';
 import { RepairsList } from './components/repairs-list/repairs-list';
+import { SplitChipsPipe } from './pipes/split-chips.pipe';
+import { ChipMatchPipe } from './pipes/chip-match.pipe';
 @NgModule({
   declarations: [
+    SplitChipsPipe,
+    ChipMatchPipe,
     App,
+
     CustomerForm,
     QrCodeComponent,
     ThankYou,

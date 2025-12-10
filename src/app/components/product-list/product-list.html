@@ -14,6 +14,13 @@
 
   <div class="filters-wrapper" [class.show]="showFilters">
 
+    <!-- <div></div> -->
+    <!-- <div></div> -->
+    <!-- <div></div> -->
+    <!-- <div></div> -->
+    <!-- <div></div> -->
+    <!-- <div></div> -->
+    <!-- <div></div> -->
     <!-- 🔥 Updated with debounce -->
     <input
       type="text"
@@ -21,6 +28,7 @@
       [ngModel]="filterName"
       (input)="onNameInput($event)"
       class="filter-input" />
+
 
     <select [(ngModel)]="filterCategoryId"
             (change)="onCategoryChange(filterCategoryId)"
@@ -84,7 +92,17 @@
 
       <ng-template #viewCard>
         <div class="product-name">
-          <span class="name-text">{{ p.name }}</span>
+          <span class="name-text">
+            <div class="chip-row">
+  <span
+    *ngFor="let part of p.name | splitChips"
+    class="chip"
+    [class.chip-active]="part | chipMatch : filterName"
+  >
+    {{ part }}
+  </span>
+</div>
+          </span>
           <div class="category-tag" *ngIf="p.categoryName">{{ p.categoryName }}</div>
           <span class="action-icons">
             <button (click)="startEdit(p)"><i class="pi pi-pencil"></i></button>
@@ -121,7 +139,17 @@
       <tr *ngFor="let p of paginatedProducts">
 
         <ng-container *ngIf="editingProduct?.id !== p.id; else editRow">
-          <td>{{ p.name }}</td>
+          <td>
+            <div class="chip-row">
+  <span
+    *ngFor="let part of p.name | splitChips"
+    class="chip"
+    [class.chip-active]="part | chipMatch : filterName"
+  >
+    {{ part }}
+  </span>
+</div>
+</td>
           <td>{{ p.categoryName }}</td>
           <td>{{ p.subcategoryName }}</td>
           <td>{{ p.price }}</td>

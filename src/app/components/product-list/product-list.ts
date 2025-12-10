@@ -5,12 +5,14 @@ import { SubcategoryService } from '../../services/sub-category';
 import { Firestore, doc, updateDoc } from '@angular/fire/firestore';
 import { Subject, debounceTime, take } from 'rxjs';
 import { FirestoreLoaderService } from '../../services/firestore-loader.service';
+import { SplitChipsPipe } from '../../pipes/split-chips.pipe';
+import { ChipMatchPipe } from '../../pipes/chip-match.pipe';
 
 @Component({
   selector: 'app-product-list',
   standalone: false,
   templateUrl: './product-list.html',
-  styleUrls: ['./product-list.scss'],
+  styleUrls: ['./product-list.scss']
 })
 export class ProductList {
   products: any[] = [];
