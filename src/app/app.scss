@@ -1,23 +1,57 @@
+/* ====== GLOBAL OVERLAY ====== */
 .global-loader {
   position: fixed;
   inset: 0;
-  background: rgba(255,255,255,0.6);
   z-index: 9999;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(3px);
+
+  background: rgba(248, 250, 252, 0.75);
+  backdrop-filter: blur(6px);
 }
 
-.spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid #ddd;
-  border-top-color: #4f46e5;
+/* ====== CENTER WRAPPER ====== */
+.spinner-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ====== GRADIENT SPINNER ====== */
+.gradient-spinner {
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
-  animation: spin 0.9s linear infinite;
+
+  background:
+    conic-gradient(
+      from 0deg,
+      #4f46e5,
+      #6366f1,
+      #06b6d4,
+      #22c55e,
+      #facc15,
+      #4f46e5
+    );
+
+  mask: radial-gradient(circle, transparent 60%, black 61%);
+  animation: spin 1s linear infinite;
 }
 
+/* ====== TEXT BELOW ====== */
+.loader-text {
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  color: #475569;
+  font-weight: 500;
+}
+
+/* ====== ANIMATION ====== */
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
