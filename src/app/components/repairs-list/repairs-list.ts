@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { RepairsService } from '../../services/repairs.service';
+import { FirestoreLoaderService } from '../../services/firestore-loader.service';
+import { take } from 'rxjs';
 
 @Component({
   selector: 'app-repairs-list',
@@ -28,7 +30,9 @@ export class RepairsList implements OnInit {
   // realtime
   realtime = true;
 
-  constructor(private repairService: RepairsService) {}
+  constructor(private repairService: RepairsService,
+    private fsLoader: FirestoreLoaderService
+  ) {}
 
   ngOnInit() {
     this.setDefaultDates();
@@ -76,7 +80,8 @@ export class RepairsList implements OnInit {
       return;
     }
 
-    this.repairService.getRepairs(
+    this.fsLoader
+    .wrapObservable(this.repairService.getRepairs(
       {
         status: this.filterStatus,
         start: range.start,
@@ -85,7 +90,7 @@ export class RepairsList implements OnInit {
       this.pageSize,
       this.lastDoc,
       this.realtime
-    ).subscribe(list => {
+    ).pipe(take(1))).subscribe(list => {
       if (list.length) {
         this.lastDoc = list[list.length - 1];
         this.repairs = reset ? list : [...this.repairs, ...list];
@@ -128,7 +133,15 @@ export class RepairsList implements OnInit {
     const newPaid = (r.paidAmount || 0) + amt;
     const newPending = Math.max((r.estimatedAmount || 0) - newPaid, 0);
 
-    this.repairService.updatePayment(r.id, newPaid, newPending);
+
+    this.fsLoader.wrapPromise(
+    this.repairService.updatePayment(r.id, newPaid, newPending)
+  ).then(() => {
+    this.load(true);
+    // ✅ optional success UI
+  }).catch(() => {
+    alert('Failed to complete repair');
+  });
   }
 
   // ======================================================
@@ -151,6 +164,12 @@ export class RepairsList implements OnInit {
     const newPaid = (r.paidAmount || 0) + amt;
     const newPending = Math.max((r.estimatedAmount || 0) - newPaid, 0);
 
-    this.repairService.markCompleted(r.id, newPaid, newPending);
-  }
+this.fsLoader.wrapPromise(
+    this.repairService.markCompleted(r.id, newPaid, newPending)
+  ).then(() => {
+    this.load(true);
+    // ✅ optional success UI
+  }).catch(() => {
+    alert('Failed to complete repair');
+  });  }
 }

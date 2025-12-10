@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
 import { Firestore, collection, addDoc, query, where, collectionData, getDocs } from '@angular/fire/firestore';
+import { FirestoreLoaderService } from '../../services/firestore-loader.service';
+import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 
 @Component({
   selector: 'app-repair-form',
@@ -8,6 +10,7 @@ import { Firestore, collection, addDoc, query, where, collectionData, getDocs } 
   styleUrls: ['./repair-form.scss']
 })
 export class RepairForm {
+phoneInput$ = new Subject<string>();
 
   model = {
     customerPhone: '',
@@ -22,7 +25,9 @@ export class RepairForm {
     completedAt: null
   };
 
-  constructor(private firestore: Firestore) {}
+  constructor(private firestore: Firestore,
+    private fsLoader: FirestoreLoaderService
+  ) {}
 
   // ================================
   // 🔄 Auto calculate pending amount
@@ -44,7 +49,10 @@ export class RepairForm {
       inDate: new Date()
     };
 
-    await addDoc(ref, payload);
+    await this.fsLoader.wrapPromise(
+      addDoc(ref, payload)
+    );
+
     alert('Repair job saved!');
 
     // Reset form
@@ -62,7 +70,21 @@ export class RepairForm {
     };
   }
 
-  async onPhoneChange(phone: string) {
+onPhoneChange(phone: string) {
+  this.phoneInput$.next(phone);
+}
+ngOnInit() {
+  this.phoneInput$
+    .pipe(
+      debounceTime(400),        // ✅ wait for user to stop typing
+      distinctUntilChanged()    // ✅ ignore same value
+    )
+    .subscribe(phone => {
+      this.fetchCustomerByPhone(phone);
+    });
+}
+
+async fetchCustomerByPhone(phone: string) {
   if (!phone || phone.length < 5) {
     this.model.customerName = '';
     return;
@@ -70,8 +92,10 @@ export class RepairForm {
 
   const customersRef = collection(this.firestore, 'customers');
   const q = query(customersRef, where('phone', '==', phone));
-  const snapshot = await getDocs(q);
 
+  const snapshot = await this.fsLoader.wrapPromise(
+      getDocs(q)
+    );
   if (!snapshot.empty) {
     const customer = snapshot.docs[0].data() as any;
     this.model.customerName = customer.name || '';
@@ -79,6 +103,7 @@ export class RepairForm {
     this.model.customerName = '';
   }
 }
+
 
 
 }
