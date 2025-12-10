@@ -1,4 +1,4 @@
-import { NgModule, importProvidersFrom } from '@angular/core';
+import { NgModule, importProvidersFrom, isDevMode } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -38,6 +38,7 @@ import { RepairForm } from './components/repair-form/repair-form';
 import { RepairsList } from './components/repairs-list/repairs-list';
 import { SplitChipsPipe } from './pipes/split-chips.pipe';
 import { ChipMatchPipe } from './pipes/chip-match.pipe';
+import { ServiceWorkerModule } from '@angular/service-worker';
 @NgModule({
   declarations: [
     SplitChipsPipe,
@@ -73,7 +74,13 @@ BrowserAnimationsModule,
 FormsModule,
     HttpClientModule,
 
-PrimengModule
+PrimengModule,
+  ServiceWorkerModule.register('ngsw-worker.js', {
+    enabled: !isDevMode(),
+    // Register the ServiceWorker as soon as the application is stable
+    // or after 30 seconds (whichever comes first).
+    registrationStrategy: 'registerWhenStable:30000'
+  })
   ],
   providers: [
     // ✅ These go in providers, not imports
