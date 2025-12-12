@@ -4,6 +4,32 @@
       <h2>Low Stock Products</h2>
       <p class="page-subtitle">Products that need reordering</p>
     </div>
+    <div class="filters mb-2">
+  <label>Category:</label>
+  <select 
+    [(ngModel)]="selectedCategory"
+    (change)="loadSubcategories()"
+  >
+    <option [ngValue]="null" disabled selected>Select Category</option>
+    <option *ngFor="let c of categories" [ngValue]="c">
+  {{ c.name }}
+</option>
+
+  </select>
+
+  <label>Subcategory:</label>
+  <select 
+    [(ngModel)]="selectedSubcategory"
+    (change)="loadProducts()"
+  >
+    <option [ngValue]="null" selected>All Subcategories</option>
+    <option *ngFor="let s of subcategories" [ngValue]="s">
+  {{ s.name }}
+</option>
+
+  </select>
+</div>
+
 
     <ng-container *ngIf="!loading; else loadingTpl">
       <ng-container *ngIf="grouped | keyvalue as groupedData; else noDataTpl">
@@ -51,7 +77,7 @@
 
               <ng-template pTemplate="body" let-p>
                 <tr>
-                  <td>{{ p.name }}</td>
+                  <td style="word-break: break-all;">{{ p.name }}</td>
                   <td>{{ p.stock }}</td>
                   <td>{{ p.minStock }}</td>
                   <td>
@@ -96,7 +122,7 @@
 
 <ng-template #loadingTpl>
   <div class="loading-container">
-    <p>Loading products...</p>
+    <p>Please choose valid category or sub category</p>
   </div>
 </ng-template>
 

@@ -16,6 +16,7 @@ import { DrawerModule } from 'primeng/drawer';
 import { PaginatorModule } from 'primeng/paginator'; // <-- import paginator module
 import { AccordionModule } from 'primeng/accordion';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+// import { DropdownModule } from 'primeng/dropdown';
 
 @NgModule({
   exports: [
@@ -33,7 +34,8 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
     DrawerModule,
     PaginatorModule,
     AccordionModule,
-    ProgressSpinnerModule
+    ProgressSpinnerModule,
+    // DropdownModule
 
   ]
 })

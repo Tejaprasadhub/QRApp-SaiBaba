@@ -9,6 +9,14 @@ import { Observable } from 'rxjs';
   styleUrls: ['./reorder.scss'],
 })
 export class Reorder implements OnInit {
+categories: any[] = [];
+subcategories: any[] = [];
+selectedCategory: any = null;     // category object
+selectedSubcategory: any = null;  // subcategory object
+
+
+
+
   products$!: Observable<any[]>;
   grouped: { [key: string]: any[] } = {};
   loading = true;
@@ -22,88 +30,112 @@ export class Reorder implements OnInit {
   constructor(private firestore: Firestore) {}
 
   ngOnInit() {
-    const productsRef = collection(this.firestore, 'products');
-    this.products$ = collectionData(productsRef, { idField: 'id' });
-
-    this.products$.subscribe((products) => {
-      this.loading = false;
-
-      // const productMap: { [name: string]: any } = {};
-      // for (const p of products) {
-      //   const name = (p.name || '').trim();
-      //   if (!name) continue;
-
-      //   if (!productMap[name]) productMap[name] = { ...p };
-      //   else {
-      //     const existing = productMap[name];
-      //     existing.stock = (existing.stock || 0) + (p.stock || 0);
-      //     existing.minStock = Math.max(existing.minStock || 0, p.minStock || 0);
-      //   }
-      // }
-
-      const productMap: { [key: string]: any } = {};
-
-for (const p of products) {
-  const name = (p.name || '').trim();
-  const categoryId = p.categoryId || 'unknown';
-  if (!name) continue;
-
-  // Unique key: product name + category
-  const key = `${categoryId}_${name}`;
-
-  if (!productMap[key]) {
-    productMap[key] = { ...p };
-  } else {
-    const existing = productMap[key];
-
-    // Merge only within same category
-    existing.stock = (existing.stock || 0) + (p.stock || 0);
-    existing.minStock = Math.max(existing.minStock || 0, p.minStock || 0);
-  }
+  this.loadCategories();
+  this.loadPurchaseOrders();
+}
+loadPurchaseOrders() {
+  const poRef = collection(this.firestore, 'purchaseOrders');
+  collectionData(poRef, { idField: 'id' }).subscribe((orders: any[]) => {
+    this.orders = orders;
+    this.updateCreatedOrders();
+  });
+}
+updateCreatedOrders() {
+  this.createdOrders = {};
+  this.orders.forEach(order => {
+    if (order.status === 'pending') {
+      this.createdOrders[order.categoryName] = true;
+    }
+  });
 }
 
 
-      const lowStock = Object.values(productMap).filter(
-        (p: any) => (p.stock || 0) < (p.minStock || 0)
-      );
 
-      const categoryGroups: { [key: string]: any[] } = {};
-      lowStock.forEach((p: any) => {
-        const catName = p.categoryName || 'Uncategorized';
-        if (!categoryGroups[catName]) categoryGroups[catName] = [];
 
-        const orderQty = Math.max((p.minStock || 0) - (p.stock || 0), 1);
+  loadCategories() {
+  const catRef = collection(this.firestore, 'categories');
+  collectionData(catRef, { idField: 'id' }).subscribe((cats: any[]) => {
+    this.categories = cats;
+  });
+}
 
-        categoryGroups[catName].push({
-          ...p,
-          orderQty,
-          subCategoryId: p.subcategoryId || null,
-          subCategoryName: p.subcategoryName || '—',
-        });
-      });
+loadSubcategories() {
 
-      for (const key of Object.keys(categoryGroups)) {
-        categoryGroups[key].sort((a, b) => (a.price || 0) - (b.price || 0));
-      }
-
-      this.grouped = categoryGroups;
-    });
-
-    const poRef = collection(this.firestore, 'purchaseOrders');
-    this.purchaseOrders$ = collectionData(poRef, { idField: 'id' });
-
-    this.purchaseOrders$.subscribe((orders) => {
-      this.orders = orders;
-      this.createdOrders = {};
-
-      // 🚀 only block categories that have "pending" orders
-      for (const o of orders) {
-        if (o.status === 'pending') {
-          this.createdOrders[o.categoryName] = true;
-        }
-      }
-    });
+  if (!this.selectedCategory) {
+    this.subcategories = [];
+    this.grouped = {}; 
+    return;
   }
+
+  const subRef = collection(this.firestore, 'subcategories');
+
+  collectionData(subRef, { idField: 'id' }).subscribe((list: any[]) => {
+this.subcategories = list.filter(s => s.categoryId === this.selectedCategory.id);
+  });
+
+  // After selecting category, load products (subcategory optional)
+  this.loadProducts();
+}
+
+
+loadProducts() {
+  this.loading = true;
+
+  const productsRef = collection(this.firestore, 'products');
+  collectionData(productsRef, { idField: 'id' }).subscribe((products) => {
+    
+    products = products.filter(p => p['categoryId'] === this.selectedCategory.id);
+
+if (this.selectedSubcategory) {
+  products = products.filter(p => p['subcategoryId'] === this.selectedSubcategory.id);
+}
+
+
+    this.processProducts(products);
+    this.loading = false;
+  });
+}
+
+
+processProducts(products: any[]) {
+  const productMap: any = {};
+
+  for (const p of products) {
+    const key = `${p.categoryId}_${(p.name || '').trim()}`;
+
+    if (!productMap[key]) productMap[key] = { ...p };
+    else {
+      productMap[key].stock = (productMap[key].stock || 0) + (p.stock || 0);
+      productMap[key].minStock = Math.max(productMap[key].minStock || 0, p.minStock || 0);
+    }
+  }
+
+  const lowStock = Object.values(productMap).filter((p: any) =>
+    (p.stock || 0) < (p.minStock || 0)
+  );
+
+  const categoryGroups: any = {};
+
+  lowStock.forEach((p: any) => {
+    const catName = p.categoryName || 'Uncategorized';
+    if (!categoryGroups[catName]) categoryGroups[catName] = [];
+
+    categoryGroups[catName].push({
+      ...p,
+      orderQty: Math.max((p.minStock || 0) - (p.stock || 0), 1),
+      subCategoryName: p.subcategoryName || '—',
+    });
+  });
+
+  for (const key of Object.keys(categoryGroups)) {
+    categoryGroups[key].sort((a:any, b:any) => (a.price || 0) - (b.price || 0));
+  }
+
+  this.grouped = categoryGroups;
+}
+
+
+
 
   async createOrder(categoryName: string, products: any[]) {
     if (!products.length) return;
@@ -140,6 +172,8 @@ for (const p of products) {
     const docRef = await addDoc(poRef, order);
     alert(`Purchase order created for "${categoryName}" (ID: ${docRef.id})`);
     this.createdOrders[categoryName] = true;
+    this.loadPurchaseOrders(); // refresh list
+
   }
 
   getOrderedQty(categoryName: string): number {
