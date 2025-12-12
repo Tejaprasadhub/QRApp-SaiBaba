@@ -2,13 +2,20 @@ import { Component, OnInit } from '@angular/core';
 import { ProductService } from '../../services/product';
 import { SalesService } from '../../services/sales';
 import { ChartOptions } from 'chart.js';
-import { Firestore, collection, collectionData } from '@angular/fire/firestore';
+import {
+  Firestore,
+  collection,
+  getDocs,
+  query,
+  where,
+  getCountFromServer,
+} from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-dashboard',
   standalone: false,
   templateUrl: './dashboard.html',
-  styleUrl: './dashboard.scss',
+  styleUrls: ['./dashboard.scss'],
 })
 export class Dashboard implements OnInit {
   totalProducts = 0;
@@ -63,7 +70,7 @@ export class Dashboard implements OnInit {
     return isNaN(n) ? 0 : n;
   }
 
-  // ✅ Aggregate by product name
+  // Aggregate products locally
   private aggregateProducts(products: any[]) {
     const grouped: Record<string, any> = {};
     for (const p of products) {
@@ -81,15 +88,20 @@ export class Dashboard implements OnInit {
     return Object.values(grouped);
   }
 
-  private loadProducts() {
-    this.ps.getProducts().subscribe((products) => {
+  // Load all products once (no live listener)
+  private async loadProducts() {
+    try {
+      const productsSnap = await getDocs(collection(this.firestore, 'products'));
+      const products = productsSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
       const aggregated = this.aggregateProducts(products);
 
       this.totalProducts = aggregated.length;
       this.totalStock = aggregated.reduce((s, p: any) => s + p.totalStock, 0);
+
       this.lowStock = aggregated.filter((p: any) =>
         p.subcategories.some((s: any) => this.safeNumber(s.stock) <= this.safeNumber(s.minStock))
       ).length;
+
       this.outOfStock = aggregated.filter((p: any) => p.totalStock <= 0).length;
 
       const FAST_THRESHOLD = 10;
@@ -120,14 +132,21 @@ export class Dashboard implements OnInit {
 
       this.prepareStockPieChart();
       this.prepareCategoryBarChart();
-    });
+    } catch (err) {
+      console.error('Error loading products:', err);
+    }
   }
 
-  private loadSales() {
-    this.ss.getSales().subscribe((sales) => {
+  // Load sales (filtering can be done server-side if desired)
+  private async loadSales() {
+    try {
+      const salesSnap = await getDocs(collection(this.firestore, 'sales'));
+      const sales = salesSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
       this.allSales = sales;
       this.applyDateFilter();
-    });
+    } catch (err) {
+      console.error('Error loading sales:', err);
+    }
   }
 
   applyDateFilter() {
@@ -165,12 +184,8 @@ export class Dashboard implements OnInit {
 
       for (const item of s.items || []) {
         const qty = this.safeNumber(item.qty);
-        const cost = this.safeNumber(
-          item.costPrice || item.purchasePrice || item.priceCost || 0
-        );
-        const sell = this.safeNumber(
-          item.sellingPrice || item.salePrice || item.price || 0
-        );
+        const cost = this.safeNumber(item.costPrice || item.purchasePrice || item.priceCost || 0);
+        const sell = this.safeNumber(item.sellingPrice || item.salePrice || item.price || 0);
         saleTotal += sell * qty;
         saleProfit += (sell - cost) * qty;
       }
@@ -195,42 +210,31 @@ export class Dashboard implements OnInit {
     this.monthlySalesData = {
       labels,
       datasets: [
-        {
-          label: 'Monthly Sales (₹)',
-          data: labels.map((k) => monthlyMap[k].sales),
-          backgroundColor: '#42A5F5',
-        },
-        {
-          label: 'Monthly Profit (₹)',
-          data: labels.map((k) => monthlyMap[k].profit),
-          backgroundColor: '#66BB6A',
-        },
+        { label: 'Monthly Sales (₹)', data: labels.map((k) => monthlyMap[k].sales), backgroundColor: '#42A5F5' },
+        { label: 'Monthly Profit (₹)', data: labels.map((k) => monthlyMap[k].profit), backgroundColor: '#66BB6A' },
       ],
     };
   }
 
-  // ✅ UPDATED — ONLY COMPLETED PURCHASE ORDERS CALCULATED
-  private loadPurchaseOrders() {
-    const purchaseRef = collection(this.firestore, 'purchaseOrders');
-    collectionData(purchaseRef, { idField: 'id' }).subscribe((orders) => {
+  // Load only completed purchase orders
+  private async loadPurchaseOrders() {
+    try {
+      const purchaseRef = collection(this.firestore, 'purchaseOrders');
+      const q = query(purchaseRef, where('status', '==', 'completed'));
+      const snap = await getDocs(q);
+      const orders: any[] = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
 
-      // Only include completed orders
-      const completedOrders = orders.filter(
-        (o: any) => (o.status || '').toLowerCase() === 'completed'
-      );
-
-      this.totalPurchaseCount = completedOrders.length || 0;
+      this.totalPurchaseCount = orders.length;
 
       let totalValue = 0;
       let totalReceived = 0;
 
-      for (const o of completedOrders) {
-        if (Array.isArray(o['items'])) {
-          for (const i of o['items']) {
+      for (const o of orders) {
+        if (Array.isArray(o.items)) {
+          for (const i of o.items) {
             const qty = this.safeNumber(i.orderQty || 0);
             const rcvQty = this.safeNumber(i.receivedQty || 0);
             const price = this.safeNumber(i.newPrice || i.price || 0);
-
             totalValue += qty * price;
             totalReceived += rcvQty * price;
           }
@@ -239,18 +243,15 @@ export class Dashboard implements OnInit {
 
       this.totalPurchaseValue = Math.round(totalValue);
       this.totalPurchaseReceivedValue = Math.round(totalReceived);
-    });
+    } catch (err) {
+      console.error('Error loading purchase orders:', err);
+    }
   }
 
   private prepareStockPieChart() {
     this.stockPieData = {
       labels: ['In Stock', 'Out of Stock'],
-      datasets: [
-        {
-          data: [this.totalProducts - this.outOfStock, this.outOfStock],
-          backgroundColor: ['#42A5F5', '#FF6384'],
-        },
-      ],
+      datasets: [{ data: [this.totalProducts - this.outOfStock, this.outOfStock], backgroundColor: ['#42A5F5', '#FF6384'] }],
     };
   }
 
