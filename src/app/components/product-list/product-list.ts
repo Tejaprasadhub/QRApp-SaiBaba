@@ -7,6 +7,7 @@ import { Subject, debounceTime, take } from 'rxjs';
 import { FirestoreLoaderService } from '../../services/firestore-loader.service';
 import { SplitChipsPipe } from '../../pipes/split-chips.pipe';
 import { ChipMatchPipe } from '../../pipes/chip-match.pipe';
+import { ProductKeywordUpdateService } from '../../services/ProductKeywordUpdate.service';
 
 @Component({
   selector: 'app-product-list',
@@ -45,7 +46,8 @@ export class ProductList {
     private cs: CategoryService,
     private ss: SubcategoryService,
     private firestore: Firestore,
-    private fsLoader: FirestoreLoaderService
+    private fsLoader: FirestoreLoaderService,
+    private updater: ProductKeywordUpdateService
   ) {}
 
   ngOnInit() {
@@ -312,5 +314,9 @@ get totalMinStock() {
     }));
   }
 
-
+updateProductKeywords(){
+  this.updater.updateAllProducts()
+    .then(() => alert('✔ Successfully Done !!'))
+    .catch((err:any) => console.error(err));
+}
 }
