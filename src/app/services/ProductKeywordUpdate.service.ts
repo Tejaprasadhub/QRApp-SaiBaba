@@ -29,10 +29,10 @@ export class ProductKeywordUpdateService {
     for (let chunk of firstSplit) {
       keywords.add(chunk);
 
-      const spaceParts = chunk.split(/\s+/).filter(Boolean);
-      for (let part of spaceParts) {
-        keywords.add(part);
-      }
+    //   const spaceParts = chunk.split(/\s+/).filter(Boolean);
+    //   for (let part of spaceParts) {
+    //     keywords.add(part);
+    //   }
     }
 
     return Array.from(keywords);
@@ -41,15 +41,54 @@ export class ProductKeywordUpdateService {
   // -------------------------------------
   // minStock logic
   // -------------------------------------
-  getMinStock(keywordCount: number): number {
-    if (keywordCount <= 2) return 2;
-    if (keywordCount <= 6) return 3;
-    if (keywordCount <= 10) return 5;
-    return 10;
-  }
+  getMinStock(categoryName: string, keywordCount: number): number {
+  const cat = (categoryName || "").trim().toUpperCase();
+
+  // -------------------------
+  // CATEGORY: DISPLAYS
+  // -------------------------
+  if (cat === "DISPLAYS") {
+  if (keywordCount <= 2) return 2;
+  if (keywordCount <= 4) return 3;
+  return 5;
+}
+
+
+  // -------------------------
+  // CATEGORY: Always 2
+  // -------------------------
+  const min2Categories = [
+    "CC BOARD",
+    "UV GLASS",
+    "ON OFF STRIPS",
+    "MIDDLE FRAMES",
+    "OUTER BUTTONS",
+    "BACK CAPS",
+  ];
+
+  if (min2Categories.includes(cat)) return 2;
+
+  // -------------------------
+  // CATEGORY: Always 1
+  // -------------------------
+  const min1Categories = [
+    "SIM SLOTS",
+    "WATCHES",
+    "BATTERIES",
+    "RINGER KITS",
+  ];
+
+  if (min1Categories.includes(cat)) return 1;
+
+  // -------------------------
+  // Default
+  // -------------------------
+  return 0; // safer default
+}
+
 
   // -------------------------------------
-  // Batch Update Script
+  // Batch Update Script + isLowStock
   // -------------------------------------
   async updateAllProducts() {
     const productCol = collection(this.firestore, 'products');
@@ -78,13 +117,21 @@ export class ProductKeywordUpdateService {
       snap.docs.forEach(d => {
         const data = d.data() as any;
 
-        // Use "name" field
-        const keywords = this.generateKeywords(data.name || '');
-        const minStock = this.getMinStock(keywords.length);
+        const name = data.name || "";
+        const stock = data.stock || 0;
 
+        // Generate keywords
+        const keywords = this.generateKeywords(name);
+        const minStock = this.getMinStock(data.categoryName,keywords.length);
+
+        // 🔥 NEW: Calculate low-stock field
+        const isLowStock = stock < minStock;
+
+        // Update Firestore doc
         batch.update(doc(this.firestore, 'products', d.id), {
           keywords,
-          minStock // Firestore field uses camelCase
+          minStock,
+          isLowStock  // 🔥 new field
         });
       });
 
