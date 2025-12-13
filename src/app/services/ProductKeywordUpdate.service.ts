@@ -29,10 +29,10 @@ export class ProductKeywordUpdateService {
     for (let chunk of firstSplit) {
       keywords.add(chunk);
 
-    //   const spaceParts = chunk.split(/\s+/).filter(Boolean);
-    //   for (let part of spaceParts) {
-    //     keywords.add(part);
-    //   }
+      const spaceParts = chunk.split(/\s+/).filter(Boolean);
+      for (let part of spaceParts) {
+        keywords.add(part);
+      }
     }
 
     return Array.from(keywords);
@@ -122,16 +122,16 @@ export class ProductKeywordUpdateService {
 
         // Generate keywords
         const keywords = this.generateKeywords(name);
-        const minStock = this.getMinStock(data.categoryName,keywords.length);
+        // const minStock = this.getMinStock(data.categoryName,keywords.length);
 
-        // 🔥 NEW: Calculate low-stock field
-        const isLowStock = stock < minStock;
+        // // 🔥 NEW: Calculate low-stock field
+        // const isLowStock = stock < minStock;
 
         // Update Firestore doc
         batch.update(doc(this.firestore, 'products', d.id), {
-          keywords,
-          minStock,
-          isLowStock  // 🔥 new field
+          keywords
+          // minStock,
+          // isLowStock  // 🔥 new field
         });
       });
 

@@ -96,9 +96,10 @@
       <ng-template #viewCard>
         <div class="product-name">
           <span class="name-text">
+            <!-- {{ p.name }} -->
             <div class="chip-row">
   <span
-    *ngFor="let part of p.name | splitChips"
+    *ngFor="let part of p.keywords"
     class="chip"
     [class.chip-active]="part | chipMatch : filterName"
   >
@@ -143,9 +144,10 @@
 
         <ng-container *ngIf="editingProduct?.id !== p.id; else editRow">
           <td>
+            <!-- {{p.name}} -->
             <div class="chip-row">
   <span
-    *ngFor="let part of p.name | splitChips"
+     *ngFor="let part of p.keywords"
     class="chip"
     [class.chip-active]="part | chipMatch : filterName"
   >
