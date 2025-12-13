@@ -99,7 +99,7 @@
             <!-- {{ p.name }} -->
             <div class="chip-row">
   <span
-    *ngFor="let part of p.keywords"
+   *ngFor="let part of p.name | splitChips"
     class="chip"
     [class.chip-active]="part | chipMatch : filterName"
   >
@@ -147,7 +147,7 @@
             <!-- {{p.name}} -->
             <div class="chip-row">
   <span
-     *ngFor="let part of p.keywords"
+     *ngFor="let part of p.name | splitChips"
     class="chip"
     [class.chip-active]="part | chipMatch : filterName"
   >

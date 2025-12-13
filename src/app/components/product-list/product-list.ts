@@ -297,7 +297,7 @@ get totalMinStock() {
         keywords: namekeyWords
       }));
 
-      alert('Product updated successfully!');
+      // alert('Product updated successfully!');
       this.editingProduct = null;
 
       this.loadServerProducts({ page: 0 });
