@@ -149,7 +149,7 @@ public generateKeywords(text: string): string[] {
     }
 
     // 🔥 Order must be applied BEFORE startAfter
-q = query(q, orderBy('name'));
+q = query(q, orderBy('updatedAt', 'asc'));
 
 // 🔥 Apply cursor AFTER orderBy
 if (lastDoc) {

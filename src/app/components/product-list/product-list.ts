@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { ProductService } from '../../services/product';
 import { CategoryService } from '../../services/category';
 import { SubcategoryService } from '../../services/sub-category';
-import { Firestore, doc, updateDoc } from '@angular/fire/firestore';
+import { Firestore, doc, serverTimestamp, updateDoc } from '@angular/fire/firestore';
 import { Subject, debounceTime, take } from 'rxjs';
 import { FirestoreLoaderService } from '../../services/firestore-loader.service';
 import { SplitChipsPipe } from '../../pipes/split-chips.pipe';
@@ -293,8 +293,9 @@ get totalMinStock() {
         subcategoryName: sub?.name || '',
         price: Number(this.editingProduct.price),
         stock: Number(this.editingProduct.stock),
-        minStock: Number(this.editingProduct.minStock || 5),
-        keywords: namekeyWords
+        minStock: Number(this.editingProduct.minStock || 0),
+        keywords: namekeyWords,
+        updatedAt: serverTimestamp()
       }));
 
       // alert('Product updated successfully!');

@@ -7,13 +7,37 @@ import {
   startAfter,
   getDocs,
   writeBatch,
-  doc
+  doc,
+  serverTimestamp
 } from '@angular/fire/firestore';
 
 @Injectable({ providedIn: 'root' })
 export class ProductKeywordUpdateService {
 
   constructor(private firestore: Firestore) {}
+
+  // -------------------------------------
+  // Generate Keywords at update (your logic)
+  // -------------------------------------
+  generateKeywordsAtUpdate(text: string): string[] {
+    text = (text || '').toLowerCase().trim();
+
+    const keywords = new Set<string>();
+    if (!text) return [];
+
+    const firstSplit = text.split(/\//).map(t => t.trim()).filter(Boolean);
+
+    for (let chunk of firstSplit) {
+      keywords.add(chunk);
+
+      // const spaceParts = chunk.split(/\s+/).filter(Boolean);
+      // for (let part of spaceParts) {
+      //   keywords.add(part);
+      // }
+    }
+
+    return Array.from(keywords);
+  }
 
   // -------------------------------------
   // Generate Keywords (your logic)
@@ -117,11 +141,11 @@ export class ProductKeywordUpdateService {
       snap.docs.forEach(d => {
         const data = d.data() as any;
 
-        const name = data.name || "";
-        const stock = data.stock || 0;
+        // const name = data.name || "";
+        // const stock = data.stock || 0;
 
         // Generate keywords
-        const keywords = this.generateKeywords(name);
+        // const keywords = this.generateKeywords(name);
         // const minStock = this.getMinStock(data.categoryName,keywords.length);
 
         // // 🔥 NEW: Calculate low-stock field
@@ -129,9 +153,10 @@ export class ProductKeywordUpdateService {
 
         // Update Firestore doc
         batch.update(doc(this.firestore, 'products', d.id), {
-          keywords
+          // keywords
           // minStock,
           // isLowStock  // 🔥 new field
+          updatedAt: serverTimestamp()
         });
       });
 
