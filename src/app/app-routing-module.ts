@@ -24,7 +24,7 @@ import { RepairsList } from './components/repairs-list/repairs-list';
 import { RepairForm } from './components/repair-form/repair-form';
 
 const routes: Routes = [
- { path: '', redirectTo: '/customer-form', pathMatch: 'full' },
+ { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'customer-form', component: CustomerForm },
   { path: 'qr-code', component: QrCodeComponent },
   { path: 'thank-you', component: ThankYou },
