@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Firestore, collection, addDoc, query, where, collectionData, getDocs } from '@angular/fire/firestore';
+import { Firestore, collection, addDoc, query, where, collectionData, getDocs, serverTimestamp } from '@angular/fire/firestore';
 import { FirestoreLoaderService } from '../../services/firestore-loader.service';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 
@@ -41,34 +41,93 @@ phoneInput$ = new Subject<string>();
   // ================================
   // 💾 Save repair job
   // ================================
+  // async saveRepair() {
+  //   const ref = collection(this.firestore, 'repairs');
+
+  //   const payload = {
+  //     ...this.model,
+  //     inDate: new Date()
+  //   };
+
+  //   await this.fsLoader.wrapPromise(
+  //     addDoc(ref, payload)
+  //   );
+
+  //   alert('Repair job saved!');
+
+  //   // Reset form
+  //   this.model = {
+  //     customerPhone: '',
+  //     customerName: '',
+  //     deviceName: '',
+  //     issue: '',
+  //     estimatedAmount: 0,
+  //     paidAmount: 0,
+  //     pendingAmount: 0,
+  //     status: 'pending',
+  //     inDate: new Date(),
+  //     completedAt: null
+  //   };
+  // }
+
+
   async saveRepair() {
-    const ref = collection(this.firestore, 'repairs');
+  // Step 1: Check if the customer exists by phone number
+  const customerRef = collection(this.firestore, 'customers');
+  const q = query(customerRef, where('phone', '==', this.model.customerPhone));
 
-    const payload = {
-      ...this.model,
-      inDate: new Date()
-    };
+  const snapshot = await this.fsLoader.wrapPromise(getDocs(q));
 
-    await this.fsLoader.wrapPromise(
-      addDoc(ref, payload)
-    );
-
-    alert('Repair job saved!');
-
-    // Reset form
-    this.model = {
-      customerPhone: '',
-      customerName: '',
-      deviceName: '',
-      issue: '',
-      estimatedAmount: 0,
-      paidAmount: 0,
-      pendingAmount: 0,
-      status: 'pending',
-      inDate: new Date(),
-      completedAt: null
-    };
+  if (snapshot.empty) {
+    // Step 2: If customer doesn't exist, create a new customer
+    await this.createNewCustomer();
   }
+
+  // Step 3: Create the repair job after ensuring the customer exists
+  const repairRef = collection(this.firestore, 'repairs');
+  const repairPayload = {
+    ...this.model,
+    inDate: new Date(),
+  };
+
+  // Add repair job document to Firestore
+  await this.fsLoader.wrapPromise(addDoc(repairRef, repairPayload));
+
+  alert('Repair job saved!');
+
+  // Reset the form after saving
+  this.resetForm();
+}
+
+async createNewCustomer() {
+  // Step 4: Create the new customer if not found
+  const newCustomerPayload = {
+    phone: this.model.customerPhone,
+    name: this.model.customerName,  // Ensure the customer name is provided,
+    createdAt: serverTimestamp()
+  };
+  // debugger;
+  // Add customer document to Firestore
+  await this.fsLoader.wrapPromise(addDoc(collection(this.firestore, 'customers'), newCustomerPayload));
+  // debugger;
+  // alert('New customer created!');
+}
+
+resetForm() {
+  this.model = {
+    customerPhone: '',
+    customerName: '',
+    deviceName: '',
+    issue: '',
+    estimatedAmount: 0,
+    paidAmount: 0,
+    pendingAmount: 0,
+    status: 'pending',
+    inDate: new Date(),
+    completedAt: null
+  };
+}
+
 
 onPhoneChange(phone: string) {
   this.phoneInput$.next(phone);

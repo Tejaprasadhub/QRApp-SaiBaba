@@ -55,6 +55,10 @@
     </div> -->
 
   </div>
+  <!-- TOTAL SERVICE AMOUNT -->
+  <div class="total-service-amount mb-2">
+    Total Service Amount: <strong>₹{{ totalServiceAmount }}</strong>
+  </div>
 
   <!-- LIST -->
   <div class="card-list" *ngIf="filtered.length > 0">
@@ -81,6 +85,15 @@
           <span>📅 {{ r.inDate?.toDate() | date:'mediumDate' }}</span>
           <span>Total: ₹{{ r.estimatedAmount }}</span>
           <span>Paid: ₹{{ r.paidAmount }}</span>
+          
+        </div>
+         <div class="meta actions">
+          <span>Service Amount: ₹{{ r?.serviceAmount || 0 }}</span>
+          <span>
+          <button  (click)="addServiceAmount(r)">
+            {{ r?.serviceAmount > 0 ? 'Edit' : 'Add' }} Service Amount
+          </button>
+        </span>
         </div>
       </div>
 
@@ -88,16 +101,17 @@
       <div class="card-footer">
         <span class="pending" *ngIf="r.pendingAmount > 0">
           Pending ₹{{ r.pendingAmount }}
-        </span>
+        </span>       
+        
         <div class="actions">
           <button
             *ngIf="r.pendingAmount > 0"
             (click)="addPayment(r)">
             Add Payment
           </button>
-
+          
           <button
-            *ngIf="r.status !== 'completed'"
+            *ngIf="r.status !== 'completed' && r.serviceAmount > 0"
             class="success"
             (click)="completeWithPayment(r)">
             Complete

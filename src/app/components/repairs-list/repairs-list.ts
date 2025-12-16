@@ -163,6 +163,7 @@ export class RepairsList implements OnInit {
 
     const newPaid = (r.paidAmount || 0) + amt;
     const newPending = Math.max((r.estimatedAmount || 0) - newPaid, 0);
+    
 
 this.fsLoader.wrapPromise(
     this.repairService.markCompleted(r.id, newPaid, newPending)
@@ -172,4 +173,34 @@ this.fsLoader.wrapPromise(
   }).catch(() => {
     alert('Failed to complete repair');
   });  }
+
+  // Calculate the total service amount
+  get totalServiceAmount(): number {
+    return this.filtered.reduce((total, repair) => total + (repair.serviceAmount || 0), 0);
+  }
+
+
+  // Add service amount to the repair
+addServiceAmount(r: any) {
+  const value = prompt(`Enter service amount for repair: ₹${r.serviceAmount}`, r.serviceAmount);
+  if (!value) return;
+
+  const amt = Number(value);
+  if (isNaN(amt) || amt <= 0) {
+    alert("Invalid amount");
+    return;
+  }
+
+  const newServiceAmount = amt;
+
+  this.fsLoader.wrapPromise(
+    this.repairService.updateServiceAmount(r.id, newServiceAmount)
+  ).then(() => {
+    this.load(true);
+    // ✅ optional success UI
+  }).catch(() => {
+    alert('Failed to add service amount');
+  });
+}
+
 }

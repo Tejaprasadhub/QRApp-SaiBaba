@@ -98,41 +98,66 @@ if (this.selectedSubcategory) {
 
 
 processProducts(products: any[]) {
-  const productMap: any = {};
+  const productMap: Record<string, any> = {};
 
+  // 1. Aggregate by category + name
   for (const p of products) {
-    const key = `${p.categoryId}_${(p.name || '').trim()}`;
+    const key = `${p.categoryId}_${(p.name || '').trim().toLowerCase()}`;
 
-    if (!productMap[key]) productMap[key] = { ...p };
-    else {
-      productMap[key].stock = (productMap[key].stock || 0) + (p.stock || 0);
-      productMap[key].minStock = Math.max(productMap[key].minStock || 0, p.minStock || 0);
+    if (!productMap[key]) {
+      productMap[key] = {
+        productIds: [p.id], 
+        categoryId: p.categoryId,
+        categoryName: p.categoryName,
+        name: (p.name || '').trim(),
+        stock: p.stock || 0,
+        minStock: p.minStock || 0,
+        price: p.price || 0, // choose base price if needed
+      };
+    } else {
+      productMap[key].stock += p.stock || 0;
+      productMap[key].minStock = Math.max(
+        productMap[key].minStock,
+        p.minStock || 0
+      );
+      productMap[key].productIds.push(p.id); // ✅ FIX
     }
   }
 
-  const lowStock = Object.values(productMap).filter((p: any) =>
-    (p.stock || 0) < (p.minStock || 0)
+  // 2. Convert map → array
+  const aggregatedProducts = Object.values(productMap);
+
+  // 3. Filter low stock AFTER aggregation
+  const lowStock = aggregatedProducts.filter(
+    (p: any) => p.stock < p.minStock
   );
 
-  const categoryGroups: any = {};
+  // 4. Group by category
+  const categoryGroups: Record<string, any[]> = {};
 
-  lowStock.forEach((p: any) => {
+  for (const p of lowStock) {
     const catName = p.categoryName || 'Uncategorized';
-    if (!categoryGroups[catName]) categoryGroups[catName] = [];
+
+    if (!categoryGroups[catName]) {
+      categoryGroups[catName] = [];
+    }
 
     categoryGroups[catName].push({
       ...p,
-      orderQty: Math.max((p.minStock || 0) - (p.stock || 0), 1),
-      subCategoryName: p.subcategoryName || '—',
+      orderQty: Math.max(p.minStock - p.stock, 1),
     });
-  });
+  }
 
+  // 5. Sort products inside category
   for (const key of Object.keys(categoryGroups)) {
-    categoryGroups[key].sort((a:any, b:any) => (a.price || 0) - (b.price || 0));
+    categoryGroups[key].sort(
+      (a: any, b: any) => (a.price || 0) - (b.price || 0)
+    );
   }
 
   this.grouped = categoryGroups;
 }
+
 
 
 

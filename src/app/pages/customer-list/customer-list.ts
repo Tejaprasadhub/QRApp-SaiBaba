@@ -45,7 +45,7 @@ prevPage() {
 const ref = collection(this.firestore, 'customers');
 
 // 🔽 Order by 'createdAt' descending (newest first)
-  const q = query(ref, orderBy('createdAt', 'desc'), limit(500)); // get last 10 records
+  const q = query(ref, orderBy('createdAt', 'desc')); // get last 10 records
 
 
     const snapshot = await getDocs(q);

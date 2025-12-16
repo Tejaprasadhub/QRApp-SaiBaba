@@ -83,9 +83,18 @@ export class RepairsService {
 
     await updateDoc(ref, {
       paidAmount: paid,
-      pendingAmount: pending,
+      pendingAmount: pending,     
       status: pending === 0 ? 'completed' : 'completed', // still completed
       completedAt: new Date()
     });
   }
+
+  // Update service amount
+  async updateServiceAmount(repairId: string, newServiceAmount: number) {
+   const ref = doc(this.firestore, `repairs/${repairId}`);
+
+    await updateDoc(ref, {
+      serviceAmount: newServiceAmount
+    });
+}
 }
