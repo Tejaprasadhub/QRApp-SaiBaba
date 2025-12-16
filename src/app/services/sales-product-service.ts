@@ -30,9 +30,11 @@ export class SalesProductService {
     const productsRef = collection(this.firestore, 'products');
 
     let q = query(productsRef, orderBy('name'));
-
-    if (filter.name) {
-      q = query(q, where('name', '>=', filter.name), where('name', '<=', filter.name + '\uf8ff'));
+if (filter.name) {
+       q = query(
+        productsRef,
+        where('keywords', 'array-contains', filter.name.toLowerCase())
+      );
     }
 
     if (filter.category) {

@@ -36,10 +36,11 @@
             <p>Cost: ₹{{ p?.price }}</p>
             <p *ngIf="p?.categoryName">Category: {{ p?.categoryName }}</p>
             <p *ngIf="p?.subcategoryName">Sub Category: {{ p?.subcategoryName }}</p>
-          </div>
-          <button class="btn-add" (click)="addToCart(p)" [disabled]="!canAddToCart(p)">
+            <button class="btn-add" (click)="addToCart(p)" [disabled]="!canAddToCart(p)">
             {{ canAddToCart(p) ? 'Add' : 'Out of stock' }}
           </button>
+          </div>
+          
         </div>
       </div>
 

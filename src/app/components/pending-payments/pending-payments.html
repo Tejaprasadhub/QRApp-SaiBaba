@@ -9,7 +9,9 @@
       
       <div class="row1">
         <div>
-          <b>{{ p.customerName || 'Unknown' }}</b>
+          <b>{{ p.customerName || 'Unknown' }}<a [href]="'tel:' + p.customerPhone" class="phone-icon ml-3" title="Call">
+              📞
+            </a></b>
           <p>{{ p.customerPhone }}</p>         
         </div>
 
@@ -27,6 +29,9 @@
       <div class="row2">
         <span><b>Total:</b> ₹{{ p.total }}</span>
         <span><b>Paid:</b> ₹{{ p.paidAmount }}</span>
+      </div>
+      <div class="row2">
+        <span><b>Issue:</b> {{ p.issue }}</span>
       </div>
 
       <div class="row3">
