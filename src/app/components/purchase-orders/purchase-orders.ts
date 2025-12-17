@@ -251,7 +251,7 @@ toggleOrderItems(orderId: string) {
         subcategoryName: editData.subCategoryName || '',
         stock: Number(editData.receivedQty),
         price: editData.newPrice || item.price,
-        minStock: 5,        
+        minStock: 1,        
         // ✅ FIX: insert keywords
         keywords: this.ps.generateKeywords(item.name)
       });
