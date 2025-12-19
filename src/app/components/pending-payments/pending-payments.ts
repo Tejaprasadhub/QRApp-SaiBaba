@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 import { Firestore, collection, query, where, updateDoc, doc } from '@angular/fire/firestore';
 import { collectionData } from '@angular/fire/firestore';
-import { combineLatest } from 'rxjs';
+import { combineLatest, take } from 'rxjs';
+import { FirestoreLoaderService } from '../../services/firestore-loader.service';
 
 @Component({
   selector: 'app-pending-payments',
@@ -11,75 +12,113 @@ import { combineLatest } from 'rxjs';
 })
 export class PendingPayments {
 
-  pendingList: any[] = [];
+  activeTab: 'sales' | 'repairs' = 'sales';
 
-  constructor(private firestore: Firestore) {
+  pendingSales: any[] = [];
+  pendingRepairs: any[] = [];
+
+  constructor(private firestore: Firestore,
+     private fsLoader: FirestoreLoaderService
+  ) {
     this.loadPendingPayments();
   }
 
-  // ================================
-  // 🔥 Get all pending payments
-  // ================================
-  // loadPendingPayments() {
-  //   const ref = collection(this.firestore, 'sales');
-  //   const q1 = query(ref, where('pendingAmount', '>', 0));
+  loadPendingPayments() {
+    const salesRef = collection(this.firestore, 'sales');
+    const repairsRef = collection(this.firestore, 'repairs');
 
-  //   collectionData(q1, { idField: 'id' }).subscribe(res => {
-  //     this.pendingList = res.sort(
-  //       (a, b) => b['date'].toDate() - a['date'].toDate()
-  //     );
-  //   });
-  // }
+    const salesQ = query(salesRef, where('pendingAmount', '>', 0));
+    const repairsQ = query(repairsRef, where('pendingAmount', '>', 0));
 
- 
-loadPendingPayments() {
-  const salesRef = collection(this.firestore, 'sales');
-  const repairsRef = collection(this.firestore, 'repairs');
+    
+  this.fsLoader
+    .wrapObservable(
+combineLatest([
+      collectionData(salesQ, { idField: 'id' }),
+      collectionData(repairsQ, { idField: 'id' })
+    ]).pipe(take(1))).subscribe(([sales, repairs]: any[]) => {
 
-  const salesQ = query(salesRef, where('pendingAmount', '>', 0));
-  const repairsQ = query(repairsRef, where('pendingAmount', '>', 0));
+      this.pendingSales = sales
+        .map((s: any) => ({
+          ...s,
+          type: 'sale',
+          total: s.total,
+          paymentMode: s.paymentMode || '—',
+          date: s.date
+        }))
+        .sort((a:any, b:any) => b.date.toDate() - a.date.toDate());
 
-  combineLatest([
-    collectionData(salesQ, { idField: 'id' }),
-    collectionData(repairsQ, { idField: 'id' })
-  ]).subscribe(([sales, repairs]: any[]) => {
+      this.pendingRepairs = repairs
+        .map((r: any) => ({
+          ...r,
+          type: 'repair',
+          total: r.estimatedAmount,
+          paymentMode: 'Repair',
+          date: r.inDate
+        }))
+        .sort((a:any, b:any) => b.date.toDate() - a.date.toDate());
+    });
+  }
 
-    const formattedSales = sales.map((s:any) => ({
-      ...s,
-      type: 'Sale',
-       total: s.total,
-      paymentMode: s.paymentMode || '—',
-      date: s.date
-    }));
+  async markPartialPaid(item: any) {
+  const amountStr = prompt('Enter partial payment amount:');
 
-    const formattedRepairs = repairs.map((r:any) => ({
-      ...r,
-      type: 'Repair',
-       total: r.estimatedAmount,          // ✅ map correctly
-      paymentMode: 'Repair',              // ✅ default value
-      date: r.inDate                      // ✅ map date
-    }));
+  if (!amountStr) return;
 
-    this.pendingList = [...formattedSales, ...formattedRepairs]
-      .sort((a, b) => b.date.toDate() - a.date.toDate());
-  });
+  const amount = Number(amountStr);
+  if (isNaN(amount) || amount <= 0 || amount > item.pendingAmount) {
+    alert('Invalid amount');
+    return;
+  }
+
+  const collectionName = item.type === 'sale' ? 'sales' : 'repairs';
+  const ref = doc(this.firestore, `${collectionName}/${item.id}`);
+
+  await this.fsLoader.wrapPromise(
+  updateDoc(ref, {
+    paidAmount: (item.paidAmount || 0) + amount,
+    pendingAmount: item.pendingAmount - amount
+  })
+);
+
+this.loadPendingPayments();
+
 }
 
+async markFullyPaid(item: any) {
+ const amountStr = prompt(
+  `Enter payment amount (Pending ₹${item.pendingAmount}):`,
+  item.pendingAmount
+);
 
-  // ================================
-  // 🔆 Mark as fully paid
-  // ================================
-  async markAsPaid(item: any) {
-    const ref = doc(this.firestore, `sales/${item.id}`);
 
-    await updateDoc(ref, {
-      pendingAmount: 0,
-      paidAmount: item.total,
-      paymentCompleted: true,
-      paymentCompletedAt: new Date()
-    });
+  if (!amountStr) return;
 
-    this.loadPendingPayments();
+  const amount = Number(amountStr);
+  if (isNaN(amount) || amount !== item.pendingAmount) {
+    alert('Amount must match pending amount');
+    return;
   }
+
+  const collectionName = item.type === 'sale' ? 'sales' : 'repairs';
+  const ref = doc(this.firestore, `${collectionName}/${item.id}`);
+
+ const updateData: any = {
+  paidAmount: (item.paidAmount || 0) + amount,
+  pendingAmount: 0,
+  completedAt: new Date()
+};
+
+if (item.type === 'repair') {
+  updateData.status = 'completed';
+}
+
+if (item.type === 'sale') {
+  updateData.paymentStatus = 'paid';
+}
+await this.fsLoader.wrapPromise(updateDoc(ref, updateData));
+
+this.loadPendingPayments();
+}
 
 }

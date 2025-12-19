@@ -69,3 +69,46 @@
   border-left: 4px solid #1484d6;
 }
 
+.tabs {
+  display: flex;
+  width: 100%;
+  margin-bottom: 16px;
+  background: #f1f1f1;
+  border-radius: 12px;
+  padding: 4px;
+}
+
+.tabs button {
+  flex: 1;                 // 🔑 50% width
+  height: 42px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  font-size: 15px;
+  font-weight: 600;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.tabs button.active {
+  background: #000;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* Hover (non-active) */
+.tabs button:not(.active):hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.tabs button.active:first-child {
+  background: #2563eb; // blue for sales
+}
+
+.tabs button.active:last-child {
+  background: #16a34a; // green for repairs
+}
+
+
+

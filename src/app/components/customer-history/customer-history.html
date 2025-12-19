@@ -60,7 +60,7 @@
 
         <!-- ITEMS -->
         <div class="items">
-          <div class="item" *ngFor="let i of s.items">
+          <div class="item" style="word-break: break-all;" *ngFor="let i of s.items">
             <span>{{ i.name }} × {{ i.qty }}</span>
             <strong
               [ngClass]="{

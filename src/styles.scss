@@ -97,6 +97,26 @@ body {
   line-height: 1.6;
 }
 
+.actions button {
+  border: none;
+  border-radius: 8px;
+  padding: .45rem .7rem;
+  font-size: .75rem;
+  margin-left: .25rem;
+}
+
+.actions button.success {
+  background: #2e7d32;
+  color: #fff;
+}
+
+
+  .actions {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
+
 /* ======================================================
    TOAST STYLES
    ====================================================== */
