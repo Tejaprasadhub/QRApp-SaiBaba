@@ -1,9 +1,11 @@
 import { Component } from '@angular/core';
 import { SalesService } from '../../services/sales';
-import { Subject, debounceTime } from 'rxjs';
+import { Subject, debounceTime, take } from 'rxjs';
 import { QueryDocumentSnapshot, DocumentData, Firestore, collection, query, where } from '@angular/fire/firestore';
 import { Product, SalesProductService } from '../../services/sales-product-service';
 import { collectionData } from '@angular/fire/firestore';
+import { FirestoreLoaderService } from '../../services/firestore-loader.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-sales-form',
@@ -34,7 +36,9 @@ paymentMode: 'cash' | 'credit' | 'partial' = 'cash';
   constructor(
     private ps: SalesProductService,
     private ss: SalesService,
-    private firestore: Firestore
+    private firestore: Firestore,
+    private fsLoader: FirestoreLoaderService,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -58,25 +62,29 @@ ngDoCheck() {
   // 🔥 Load products
   // =====================
   loadProducts() {
-    this.ps.getProducts({
+    this.fsLoader
+  .wrapObservable(this.ps.getProducts({
       name: this.productSearch.toUpperCase(),
       category: this.selectedCategory,
       pageSize: this.pageSize,
       lastDoc: this.lastDoc,
-    }).subscribe(res => {
+    }).pipe(take(1))).subscribe(res => {
       this.products = res.data;
       this.lastDoc = res.lastDoc || null;
     });
   }
 
+  
+
   loadNextPage() {
     if (!this.lastDoc) return;
-    this.ps.getProducts({
+    this.fsLoader
+  .wrapObservable(this.ps.getProducts({
       name: this.productSearch.toUpperCase(),
       category: this.selectedCategory,
       pageSize: this.pageSize,
       lastDoc: this.lastDoc,
-    }).subscribe(res => {
+    }).pipe(take(1))).subscribe(res => {
       this.products = [...this.products, ...res.data];
       this.lastDoc = res.lastDoc || null;
     });
@@ -97,7 +105,8 @@ ngDoCheck() {
     const ref = collection(this.firestore, 'customers');
     const q1 = query(ref, where('phone', '==', this.customerPhone));
 
-    collectionData(q1, { idField: 'id' }).subscribe(res => {
+    this.fsLoader
+    .wrapObservable(collectionData(q1, { idField: 'id' }).pipe(take(1))).subscribe(res => {
       this.customerData = res[0] || {
         name: '',
         totalPendingAmount: 0
@@ -200,12 +209,14 @@ ngDoCheck() {
   };
 
   try {
-    const saleId = await this.ss.addSale(sale);
+    const saleId = await this.fsLoader.wrapPromise(
+this.ss.addSale(sale));
 
     console.log('✅ Sale saved:', saleId);
 
     alert('✅ Sale recorded successfully!');
 
+    this.router.navigate(['/sales']);
     // reset UI
     this.cart = [];
     this.total = 0;
@@ -213,7 +224,6 @@ ngDoCheck() {
     this.customerData = null;
     this.lastDoc = null;
 
-    this.loadProducts();
 
   } catch (err: any) {
     console.error('❌ Sale failed', err);
