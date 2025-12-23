@@ -81,8 +81,17 @@
       <div class="card-body">
         <div><b>Device:</b> {{ r.deviceName }}</div>
         <div><b>Issue:</b> {{ r.issue }}</div>
+        <div><b>Type:</b> {{ r.repairType }}</div>
+         <details class="items-details" *ngIf="r.repairType == 'repair'">
+        <summary>Items Breakdown</summary>
+        <ul>
+          <li *ngFor="let i of r.usedParts" style="word-break: break-word;">
+            {{ i.name }} x {{ i.qty }} | Category: {{ i.categoryName || 'N/A' }} | Subcategory: {{ i.subcategoryName || 'N/A' }} 
+          </li>
+        </ul>
+      </details>
         <div class="meta">
-          <span>📅 {{ r.inDate?.toDate() | date:'mediumDate' }}</span>
+          <span>📅 {{ r.inDate?.toDate() | date:'medium' }}</span>
           <span>Total: ₹{{ r.estimatedAmount }}</span>
           <span>Paid: ₹{{ r.paidAmount }}</span>
           

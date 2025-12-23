@@ -7,15 +7,22 @@
     <!-- Customer -->
     <div class="form-group">
       <label>Customer Phone*</label>
-      <input
-  type="text"
+<input
+  type="tel"
   [(ngModel)]="model.customerPhone"
   name="customerPhone"
   required
+  pattern="^[0-9]{10}$"
+  minlength="10"
   maxlength="10"
-  (ngModelChange)="onPhoneChange($event)"
+   (ngModelChange)="onPhoneChange($event)"
 />
-<small *ngIf="model.customerName">
+
+<!-- <small *ngIf="model.customerPhone.invalid && phone.touched">
+  ❌ Enter valid 10-digit phone number
+</small> -->
+
+<small *ngIf="existingCustomer">
   ✅ Existing customer found
 </small>
     </div>
@@ -23,65 +30,241 @@
     <div class="form-group">
       <label>Customer Name</label>
       <input
-        type="text"
-        [(ngModel)]="model.customerName"
-        name="customerName"
-      />
+  type="text"
+  [(ngModel)]="model.customerName"
+  name="customerName"
+  [required]="!existingCustomer"
+  minlength="3"
+  #customerName="ngModel"
+/>
+
+<small *ngIf="customerName.invalid && customerName.touched">
+  ❌ Customer name is required
+</small>
+
     </div>
+
+    <div class="form-group">
+  <label>Repair Type</label>
+  <select [(ngModel)]="model.repairType" name="repairType">
+    <option value="repair">Repair</option>
+    <option value="service">Service</option>
+  </select>
+</div>
+
 
     <!-- Device -->
     <div class="form-group">
       <label>Device Name*</label>
       <input
-        type="text"
-        [(ngModel)]="model.deviceName"
-        name="deviceName"
-        required
-      />
+  type="text"
+  [(ngModel)]="model.deviceName"
+  name="deviceName"
+  required
+  minlength="3"
+  #deviceName="ngModel"
+/>
+
+<small *ngIf="deviceName.invalid && deviceName.touched">
+  ❌ Device name required (min 3 chars)
+</small>
+
     </div>
 
     <div class="form-group">
       <label>Device Issue*</label>
       <textarea
-        [(ngModel)]="model.issue"
-        name="issue"
-        required
-        rows="3"
-      ></textarea>
+  [(ngModel)]="model.issue"
+  name="issue"
+  required
+  minlength="5"
+  #issue="ngModel"
+></textarea>
+
+<small *ngIf="issue.invalid && issue.touched">
+  ❌ Issue description required
+</small>
+
     </div>
+
+    <!-- ================= Spare Parts ================= -->
+<div class="form-group">
+  <h4>🔩 Spare Parts Used</h4>
+<!-- Search input -->
+  <input
+    type="text"
+    placeholder="Search spare part..."
+    [(ngModel)]="partSearch"
+    name="partSearch"
+    (ngModelChange)="onPartSearchChange()"
+  />
+
+ <!-- Search results -->
+<div class="products-list" *ngIf="searchedProducts.length">
+  <div class="product-card" *ngFor="let p of searchedProducts">
+    <div class="product-info">
+      <b class="product-name">{{ p.name }}</b>
+
+      <small class="meta">
+        Category: {{ p.categoryName || 'Uncategorized' }}
+      </small>
+
+      <small class="meta" *ngIf="p.subcategoryName">
+        Sub: {{ p.subcategoryName }}
+      </small>
+
+      <small
+        class="stock"
+        [class.out]="(p.stock ?? 0) <= 0"
+      >
+        Stock: {{ p.stock ?? 0 }}
+      </small>
+    </div>
+
+    <button
+      class="btn-add"
+      (click)="addSpareFromInventory(p)"
+      [disabled]="(p.stock ?? 0) <= 0"
+    >
+      {{ (p.stock ?? 0) > 0 ? 'Add' : 'Out of stock' }}
+    </button>
+  </div>
+</div>
+<!-- No products found -->
+<div
+  class="no-results"
+  *ngIf="partSearch && !searchedProducts.length"
+>
+  🔍 No products found
+</div>
+
+
+ <div *ngFor="let part of spareParts; let i = index" class="spare-row">
+  <div class="spare-info">
+
+    <!-- NAME -->
+    <input
+      *ngIf="part.source === 'outside'; else inventoryName"
+      type="text"
+      placeholder="Spare name"
+      [(ngModel)]="part.name"
+      name="partName{{i}}"
+      required
+    />
+
+    <ng-template #inventoryName>
+      <b>{{ part.name }}</b>
+    </ng-template>
+
+    <!-- CATEGORY -->
+    <input
+      *ngIf="part.source === 'outside'"
+      type="text"
+      placeholder="Category"
+      [(ngModel)]="part.categoryName"
+      name="partCat{{i}}"
+      required
+    />
+
+    <small class="meta" *ngIf="part.source === 'inventory'">
+      Category: {{ part.categoryName }}
+    </small>
+
+    <!-- SUB CATEGORY -->
+    <input
+      *ngIf="part.source === 'outside'"
+      type="text"
+      placeholder="Sub Category"
+      [(ngModel)]="part.subcategoryName"
+      name="partSub{{i}}"
+    />
+
+    <small class="meta" *ngIf="part.source === 'inventory' && part.subcategoryName">
+      Sub: {{ part.subcategoryName }}
+    </small>
+
+    <span *ngIf="part.source === 'outside'" class="badge">Outside</span>
+  </div>
+
+<!-- QTY: Editable for inventory, readonly for outside -->
+  <input
+  type="number"
+  [(ngModel)]="part.qty"
+  name="partQty{{i}}"
+  min="1"
+  max="10"
+  readonly="{{part.source === 'outside' ? true : true}}"
+  required
+/>
+
+
+
+
+  <!-- SOURCE (DISABLED FOR OUTSIDE) -->
+  <select
+    [(ngModel)]="part.source"
+    name="partSource{{i}}"
+    [disabled]="true"
+  >
+    <option value="inventory">From Inventory</option>
+    <option value="outside">From Outside Shop</option>
+  </select>
+
+  <button type="button" (click)="removePart(i)">❌</button>
+</div>
+
+
+<button
+  type="button"
+  class="btn-outside"
+  (click)="addOutsideSpare()"
+>
+  ➕ Add Outside Spare
+</button>
+</div>
 
     <!-- Amounts -->
     <div class="two-grid">
       <div class="form-group">
         <label>Estimated Amount*</label>
         <input
-          type="number"
-          [(ngModel)]="model.estimatedAmount"
-          name="estimatedAmount"
-          required
-          (ngModelChange)="updatePending()"
-        />
+  type="number"
+  [(ngModel)]="model.estimatedAmount"
+  name="estimatedAmount"
+  required
+  min="1"
+   (ngModelChange)="updatePending()"
+/>
+
+<!-- <small *ngIf="estimated.invalid && estimated.touched">
+  ❌ Estimated amount must be greater than 0
+</small> -->
+
       </div>
 
       <div class="form-group">
         <label>Paid Amount</label>
         <input
-          type="number"
-          [(ngModel)]="model.paidAmount"
-          name="paidAmount"
-          (ngModelChange)="updatePending()"
-        />
+  type="number"
+  [(ngModel)]="model.paidAmount"
+  name="paidAmount"
+  min="0"
+  [max]="model.estimatedAmount"
+  (ngModelChange)="updatePending()"
+/>
+
       </div>
     </div>
 
     <div class="form-group">
       <label>Pending Amount</label>
       <input
-        type="number"
-        [(ngModel)]="model.pendingAmount"
-        name="pendingAmount"
-        readonly
-      />
+  type="number"
+  [(ngModel)]="model.pendingAmount"
+  name="pendingAmount"
+  readonly
+/>
+
     </div>
 
     <!-- Status -->
@@ -98,9 +281,16 @@
     </div>
 
     <!-- Save -->
-    <button class="btn-save" type="submit" [disabled]="!repairForm.form.valid">
-      Save Repair Job
-    </button>
+   <button
+  class="btn-save"
+  type="submit"
+ 
+>
+  Save Repair Job
+</button>
+
+
+
 
   </form>
 
