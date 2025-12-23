@@ -31,7 +31,16 @@
           [ngClass]="{ 'low-stock': isLowStock(p), 'out-of-stock': !canAddToCart(p) }"
         >
           <div class="product-info">
-            <h5>{{ p?.name }}</h5>
+                  <b class="product-name"><div class="chip-row">
+  <span
+   *ngFor="let part of p.name | splitChips"
+    class="chip"
+    [class.chip-active]="part | chipMatch : productSearch"
+  >
+    {{ part }}
+  </span>
+</div></b>
+
             <p>Stock: {{ p?.stock }}</p>
             <p>Cost: ₹{{ p?.price }}</p>
             <p *ngIf="p?.categoryName">Category: {{ p?.categoryName }}</p>

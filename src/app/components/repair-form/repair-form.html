@@ -103,7 +103,15 @@
 <div class="products-list" *ngIf="searchedProducts.length">
   <div class="product-card" *ngFor="let p of searchedProducts">
     <div class="product-info">
-      <b class="product-name">{{ p.name }}</b>
+      <b class="product-name"><div class="chip-row">
+  <span
+   *ngFor="let part of p.name | splitChips"
+    class="chip"
+    [class.chip-active]="part | chipMatch : partSearch"
+  >
+    {{ part }}
+  </span>
+</div></b>
 
       <small class="meta">
         Category: {{ p.categoryName || 'Uncategorized' }}
