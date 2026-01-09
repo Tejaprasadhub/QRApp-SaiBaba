@@ -67,7 +67,7 @@ export class SalesService {
     if (!snap.empty) {
       const d = snap.docs[0];
       // update lastVisit
-      await updateDoc(d.ref, { lastVisit: new Date() }).catch(() => {});
+      await updateDoc(d.ref, { lastVisitAt: new Date() }).catch(() => {});
       return d.id;
     }
 
@@ -76,7 +76,7 @@ export class SalesService {
       name: name || 'Unknown',
       phone,
       createdAt: new Date(),
-      lastVisit: new Date(),
+      lastVisitAt: new Date(),
       totalPurchases: 0,
       totalPendingAmount: 0,
     });
@@ -162,7 +162,7 @@ const paymentStatus =
         name: customerName,
         phone: customerPhone,
         createdAt: new Date(),
-        lastVisit: new Date(),
+        lastVisitAt: new Date(),
         totalPurchases: 0,
         totalPendingAmount: 0,
       });
@@ -237,7 +237,7 @@ const paymentStatus =
     tx.update(customerRef, {
       totalPurchases: (c.totalPurchases || 0) + Number(sale.total || 0),
       totalPendingAmount: (c.totalPendingAmount || 0) + pendingAmount,
-      lastVisit: new Date(),
+      lastVisitAt: new Date(),
     });
   }
 });

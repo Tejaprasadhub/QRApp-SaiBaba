@@ -1,11 +1,15 @@
 import { Component } from '@angular/core';
 import { SalesService } from '../../services/sales';
 import { Subject, debounceTime, take } from 'rxjs';
-import { QueryDocumentSnapshot, DocumentData, Firestore, collection, query, where } from '@angular/fire/firestore';
+import { QueryDocumentSnapshot, DocumentData, Firestore, collection, query, where, updateDoc, serverTimestamp, doc } from '@angular/fire/firestore';
 import { Product, SalesProductService } from '../../services/sales-product-service';
 import { collectionData } from '@angular/fire/firestore';
 import { FirestoreLoaderService } from '../../services/firestore-loader.service';
 import { Router } from '@angular/router';
+import { buildCustomerProfile } from '../../utils/customer-profile.util';
+import { CustomerProfileService } from '../../services/campaigns-ai/customer-profile.service';
+import { AITag } from '../../enums/ai-tag.enum';
+import { CustomerService } from '../../services/customer.service';
 
 @Component({
   selector: 'app-sales-form',
@@ -38,7 +42,9 @@ paymentMode: 'cash' | 'credit' | 'partial' = 'cash';
     private ss: SalesService,
     private firestore: Firestore,
     private fsLoader: FirestoreLoaderService,
-    private router: Router
+    private router: Router,
+    private customerProfileService: CustomerProfileService,
+    private customerService: CustomerService
   ) {}
 
   ngOnInit() {
@@ -216,6 +222,31 @@ this.ss.addSale(sale));
 
     alert('✅ Sale recorded successfully!');
 
+    // 🟢 NEW — Update customer's last visit & AITag
+    
+    // 2️⃣ Find customer by phone
+    const customer = await this.customerService.getCustomerByPhone(
+      sale.customerPhone
+    );
+
+    if (customer) {
+      // 3️⃣ Update lastVisitAt (payment = physical visit)
+      await this.customerService.updateCustomer(customer.id, {
+        lastVisitAt: new Date()
+      });
+
+      // 4️⃣ Recompute AI tag safely
+      this.customerProfileService
+        .getCustomerProfile$(customer)
+        .pipe(take(1))
+        .subscribe(async ({ aiTag }) => {
+          await this.customerService.updateCustomer(customer.id, {
+            aiTag
+          });
+        });
+    }
+
+    // navigate to sales list
     this.router.navigate(['/sales']);
     // reset UI
     this.cart = [];

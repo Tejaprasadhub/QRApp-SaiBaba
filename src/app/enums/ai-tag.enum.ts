@@ -1,0 +1,6 @@
+export enum AITag {
+  LOW_RISK = 'LOW_RISK',
+  CREDIT_RISK = 'CREDIT_RISK',
+  LOYAL = 'LOYAL',
+  INACTIVE = 'INACTIVE'
+}

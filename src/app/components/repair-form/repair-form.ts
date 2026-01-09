@@ -6,6 +6,7 @@ import { doc, updateDoc, increment } from '@angular/fire/firestore';
 import { take } from 'rxjs';
 import { Product, SalesProductService } from '../../services/sales-product-service';
 import { Router } from '@angular/router';
+import { CustomerService } from '../../services/customer.service';
 
 @Component({
   selector: 'app-repair-form',
@@ -43,7 +44,8 @@ private partSearch$ = new Subject<void>();
   constructor(private firestore: Firestore,
     private fsLoader: FirestoreLoaderService,
     private ps: SalesProductService,
-    private router: Router
+    private router: Router,
+    private customerService: CustomerService
   ) {}
 
  addOutsideSpare() {
@@ -200,11 +202,24 @@ if (this.model.repairType === 'repair') {
     addDoc(repairRef, {
       ...this.model,
       usedParts: this.spareParts,
-      inDate: new Date()
+      inDate: new Date(),
+      readyNotified: false
     })
   );
 
   alert('Repair job saved successfully!');
+
+   // 2️⃣ Find customer by phone
+    const customer = await this.customerService.getCustomerByPhone(
+      this.model.customerPhone
+    );
+
+    if (customer) {
+      // 3️⃣ Update lastVisitAt (payment = physical visit)
+      await this.customerService.updateCustomer(customer.id, {
+        lastVisitAt: new Date()
+      });
+    }
 
   this.router.navigate(['/repairs-list']);
   // =========================

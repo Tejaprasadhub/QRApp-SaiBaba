@@ -2,6 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { RepairsService } from '../../services/repairs.service';
 import { FirestoreLoaderService } from '../../services/firestore-loader.service';
 import { take } from 'rxjs';
+import { CustomerService } from '../../services/customer.service';
+import { CustomerProfileService } from '../../services/campaigns-ai/customer-profile.service';
+import { doc, Firestore, serverTimestamp, updateDoc } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-repairs-list',
@@ -31,7 +34,10 @@ export class RepairsList implements OnInit {
   realtime = true;
 
   constructor(private repairService: RepairsService,
-    private fsLoader: FirestoreLoaderService
+    private fsLoader: FirestoreLoaderService,
+    private customerService: CustomerService,
+    private customerProfileService: CustomerProfileService,
+    private firestore: Firestore  
   ) {}
 
   ngOnInit() {
@@ -120,35 +126,61 @@ export class RepairsList implements OnInit {
   // ======================================================
   // 😎 ADD PAYMENT ANYTIME (Before or After Completion)
   // ======================================================
-  addPayment(r: any) {
-    const value = prompt(`Enter amount received now:`, '0');
-    if (!value) return;
+async addPayment(r: any) {
+  const value = prompt(`Enter amount received now:`, '0');
+  if (!value) return;
 
-    const amt = Number(value);
-    if (isNaN(amt) || amt <= 0) {
-      alert("Invalid amount");
-      return;
-    }
-
-    const newPaid = (r.paidAmount || 0) + amt;
-    const newPending = Math.max((r.estimatedAmount || 0) - newPaid, 0);
-
-
-    this.fsLoader.wrapPromise(
-    this.repairService.updatePayment(r.id, newPaid, newPending)
-  ).then(() => {
-    this.load(true);
-    // ✅ optional success UI
-  }).catch(() => {
-    alert('Failed to complete repair');
-  });
+  const amt = Number(value);
+  if (isNaN(amt) || amt <= 0) {
+    alert("Invalid amount");
+    return;
   }
 
-  // ======================================================
+  const newPaid = (r.paidAmount || 0) + amt;
+  const newPending = Math.max((r.estimatedAmount || 0) - newPaid, 0);
+
+  try {
+    // 1️⃣ Update repair payment
+    await this.fsLoader.wrapPromise(
+      this.repairService.updatePayment(r.id, newPaid, newPending)
+    );
+
+    // 2️⃣ Find customer by phone
+    const customer = await this.customerService.getCustomerByPhone(
+      r.customerPhone
+    );
+
+    if (customer) {
+      // 3️⃣ Update lastVisitAt (payment = physical visit)
+      await this.customerService.updateCustomer(customer.id, {
+        lastVisitAt: new Date()
+      });
+
+      // 4️⃣ Recompute AI tag safely
+      this.customerProfileService
+        .getCustomerProfile$(customer)
+        .pipe(take(1))
+        .subscribe(async ({ aiTag }) => {
+          await this.customerService.updateCustomer(customer.id, {
+            aiTag
+          });
+        });
+    }
+
+    // 5️⃣ Reload UI
+    this.load(true);
+
+  } catch (err) {
+    alert('Failed to complete repair payment');
+  }
+}
+
+
+// ======================================================
   // 🎉 COMPLETE WITH PAYMENT (Full or Partial)
   // ======================================================
-  completeWithPayment(r: any) {
-    const value = prompt(
+async completeWithPayment(r: any) {
+  const value = prompt(
       `Customer is taking the device.\nEnter amount received now:\nPending: ₹${r.pendingAmount}`,
       r.pendingAmount
     );
@@ -164,15 +196,100 @@ export class RepairsList implements OnInit {
     const newPaid = (r.paidAmount || 0) + amt;
     const newPending = Math.max((r.estimatedAmount || 0) - newPaid, 0);
     
+  try {
+    // 1️⃣ Update repair payment
+    await this.fsLoader.wrapPromise(
+     this.repairService.markCompleted(r.id, newPaid, newPending)
+    );
 
-this.fsLoader.wrapPromise(
-    this.repairService.markCompleted(r.id, newPaid, newPending)
-  ).then(() => {
+    // 2️⃣ Find customer by phone
+    const customer = await this.customerService.getCustomerByPhone(
+      r.customerPhone
+    );
+
+    if (customer) {
+      // 3️⃣ Update lastVisitAt (payment = physical visit)
+      await this.customerService.updateCustomer(customer.id, {
+        lastVisitAt: new Date()
+      });
+
+      // 4️⃣ Recompute AI tag safely
+      this.customerProfileService
+        .getCustomerProfile$(customer)
+        .pipe(take(1))
+        .subscribe(async ({ aiTag }) => {
+          await this.customerService.updateCustomer(customer.id, {
+            aiTag
+          });
+        });
+    }
+
+    // 5️⃣ Reload UI
     this.load(true);
-    // ✅ optional success UI
-  }).catch(() => {
-    alert('Failed to complete repair');
-  });  }
+
+  } catch (err) {
+    alert('Failed to complete repair payment');
+  }
+}
+
+
+  // ======================================================
+  // 🎉 COMPLETE WITH PAYMENT (Full or Partial)
+  // ======================================================
+//  async completeWithPayment(r: any) {
+//     const value = prompt(
+//       `Customer is taking the device.\nEnter amount received now:\nPending: ₹${r.pendingAmount}`,
+//       r.pendingAmount
+//     );
+
+//     if (value === null) return;
+//     const amt = Number(value);
+
+//     if (isNaN(amt) || amt < 0) {
+//       alert("Invalid amount");
+//       return;
+//     }
+
+//     const newPaid = (r.paidAmount || 0) + amt;
+//     const newPending = Math.max((r.estimatedAmount || 0) - newPaid, 0);
+    
+
+// this.fsLoader.wrapPromise(
+//     this.repairService.markCompleted(r.id, newPaid, newPending)
+//   ).then(() => {
+
+//      // 🟢 NEW — Update customer's last visit & AITag
+   
+//     // 2️⃣ Find customer by phone
+//     const customer = await this.customerService.getCustomerByPhone(
+//       r.customerPhone
+//     );
+
+//     if (customer) {
+//       // 3️⃣ Update lastVisitAt (payment = physical visit)
+//       await this.customerService.updateCustomer(customer.id, {
+//         lastVisitAt: new Date()
+//       });
+
+//       // 4️⃣ Recompute AI tag safely
+//       this.customerProfileService
+//         .getCustomerProfile$(customer)
+//         .pipe(take(1))
+//         .subscribe(async ({ aiTag }) => {
+//           await this.customerService.updateCustomer(customer.id, {
+//             aiTag
+//           });
+//         });
+//     }
+
+
+//     this.load(true);
+//     // ✅ optional success UI
+//   }).catch(() => {
+//     alert('Failed to complete repair');
+//   });  
+
+// }
 
   // Calculate the total service amount
   get totalServiceAmount(): number {

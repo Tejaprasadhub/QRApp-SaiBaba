@@ -50,6 +50,8 @@ async submitForm() {
 
   const customer = this.customerForm.value;
   customer.createdAt = new Date();
+  customer.aiTag = 'LOW_RISK'; // default AI tag
+  customer.lastVisitAt = new Date();
 
   const phone = customer.phone.trim();
   const phoneId = phone.replace(/\D/g, ''); // remove non-digit characters
