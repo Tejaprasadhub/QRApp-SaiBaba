@@ -3,6 +3,8 @@ import { Firestore, collection, query, where, updateDoc, doc } from '@angular/fi
 import { collectionData } from '@angular/fire/firestore';
 import { combineLatest, take } from 'rxjs';
 import { FirestoreLoaderService } from '../../services/firestore-loader.service';
+import { CustomerService } from '../../services/customer.service';
+import { CustomerProfileService } from '../../services/campaigns-ai/customer-profile.service';
 
 @Component({
   selector: 'app-pending-payments',
@@ -18,7 +20,9 @@ export class PendingPayments {
   pendingRepairs: any[] = [];
 
   constructor(private firestore: Firestore,
-     private fsLoader: FirestoreLoaderService
+     private fsLoader: FirestoreLoaderService,
+     private customerService: CustomerService,
+         private customerProfileService: CustomerProfileService
   ) {
     this.loadPendingPayments();
   }
@@ -78,11 +82,34 @@ combineLatest([
   updateDoc(ref, {
     paidAmount: (item.paidAmount || 0) + amount,
     pendingAmount: item.pendingAmount - amount
-  })
+  })  
 );
 
-this.loadPendingPayments();
 
+// 2️⃣ Find customer by phone
+    const customer = await this.customerService.getCustomerByPhone(
+      item.customerPhone
+    );
+
+    if (customer) {
+      // 3️⃣ Update lastVisitAt (payment = physical visit)
+      await this.customerService.updateCustomer(customer.id, {
+        lastVisitAt: new Date(),
+        totalPendingAmount: (customer.totalPendingAmount || 0) - amount > 0 ? (customer.totalPendingAmount || 0) - amount : 0
+      });
+
+      // 4️⃣ Recompute AI tag safely
+      this.customerProfileService
+        .getCustomerProfile$(customer)
+        .pipe(take(1))
+        .subscribe(async ({ aiTag }) => {
+          await this.customerService.updateCustomer(customer.id, {
+            aiTag
+          });
+        });
+
+this.loadPendingPayments();
+      }
 }
 
 async markFullyPaid(item: any) {
@@ -117,6 +144,30 @@ if (item.type === 'sale') {
   updateData.paymentStatus = 'paid';
 }
 await this.fsLoader.wrapPromise(updateDoc(ref, updateData));
+
+
+// 2️⃣ Find customer by phone
+    const customer = await this.customerService.getCustomerByPhone(
+      item.customerPhone
+    );
+
+    if (customer) {
+      // 3️⃣ Update lastVisitAt (payment = physical visit)
+      await this.customerService.updateCustomer(customer.id, {
+        lastVisitAt: new Date(),
+        totalPendingAmount: (customer.totalPendingAmount || 0) - amount > 0 ? (customer.totalPendingAmount || 0) - amount : 0
+      });
+
+      // 4️⃣ Recompute AI tag safely
+      this.customerProfileService
+        .getCustomerProfile$(customer)
+        .pipe(take(1))
+        .subscribe(async ({ aiTag }) => {
+          await this.customerService.updateCustomer(customer.id, {
+            aiTag
+          });
+        });
+      }
 
 this.loadPendingPayments();
 }

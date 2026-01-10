@@ -217,7 +217,9 @@ if (this.model.repairType === 'repair') {
     if (customer) {
       // 3️⃣ Update lastVisitAt (payment = physical visit)
       await this.customerService.updateCustomer(customer.id, {
-        lastVisitAt: new Date()
+        lastVisitAt: new Date(),
+        totalPurchases: (customer.totalPurchases || 0) + Number(this.model.estimatedAmount || 0),
+        totalPendingAmount: (customer.totalPendingAmount || 0) + Number(this.model.estimatedAmount || 0)
       });
     }
 
@@ -254,7 +256,11 @@ async createNewCustomer() {
   const newCustomerPayload = {
     phone: this.model.customerPhone,
     name: this.model.customerName,  // Ensure the customer name is provided,
-    createdAt: serverTimestamp()
+    createdAt: serverTimestamp(),
+    lastVisitAt: serverTimestamp(),
+    aiTag: 'LOW_RISK', // default AI tag,
+    // totalPurchases: Number(this.model.estimatedAmount || 0),
+    // totalPendingAmount: Number(this.model.pendingAmount || 0)      
   };
   // debugger;
   // Add customer document to Firestore

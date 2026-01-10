@@ -153,7 +153,8 @@ async addPayment(r: any) {
     if (customer) {
       // 3️⃣ Update lastVisitAt (payment = physical visit)
       await this.customerService.updateCustomer(customer.id, {
-        lastVisitAt: new Date()
+        lastVisitAt: new Date(),
+        totalPendingAmount: (customer.totalPendingAmount || 0) - amt > 0 ? (customer.totalPendingAmount || 0) - amt : 0,
       });
 
       // 4️⃣ Recompute AI tag safely
@@ -210,7 +211,8 @@ async completeWithPayment(r: any) {
     if (customer) {
       // 3️⃣ Update lastVisitAt (payment = physical visit)
       await this.customerService.updateCustomer(customer.id, {
-        lastVisitAt: new Date()
+        lastVisitAt: new Date(),
+        totalPendingAmount: (customer.totalPendingAmount || 0) - amt > 0 ? (customer.totalPendingAmount || 0) - amt : 0
       });
 
       // 4️⃣ Recompute AI tag safely

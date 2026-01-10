@@ -155,7 +155,7 @@ const paymentStatus =
       customerId = snap.docs[0].id;
 
       // Update lastVisit WITHOUT needing a transaction
-      await updateDoc(snap.docs[0].ref, { lastVisit: new Date() });
+      await updateDoc(snap.docs[0].ref, { lastVisitAt: new Date() });
     } else {
       // Create new customer
       const newCustRef = await addDoc(custColl, {
